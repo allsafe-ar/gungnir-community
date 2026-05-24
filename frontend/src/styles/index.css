@@ -1,0 +1,108 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import './theme.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  html {
+    @apply overflow-x-hidden;
+    font-size: 20px;
+  }
+  body {
+    @apply min-h-svh w-full bg-background text-foreground has-[div[data-variant='inset']]:bg-sidebar;
+  }
+
+  /* Override Radix scroll locking for sticky headers */
+  body[data-scroll-locked] {
+    overflow: unset !important;
+  }
+
+  /* Cursor pointer for buttons */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Prevent focus zoom on mobile devices */
+  @media screen and (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+}
+
+@utility no-scrollbar {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+@utility faded-bottom {
+  @apply after:pointer-events-none after:absolute after:inset-s-0 after:bottom-0 after:hidden after:h-32 after:w-full after:rounded-b-2xl after:bg-[linear-gradient(180deg,transparent_10%,var(--background)_70%)] md:after:block;
+}
+
+/* styles.css */
+.CollapsibleContent {
+  overflow: hidden;
+}
+.CollapsibleContent[data-state='open'] {
+  animation: slideDown 300ms ease-out;
+}
+.CollapsibleContent[data-state='closed'] {
+  animation: slideUp 300ms ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    height: var(--radix-collapsible-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+/* ── Autofill del browser (Chrome/Edge pone fondo verde/amarillo por defecto) ── */
+/* IMPORTANTE: usar var(--card) (opaco) — var(--input) es semi-transparente y no funciona
+   con -webkit-box-shadow inset. hsl(var(--x)) es inválido en Tailwind v4 (las vars ya son oklch). */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--card) inset !important;
+  box-shadow:         0 0 0 1000px var(--card) inset !important;
+  -webkit-text-fill-color: var(--foreground) !important;
+  caret-color: var(--foreground);
+  transition: background-color 5000s ease-in-out 0s;
+}

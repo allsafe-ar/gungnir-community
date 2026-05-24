@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/images/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary Meta Tags -->
+    <title>AllSafe Gungnir</title>
+    <meta name="title" content="AllSafe Gungnir — Offensive Security Manager" />
+    <meta
+      name="description"
+      content="Plataforma de gestión de pentesting de AllSafe Security Solutions."
+    />
+
+    <!-- font family -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap"
+      rel="stylesheet"
+    />
+
+    <meta name="theme-color" content="#fff" />
+
+    <!-- Inicialización síncrona del tema oscuro — DEBE ejecutarse antes del primer render de React.
+         Sin este script, ThemeProvider aplica la clase .dark en useEffect (post-render)
+         causando FOUC: un flash de bordes claros sobre fondo oscuro al iniciar sesión. -->
+    <script>
+      (function () {
+        try {
+          var t = document.cookie.match(/vite-ui-theme=([^;]+)/)?.[1] || 'system'
+          if (t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+          }
+        } catch (e) {}
+      })()
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

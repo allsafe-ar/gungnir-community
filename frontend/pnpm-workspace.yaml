@@ -1,0 +1,4 @@
+allowBuilds:
+  '@clerk/shared': false
+  core-js: true
+  esbuild: true

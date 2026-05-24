@@ -1,0 +1,44 @@
+# Gungnir Community — Docker Compose
+# Copyright (c) 2026 Eduardo Emiliano Alaniz - AllSafe Security Solutions
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: allsafe_gungnir
+      MYSQL_USER: gungnir
+      MYSQL_PASSWORD: ${DB_PASSWORD:-changeme}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootchangeme}
+    volumes:
+      - gungnir_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3006}:3006"
+    environment:
+      PORT: 3006
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: gungnir
+      DB_PASSWORD: ${DB_PASSWORD:-changeme}
+      DB_NAME: allsafe_gungnir
+      JWT_SECRET: ${JWT_SECRET:-change_this_to_a_random_64char_string}
+      NODE_ENV: production
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3006}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - gungnir_uploads:/app/uploads
+
+volumes:
+  gungnir_db:
+  gungnir_uploads:
