@@ -1,0 +1,311 @@
+{
+  "nav": {
+    "operations": "Operaciones",
+    "tools": "Herramientas",
+    "admin": "Administración",
+    "dashboard": "Panel de Control",
+    "threat_intel_dash": "Threat Intel",
+    "integrations_dash": "Integraciones",
+    "operations_dash": "Operaciones",
+    "clients": "Clientes",
+    "engagements": "Engagements",
+    "techniques": "Técnicas",
+    "arsenal": "Arsenal",
+    "scripts": "Scripts",
+    "library": "Biblioteca",
+    "templates": "Templates",
+    "reports": "Reportes",
+    "writeups": "Writeups",
+    "overview": "Dashboards",
+    "integrations": "Integraciones",
+    "scanners": "Scanners",
+    "recon": "Recon / OSINT",
+    "api_keys": "API Keys",
+    "users": "Usuarios",
+    "settings": "Configuración",
+    "notes": "Notas",
+    "admin_menu": {
+      "title": "Administración",
+      "subtitle": "Configuración del sistema",
+      "section": "Administración",
+      "usuarios": "Usuarios",
+      "auditoria": "Auditoría",
+      "configuracion": "Plantilla de Reportes",
+      "scanners_config": "Config. Scanners",
+      "api_keys": "API Keys",
+      "report_bug": "Reportar un problema"
+    }
+  },
+  "auth": {
+    "sign_in": "Iniciar sesión",
+    "sign_out": "Cerrar sesión",
+    "subtitle": "Offensive Security Manager",
+    "footer": "Acceso restringido — solo personal autorizado",
+    "username": "Usuario",
+    "username_placeholder": "Ingresá tu usuario",
+    "username_required": "El usuario es requerido",
+    "password": "Contraseña",
+    "password_required": "La contraseña es requerida",
+    "login": "Ingresar",
+    "login_error": "Credenciales incorrectas",
+    "welcome": "Bienvenido, {{name}}",
+    "forgot_password": "¿Olvidaste tu contraseña?",
+    "signing_in": "Ingresando...",
+    "invalid_credentials": "Credenciales incorrectas",
+    "session_expired": "Sesión expirada. Iniciá sesión nuevamente.",
+    "totp": {
+      "hint": "Ingresá el código de tu autenticador",
+      "code_label": "Código 2FA",
+      "verify": "Verificar",
+      "back": "Volver al login",
+      "error": "Código incorrecto"
+    },
+    "forgot": {
+      "title": "Recuperar contraseña",
+      "username_label": "Tu usuario",
+      "username_placeholder": "Ingresá tu usuario",
+      "send": "Enviar solicitud",
+      "sent_pre": "Se envió la solicitud para",
+      "sent_post": ". El administrador te contactará pronto.",
+      "back": "Volver al login"
+    }
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Guardado correctamente",
+    "update": "Actualizar",
+    "confirm_delete": "¿Estás seguro de que querés eliminar este elemento?",
+    "no_results": "Sin resultados"
+  },
+  "integrations": {
+    "title": "Scanners",
+    "subtitle": "Integraciones con OpenVAS y Nessus para importar resultados de escaneo",
+    "openvas": {
+      "col": { "name": "Nombre", "status": "Estado", "progress": "Progreso", "target": "Objetivo", "lastScan": "Último escan", "vuln": "Vulnerabilidad" },
+      "viewVulns": "Ver vulns",
+      "noTasks": "Sin tareas de escaneo",
+      "noResults": "Sin vulnerabilidades",
+      "selectTask": "Seleccioná una tarea para ver sus vulnerabilidades",
+      "tab": { "tasks": "Tareas", "vulns": "Vulnerabilidades" }
+    },
+    "nessus": {
+      "col": { "name": "Nombre", "status": "Estado", "owner": "Owner", "modified": "Modificado", "vuln": "Vulnerabilidad", "severity": "Severidad", "affected": "Afectados", "plugin": "Plugin ID" },
+      "viewVulns": "Ver vulns",
+      "neverRun": "Nunca ejecutado",
+      "noResults": "Sin resultados",
+      "noScans": "Sin escaneos",
+      "selectScan": "Seleccioná un escaneo para ver sus vulnerabilidades",
+      "tab": { "scans": "Escaneos", "vulns": "Vulnerabilidades" }
+    },
+    "config": {
+      "tab": "Configuración",
+      "saved": "Configuración guardada",
+      "enabled": "Habilitado",
+      "disabled": "Deshabilitado",
+      "enabledLabel": "Habilitar esta integración",
+      "url": "URL del servidor",
+      "apiKey": "API Key",
+      "accessKey": "Access Key",
+      "secretKey": "Secret Key",
+      "keyPlaceholder": "Ingresá la clave..."
+    },
+    "panel": {
+      "tab": "Panel",
+      "title": "Panel de Control",
+      "subtitle": "Estado combinado de todos los scanners de vulnerabilidades",
+      "kpi": {
+        "totalScans": "Total Escaneos",
+        "running": "En Ejecución",
+        "completed": "Completados",
+        "criticalVulns": "Críticas",
+        "highVulns": "Altas"
+      },
+      "notConfigured": "No configurado",
+      "notEnabled": "Deshabilitado",
+      "noData": "Sin datos — configurá el scanner para ver estadísticas"
+    },
+    "apikeys": {
+      "title": "API Keys de Integraciones",
+      "subtitle": "Claves para servicios externos de reconocimiento y threat intel",
+      "recon": "Reconocimiento OSINT",
+      "scanners": "Estado de Scanners",
+      "freeSources": "Fuentes gratuitas",
+      "configured": "Configurada",
+      "notConfigured": "No configurada",
+      "saved": "Claves guardadas correctamente"
+    }
+  },
+  "recon": {
+    "title": "Recon / OSINT",
+    "subtitle": "Reconocimiento ofensivo: Shodan, WHOIS, DNS, subdominios y más",
+    "tab": { "search": "Búsqueda", "keys": "API Keys" },
+    "search": {
+      "placeholder": "IP o dominio objetivo (ej: 8.8.8.8 o target.com)",
+      "btn": "Consultar",
+      "hint": "Ingresá una IP o dominio para comenzar el reconocimiento",
+      "querying": "Consultando"
+    },
+    "keys": {
+      "title": "API Keys de Reconocimiento",
+      "configured": "Configurada",
+      "notConfigured": "No configurada",
+      "freeSources": "Fuentes gratuitas"
+    }
+  },
+  "signout": {
+    "title": "Cerrar sesión",
+    "desc": "¿Estás seguro de que querés cerrar sesión?",
+    "confirm": "Cerrar sesión"
+  },
+  "confirm": {
+    "cancel": "Cancelar"
+  },
+  "profile": {
+    "my_account": "Mi cuenta",
+    "sign_out": "Cerrar sesión"
+  },
+  "mi_cuenta": {
+    "title": "Mi cuenta",
+    "password": {
+      "title": "Cambiar contraseña",
+      "current": "Contraseña actual",
+      "new": "Nueva contraseña",
+      "confirm": "Confirmar nueva contraseña",
+      "btn": "Cambiar contraseña",
+      "updated": "Contraseña actualizada correctamente",
+      "mismatch": "Las contraseñas no coinciden",
+      "too_short": "La contraseña debe tener al menos 8 caracteres"
+    },
+    "2fa": {
+      "title": "Autenticación en dos pasos (2FA)",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "desc_active": "El doble factor está activo. Se pedirá el código al iniciar sesión.",
+      "desc_inactive": "Activá el segundo factor para mayor seguridad.",
+      "enable": "Activar 2FA",
+      "disable": "Desactivar 2FA",
+      "disable_confirm": "¿Seguro que querés desactivar el 2FA?",
+      "scan": "Escaneá el código QR con tu app de autenticación (Google Authenticator, Aegis, etc.).",
+      "code_label": "Código de verificación",
+      "verify": "Verificar y activar",
+      "cancel": "Cancelar",
+      "enabled": "2FA activado correctamente",
+      "disabled": "2FA desactivado",
+      "error": "Código incorrecto. Intentá nuevamente."
+    },
+    "lang": {
+      "title": "Idioma",
+      "label": "Idioma de la interfaz",
+      "updated": "Idioma actualizado"
+    },
+    "account": {
+      "title": "Mi cuenta",
+      "username": "Usuario",
+      "name": "Nombre",
+      "role": "Rol"
+    },
+    "branding": {
+      "title": "Branding AllSafe",
+      "desc": "Configuración de logo personalizado en reportes.",
+      "show_logo": "Mostrar logo",
+      "upload": "Subir",
+      "upload_hint": "PNG, JPG, SVG o WebP · max. 400 KB",
+      "saved": "Logo actualizado"
+    }
+  },
+  "errors": {
+    "go_back": "Volver atrás",
+    "back_home": "Ir al inicio",
+    "500": {
+      "title": "Error interno del servidor",
+      "desc": "Ocurrió un error inesperado. Por favor, intentá de nuevo."
+    },
+    "404": {
+      "title": "Página no encontrada",
+      "desc": "La página que buscás no existe o fue movida."
+    },
+    "401": {
+      "title": "No autenticado",
+      "desc": "Necesitás iniciar sesión para acceder a esta página."
+    },
+    "403": {
+      "title": "Acceso denegado",
+      "desc": "No tenés permisos para acceder a esta sección."
+    },
+    "503": {
+      "title": "Servicio no disponible",
+      "desc": "El sistema está en mantenimiento. Volvé en unos minutos."
+    }
+  },
+  "notas": {
+    "title": "Notas",
+    "subtitle": "Base de conocimiento personal — links, configs, observaciones",
+    "new": "Nueva nota",
+    "search_placeholder": "Buscar notas...",
+    "pin": "Fijar",
+    "unpin": "Desfijar",
+    "pinned": "Fijadas",
+    "all": "Todas",
+    "no_results": "No hay notas todavía",
+    "no_results_search": "Sin resultados para esa búsqueda",
+    "empty_hint": "Guardá links, configuraciones, comandos específicos o cualquier referencia útil.",
+    "delete_confirm": "¿Eliminar esta nota?",
+    "tag_placeholder": "Agregar tag...",
+    "tags_label": "Tags",
+    "engagement_label": "Engagement (opcional)",
+    "engagement_none": "Sin engagement",
+    "title_label": "Título",
+    "title_placeholder": "Nombre de la nota...",
+    "content_label": "Contenido",
+    "content_placeholder": "Contenido en Markdown...",
+    "saved": "Nota guardada",
+    "deleted": "Nota eliminada",
+    "edit_title": "Editar nota",
+    "new_title": "Nueva nota",
+    "last_updated": "Actualizada",
+    "linked_to": "Vinculada a",
+    "copy": "Copiar contenido"
+  },
+  "perfil": {
+    "password": {
+      "title": "Cambiar contraseña",
+      "desc": "Actualizá tu contraseña de acceso.",
+      "current": "Contraseña actual",
+      "new": "Nueva contraseña",
+      "confirm": "Confirmar contraseña",
+      "btn": "Cambiar contraseña",
+      "updated": "Contraseña actualizada",
+      "mismatch": "Las contraseñas no coinciden",
+      "too_short": "Mínimo 8 caracteres"
+    },
+    "2fa": {
+      "title": "Autenticación de dos factores",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "desc_active": "El doble factor está activo. Se pedirá el código al iniciar sesión.",
+      "desc_inactive": "Activá el segundo factor para mayor seguridad.",
+      "enable": "Activar 2FA",
+      "disable": "Desactivar",
+      "disable_confirm": "¿Seguro que querés desactivar el 2FA?",
+      "scan": "Escaneá el código QR con tu app de autenticación.",
+      "code_label": "Código de verificación",
+      "verify": "Verificar y activar",
+      "cancel": "Cancelar",
+      "enabled": "2FA activado correctamente",
+      "disabled": "2FA desactivado",
+      "error": "Código incorrecto"
+    },
+    "lang": {
+      "title": "Idioma",
+      "label": "Idioma de la interfaz",
+      "updated": "Idioma actualizado"
+    }
+  }
+}
