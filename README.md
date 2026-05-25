@@ -72,6 +72,24 @@ Gungnir Community includes everything a pentest team needs to run professional e
 
 ---
 
+## Screenshots
+
+<div align="center">
+
+**Dashboard**
+<br/>
+<img src="screenshots/1-dashboard.png" alt="Dashboard" width="900"/>
+
+<br/><br/>
+
+| **Finding Editor** | **PDF Report** |
+|:---:|:---:|
+| <img src="screenshots/2-editor-hallazgos.png" alt="Finding Editor" width="440"/> | <img src="screenshots/4-reportes.png" alt="PDF Report" width="440"/> |
+
+</div>
+
+---
+
 ## Key Features
 
 ### Engagement Lifecycle
