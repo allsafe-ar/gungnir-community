@@ -72,6 +72,24 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 
 ---
 
+## Screenshots
+
+<div align="center">
+
+**Dashboard**
+<br/>
+<img src="screenshots/1-dashboard.png" alt="Dashboard" width="900"/>
+
+<br/><br/>
+
+| **Editor de Hallazgos** | **Reporte PDF** |
+|:---:|:---:|
+| <img src="screenshots/2-editor-hallazgos.png" alt="Editor de Hallazgos" width="440"/> | <img src="screenshots/4-reportes.png" alt="Reporte PDF" width="440"/> |
+
+</div>
+
+---
+
 ## Características principales
 
 ### Ciclo de vida del Engagement
