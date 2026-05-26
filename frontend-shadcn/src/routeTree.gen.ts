@@ -708,8 +708,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuditoriaIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/integraciones/api-keys': {
       id: '/_authenticated/integraciones/api-keys'
       path: '/integraciones/api-keys'
@@ -736,10 +734,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/threat-intel'
       fullPath: '/dashboard/threat-intel'
       preLoaderRoute: typeof AuthenticatedDashboardThreatIntelRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/clientes/nuevo': {
