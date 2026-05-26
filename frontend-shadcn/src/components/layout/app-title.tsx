@@ -16,7 +16,7 @@ import {
 import allsafeLogo from '@/assets/allsafe-logo.png'
 
 const ALLSAFE_SYSTEMS = [
-  { label: 'SGSI',        url: 'https://sgsi.allsafe.com.ar' },
+  { label: 'Skuld',        url: 'https://skuld.allsafe.com.ar' },
   { label: 'ARP',         url: 'https://arp.allsafe.com.ar' },
   { label: 'CRM',         url: 'https://crm.allsafe.com.ar' },
   { label: 'Gjallarhorn', url: 'https://gjallarhorn.allsafe.com.ar' },
