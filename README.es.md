@@ -35,14 +35,14 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 - **Auto-populate por CVE** - ingresá un CVE ID y Gungnir completa automáticamente el vector CVSS, score, descripción y CWE desde la API de NVD
 - **Reporte PDF de pentesting** - salida profesional con secciones ejecutiva y técnica
 - **Importación XML** - importar hallazgos desde Nessus (.nessus), Burp Suite (.xml), OpenVAS (.xml) y Nmap (-oX .xml) directamente en cualquier fase del engagement
-- **Arsenal de comandos** - 2.200+ comandos de pentesting buscables (Recon, Web, Network, Active Directory, Post-Explotación, Evasión y más)
+- **Arsenal de comandos** - 2.300+ comandos de pentesting buscables (Recon, Web, Network, Active Directory, Post-Explotación, Evasión y más) - incluye tshark, searchsploit, smbmap, wes-ng, técnicas SysNative Windows y más
 - **Templates de hallazgos** - 15 templates preconfigurados (SQLi, XSS, CSRF, SSRF, XXE, RCE, path traversal, credenciales por defecto, open redirect, etc.) + biblioteca personalizada
 - **OSINT / Recon** - Shodan, VirusTotal, Censys, crt.sh, RDAP, DNS usando tus propias API keys (sin vendor lock-in)
 - **Notas** - notas personales en markdown con sistema de tags, pin y compartir entre usuarios
 - **Auth** - JWT (12h), TOTP 2FA (RFC 6238), lockout de cuenta, control de acceso por rol
 - **Internacionalización** - Español (por defecto) e Inglés, configurable por usuario
 
-> ¿Buscás **feeds de scanners Nessus/OpenVAS en vivo**, **sincronización con CRM AllSafe** o el **dashboard de Operaciones ejecutivo**? Esas funcionalidades están disponibles en [Gungnir Pro](https://www.allsafe.com.ar).
+> ¿Buscás **feeds de scanners Nessus/OpenVAS en vivo**, **sincronización con CRM AllSafe**, el **dashboard de Operaciones ejecutivo** o el **browser de papers de investigación Exploit-DB**? Esas funcionalidades están disponibles en [Gungnir Pro](https://www.allsafe.com.ar).
 
 ---
 
@@ -55,7 +55,7 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 | Editor de hallazgos (CVSS 3.1, CWE, OWASP, MITRE) | ✅ | ✅ |
 | Reporte PDF de pentesting | ✅ | ✅ |
 | Importación XML (Nessus, Burp, OpenVAS, Nmap) | ✅ | ✅ |
-| Arsenal de comandos (2.200+ comandos) | ✅ | ✅ |
+| Arsenal de comandos (2.300+ comandos) | ✅ | ✅ |
 | Templates de hallazgos (15 built-in + personalizados) | ✅ | ✅ |
 | Notas con compartir | ✅ | ✅ |
 | OSINT / Recon (Shodan, VirusTotal, Censys, crt.sh, DNS) | ✅ | ✅ |
@@ -69,6 +69,7 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 | Sync CRM AllSafe | ❌ | ✅ |
 | Dashboard de Operaciones (métricas ejecutivas, gráficos) | ❌ | ✅ |
 | Branding PDF personalizado + logo de organización | ❌ | ✅ |
+| Browser de papers de investigación Exploit-DB | ❌ | ✅ |
 
 > **Upgrade path**: Community y Pro comparten el mismo esquema de base de datos. Actualizar es un reemplazo de archivos - sin migraciones necesarias.
 
