@@ -1000,6 +1000,34 @@ app.put("/api/engagements/:id/phase", auth(), async (req, res) => {
   res.json({ ok: true, current_phase: phase });
 });
 
+// PUT /api/engagements/:id/phases/:phase/status — marcar fase como completed/in_progress/not_started
+app.put("/api/engagements/:id/phases/:phase/status", auth(), async (req, res) => {
+  const { status } = req.body;
+  if (!['not_started','in_progress','completed'].includes(status)) return res.status(400).json({ error: "Status inválido" });
+  if (!PHASES_ORDER.includes(req.params.phase)) return res.status(400).json({ error: "Fase inválida" });
+  await qRun(
+    `UPDATE phases SET status=?,
+      started_at = CASE WHEN ? IN ('in_progress','completed') THEN COALESCE(started_at, NOW()) ELSE started_at END,
+      completed_at = CASE WHEN ?='completed' THEN NOW() ELSE NULL END
+     WHERE engagement_id=? AND phase_type=?`,
+    [status, status, status, req.params.id, req.params.phase]
+  );
+  // Auto-actualizar status del engagement según estado de fases
+  const allPhases = await qRows("SELECT status FROM phases WHERE engagement_id=?", [req.params.id]);
+  if (allPhases.length === 6 && allPhases.every(p => p.status === 'completed')) {
+    await qRun(
+      "UPDATE engagements SET status='delivered' WHERE id=? AND status IN ('in_progress','reporting','qa')",
+      [req.params.id]
+    );
+  } else if (allPhases.some(p => p.status === 'in_progress' || p.status === 'completed')) {
+    await qRun(
+      "UPDATE engagements SET status='in_progress' WHERE id=? AND status='planned'",
+      [req.params.id]
+    );
+  }
+  res.json({ ok: true, status });
+});
+
 // ── SCOPE ─────────────────────────────────────────────────────────────────────
 app.get("/api/engagements/:id/scope", auth(), async (req, res) => {
   res.json(await qRows("SELECT * FROM scope_items WHERE engagement_id=? ORDER BY in_scope DESC, value", [req.params.id]));
