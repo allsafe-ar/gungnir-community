@@ -35,14 +35,14 @@ Gungnir Community includes everything a pentest team needs to run professional e
 - **CVE auto-populate** - enter a CVE ID and Gungnir auto-fills CVSS vector, score, description and CWE from the NVD API
 - **PDF pentest report** - professional output with executive and technical sections
 - **XML import** - import findings from Nessus (.nessus), Burp Suite (.xml), OpenVAS (.xml) and Nmap (-oX .xml) directly into any engagement phase
-- **Command arsenal** - 2,200+ searchable pentest commands (Recon, Web, Network, Active Directory, Post-Exploitation, Evasion and more)
+- **Command arsenal** - 2,300+ searchable pentest commands (Recon, Web, Network, Active Directory, Post-Exploitation, Evasion and more) - including tshark, searchsploit, smbmap, wes-ng, Windows SysNative techniques and more
 - **Finding templates** - 15 built-in templates (SQLi, XSS, CSRF, SSRF, XXE, RCE, path traversal, default credentials, open redirect, etc.) + custom library
 - **OSINT / Recon** - Shodan, VirusTotal, Censys, crt.sh, RDAP, DNS using your own API keys (no vendor lock-in)
 - **Notes** - personal markdown notes with tag system, pin support and note sharing between users
 - **Auth** - JWT (12h), TOTP 2FA (RFC 6238), account lockout, role-based access
 - **Internationalization** - Spanish (default) and English, switchable per user
 
-> Looking for **live Nessus/OpenVAS scanner feeds**, **AllSafe CRM sync**, or the **executive Operations dashboard**? Those features are available in [Gungnir Pro](https://www.allsafe.com.ar).
+> Looking for **live Nessus/OpenVAS scanner feeds**, **AllSafe CRM sync**, the **executive Operations dashboard**, or the **Exploit-DB research papers browser**? Those features are available in [Gungnir Pro](https://www.allsafe.com.ar).
 
 ---
 
@@ -55,7 +55,7 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | Finding editor (CVSS 3.1, CWE, OWASP, MITRE) | ✅ | ✅ |
 | PDF pentest report | ✅ | ✅ |
 | XML import (Nessus, Burp, OpenVAS, Nmap) | ✅ | ✅ |
-| Command arsenal (2,200+ commands) | ✅ | ✅ |
+| Command arsenal (2,300+ commands) | ✅ | ✅ |
 | Finding templates (15 built-in + custom) | ✅ | ✅ |
 | Notes with sharing | ✅ | ✅ |
 | OSINT / Recon (Shodan, VirusTotal, Censys, crt.sh, DNS) | ✅ | ✅ |
@@ -69,6 +69,7 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | AllSafe CRM sync | ❌ | ✅ |
 | Operations dashboard (exec metrics, charts) | ❌ | ✅ |
 | Custom PDF branding + org logo | ❌ | ✅ |
+| Exploit-DB research paper browser | ❌ | ✅ |
 
 > **Upgrade path**: Community and Pro share the same database schema. Upgrading is a file replacement - no migrations needed.
 
@@ -116,7 +117,7 @@ Gungnir Community includes everything a pentest team needs to run professional e
 - **Per-operator logo** - uploadable from profile settings
 
 ### Arsenal & Reference
-- **Command library** - 2,200+ categorized, searchable pentest commands
+- **Command library** - 2,300+ categorized, searchable pentest commands
 - **Script manager** - store and organize custom scripts
 - **Library** - reference resources and documentation
 - **Writeups** - vulnerability writeup management
