@@ -34,7 +34,7 @@ La comunidad comparte walkthroughs, writeups CTF y templates metodológicos en l
 
 | Archivo | Tipo | Descripción | Hallazgos | Autor |
 |---------|------|-------------|-----------|-------|
-| [RickdiculouslyEasy-CTF-Walkthrough.zip](community-engagements/RickdiculouslyEasy-CTF-Walkthrough.zip) | CTF · Pentesting | Walkthrough completo de la máquina RickdiculouslyEasy de VulnHub. 9 hallazgos, 22 entradas en el operation log. Fases PTES estándar. | 9 | AllSafe |
+| [RickdiculouslyEasy-CTF-Walkthrough.zip](community-engagements/RickdiculouslyEasy-CTF-Walkthrough.zip) | CTF · Pentesting | Walkthrough completo de la máquina [RickdiculouslyEasy](https://www.vulnhub.com/entry/rickdiculouslyeasy-1,207/) de VulnHub. 9 hallazgos, 22 entradas en el operation log. Fases PTES estándar. | 9 | Luke |
 
 **Cómo importar:** Engagements → **Importar** → seleccioná el `.zip`. Todo se recrea automáticamente con nuevos IDs.
 
