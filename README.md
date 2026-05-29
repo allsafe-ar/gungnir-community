@@ -31,11 +31,12 @@ Gungnir Community is a free, open-source pentest management platform that covers
 Gungnir Community includes everything a pentest team needs to run professional engagements:
 
 - **Full engagement lifecycle** - clients, phases (Planning → Recon → Scanning → Exploitation → Post-Exploitation → Reporting), operation logs, scope management, evidence uploads, MITRE ATT&CK mapping
+- **Export/Import engagements (ZIP)** - export any engagement as a portable ZIP and import it on any Gungnir instance; all data included: findings, phases, operation logs, scope and evidence files
 - **Finding editor** with CVSS 3.1 visual calculator, CWE + OWASP classification, and status tracking
 - **CVE auto-populate** - enter a CVE ID and Gungnir auto-fills CVSS vector, score, description and CWE from the NVD API
 - **PDF pentest report** - professional output with executive and technical sections
 - **XML import** - import findings from Nessus (.nessus), Burp Suite (.xml), OpenVAS (.xml) and Nmap (-oX .xml) directly into any engagement phase
-- **Command arsenal** - 2,300+ searchable pentest commands (Recon, Web, Network, Active Directory, Post-Exploitation, Evasion and more) - including tshark, searchsploit, smbmap, wes-ng, Windows SysNative techniques and more
+- **Command arsenal** - 2,300+ searchable pentest commands (Recon, Web, Network, Active Directory, Post-Exploitation, Evasion and more) - including OWASP ZAP, tshark, searchsploit, smbmap, wes-ng, Windows SysNative techniques and more
 - **Finding templates** - 15 built-in templates (SQLi, XSS, CSRF, SSRF, XXE, RCE, path traversal, default credentials, open redirect, etc.) + custom library
 - **OSINT / Recon** - Shodan, VirusTotal, Censys, crt.sh, RDAP, DNS using your own API keys (no vendor lock-in)
 - **Notes** - personal markdown notes with tag system, pin support and note sharing between users
@@ -52,10 +53,12 @@ Gungnir Community includes everything a pentest team needs to run professional e
 |---|:---:|:---:|
 | Client management | ✅ | ✅ |
 | Engagement lifecycle (phases, logs, scope, evidence) | ✅ | ✅ |
+| Export/Import engagements (ZIP) | ✅ | ✅ |
+| Community engagement repository | ✅ | ✅ |
 | Finding editor (CVSS 3.1, CWE, OWASP, MITRE) | ✅ | ✅ |
 | PDF pentest report | ✅ | ✅ |
 | XML import (Nessus, Burp, OpenVAS, Nmap) | ✅ | ✅ |
-| Command arsenal (2,300+ commands) | ✅ | ✅ |
+| Command arsenal (2,300+ commands, incl. OWASP ZAP) | ✅ | ✅ |
 | Finding templates (15 built-in + custom) | ✅ | ✅ |
 | Notes with sharing | ✅ | ✅ |
 | OSINT / Recon (Shodan, VirusTotal, Censys, crt.sh, DNS) | ✅ | ✅ |
@@ -93,6 +96,29 @@ Gungnir Community includes everything a pentest team needs to run professional e
 
 ---
 
+## 🤝 Community Engagements
+
+Gungnir includes a built-in engagement exchange. Export any engagement as a portable ZIP and import it on any Gungnir instance with a single click — all data included: findings, phases, operation logs, scope and physical evidence files.
+
+**Browse and download ready-to-use engagements from the community:**
+
+👉 **[community-engagements/](community-engagements/)** — Download, import, start exploring.
+
+| File | Type | Description | Findings | Author |
+|------|------|-------------|----------|--------|
+| [RickdiculouslyEasy-CTF-Walkthrough.zip](community-engagements/RickdiculouslyEasy-CTF-Walkthrough.zip) | CTF · Pentesting | Complete walkthrough of VulnHub's RickdiculouslyEasy machine. 9 findings, 22 operation log entries. Standard pentesting mode with PTES phases. | 9 | AllSafe |
+
+**Want to share yours?**
+1. Open any engagement → click **Export ZIP** in the sidebar
+2. Review the ZIP — make sure it contains no sensitive data (real credentials, client PII, production IPs)
+3. Open a Pull Request adding your `.zip` to `community-engagements/` with a short description in the README
+
+The exported ZIP contains a single JSON manifest (`engagement.json`) plus any physical evidence files. You can inspect it before importing.
+
+> ⚠️ Always review third-party engagement ZIPs before importing. The `engagement.json` file is plain text and can be opened in any editor.
+
+---
+
 ## Key Features
 
 ### Engagement Lifecycle
@@ -117,12 +143,17 @@ Gungnir Community includes everything a pentest team needs to run professional e
 - **Per-operator logo** - uploadable from profile settings
 
 ### Arsenal & Reference
-- **Command library** - 2,300+ categorized, searchable pentest commands
+- **Command library** - 2,300+ categorized, searchable pentest commands including OWASP ZAP (passive scan, active scan, API/OpenAPI scan, proxy mode, HTML/JSON report), Burp Suite, tshark, searchsploit, smbmap, wes-ng and more
 - **Script manager** - store and organize custom scripts
 - **Library** - reference resources and documentation
 - **Writeups** - vulnerability writeup management
 - **Techniques browser** - searchable MITRE-style technique reference
 - **Notes** - personal markdown notes with tag system, pin support, and read-only formatted viewer; optionally linked to a specific engagement; shareable with other users
+
+### Engagement Export/Import
+- **Export ZIP** - export any engagement (findings, phases, operation logs, scope, evidence files) as a portable ZIP from the engagement sidebar
+- **Import ZIP** - import an engagement ZIP on any Gungnir instance; all data is re-created with new IDs; clients are matched by name or created automatically
+- **Community repository** - share and download engagement templates via [`community-engagements/`](community-engagements/); ideal for CTF walkthroughs, training scenarios and methodology examples
 
 ### Scanner XML Import
 Import findings from scanner output files directly into any engagement phase:
@@ -170,6 +201,8 @@ Import findings from scanner output files directly into any engagement phase:
 ---
 
 ## Installation
+
+After installing, try importing a community engagement to explore all features: go to **Engagements → Import** and select a `.zip` from [`community-engagements/`](community-engagements/).
 
 ### Option A - Install script (recommended for Linux servers)
 
@@ -242,6 +275,29 @@ gungnir-community/
 | `admin` | Full access - users, settings, all engagements, API keys |
 | `auditor` | Create and manage engagements, findings, import scans - no user management |
 | `pentester` | Operate within assigned engagements - create findings, logs, evidence |
+
+---
+
+## Roadmap
+
+### v1.1 (current)
+- [x] Arsenal expanded to 2,300+ commands (tshark, searchsploit, smbmap, wes-ng, SysNative PS, OWASP ZAP and more)
+- [x] **Export/Import engagements (ZIP)** — portable engagement exchange across instances
+- [x] **Community Engagements repository** — share and download real engagement templates via `community-engagements/`
+- [x] Inline engagement title editing
+- [x] Engagement auto-status — when all phases complete, status updates automatically
+
+### v1.2 (next)
+- [ ] Markdown support in finding description fields
+- [ ] Nmap auto-promote findings (port-based risk rules)
+- [ ] More community engagement templates (web app, AD, IoT, mobile)
+
+### v2.0
+- [ ] Real-time collaboration (WebSockets)
+- [ ] Client portal — clients view engagement status and download reports
+- [ ] MITRE ATT&CK Navigator visual heatmap
+- [ ] Remediation tracking — post-delivery finding lifecycle
+- [ ] Word/Docx report templates
 
 ---
 
