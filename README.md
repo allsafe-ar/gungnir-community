@@ -26,6 +26,27 @@ Gungnir Community is a free, open-source pentest management platform that covers
 
 ---
 
+## 🤝 Community Engagements
+
+Gungnir has a built-in engagement exchange: **export any engagement as a ZIP and import it on any instance in one click** — findings, phases, operation logs, scope and evidence files included.
+
+The community shares walkthroughs, CTF write-ups and methodology templates in the [`community-engagements/`](community-engagements/) folder of this repository. Download one, import it, and you have a fully-documented engagement ready to explore.
+
+| File | Type | Description | Findings | Author |
+|------|------|-------------|----------|--------|
+| [RickdiculouslyEasy-CTF-Walkthrough.zip](community-engagements/RickdiculouslyEasy-CTF-Walkthrough.zip) | CTF · Pentesting | Complete walkthrough of VulnHub's RickdiculouslyEasy machine. 9 findings, 22 operation log entries. Standard PTES phases. | 9 | AllSafe |
+
+**How to import:** Engagements → **Import** → select the `.zip`. Everything is recreated automatically with new IDs.
+
+**How to share yours:**
+1. Open any engagement → **Export ZIP** in the sidebar
+2. Review the ZIP — no real credentials, client PII, or production IPs
+3. Open a Pull Request adding your `.zip` to `community-engagements/` with a short description
+
+> ⚠️ Always inspect third-party ZIPs before importing. The `engagement.json` inside is plain text — open it in any editor.
+
+---
+
 ## What is Gungnir Community?
 
 Gungnir Community includes everything a pentest team needs to run professional engagements:
@@ -93,29 +114,6 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | <img src="screenshots/2-editor-hallazgos.png" alt="Finding Editor" width="440"/> | <img src="screenshots/4-reportes.png" alt="PDF Report" width="440"/> |
 
 </div>
-
----
-
-## 🤝 Community Engagements
-
-Gungnir includes a built-in engagement exchange. Export any engagement as a portable ZIP and import it on any Gungnir instance with a single click — all data included: findings, phases, operation logs, scope and physical evidence files.
-
-**Browse and download ready-to-use engagements from the community:**
-
-👉 **[community-engagements/](community-engagements/)** — Download, import, start exploring.
-
-| File | Type | Description | Findings | Author |
-|------|------|-------------|----------|--------|
-| [RickdiculouslyEasy-CTF-Walkthrough.zip](community-engagements/RickdiculouslyEasy-CTF-Walkthrough.zip) | CTF · Pentesting | Complete walkthrough of VulnHub's RickdiculouslyEasy machine. 9 findings, 22 operation log entries. Standard pentesting mode with PTES phases. | 9 | AllSafe |
-
-**Want to share yours?**
-1. Open any engagement → click **Export ZIP** in the sidebar
-2. Review the ZIP — make sure it contains no sensitive data (real credentials, client PII, production IPs)
-3. Open a Pull Request adding your `.zip` to `community-engagements/` with a short description in the README
-
-The exported ZIP contains a single JSON manifest (`engagement.json`) plus any physical evidence files. You can inspect it before importing.
-
-> ⚠️ Always review third-party engagement ZIPs before importing. The `engagement.json` file is plain text and can be opened in any editor.
 
 ---
 

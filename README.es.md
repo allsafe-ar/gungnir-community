@@ -26,6 +26,27 @@ Gungnir Community es una plataforma de gestión de pentesting libre y open sourc
 
 ---
 
+## 🤝 Engagements de la Comunidad
+
+Gungnir tiene un intercambio de engagements integrado: **exportá cualquier engagement como ZIP e importalo en cualquier instancia con un solo clic** — hallazgos, fases, operation logs, scope y archivos de evidencia incluidos.
+
+La comunidad comparte walkthroughs, writeups CTF y templates metodológicos en la carpeta [`community-engagements/`](community-engagements/) de este repositorio. Descargá uno, importalo, y tenés un engagement completamente documentado listo para explorar.
+
+| Archivo | Tipo | Descripción | Hallazgos | Autor |
+|---------|------|-------------|-----------|-------|
+| [RickdiculouslyEasy-CTF-Walkthrough.zip](community-engagements/RickdiculouslyEasy-CTF-Walkthrough.zip) | CTF · Pentesting | Walkthrough completo de la máquina RickdiculouslyEasy de VulnHub. 9 hallazgos, 22 entradas en el operation log. Fases PTES estándar. | 9 | AllSafe |
+
+**Cómo importar:** Engagements → **Importar** → seleccioná el `.zip`. Todo se recrea automáticamente con nuevos IDs.
+
+**Cómo compartir el tuyo:**
+1. Abrí cualquier engagement → **Exportar ZIP** en el sidebar
+2. Revisá el ZIP — sin credenciales reales, datos del cliente ni IPs de producción
+3. Abrí un Pull Request agregando tu `.zip` a `community-engagements/` con una descripción breve
+
+> ⚠️ Siempre inspeccioná los ZIPs de terceros antes de importarlos. El `engagement.json` es texto plano — podés abrirlo en cualquier editor.
+
+---
+
 ## ¿Qué es Gungnir Community?
 
 Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejecutar engagements profesionales:
@@ -93,29 +114,6 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 | <img src="screenshots/2-editor-hallazgos.png" alt="Editor de Hallazgos" width="440"/> | <img src="screenshots/4-reportes.png" alt="Reporte PDF" width="440"/> |
 
 </div>
-
----
-
-## 🤝 Engagements de la Comunidad
-
-Gungnir incluye un intercambio de engagements integrado. Exportá cualquier engagement como un ZIP portátil e importalo en cualquier instancia de Gungnir con un solo clic — con todos los datos incluidos: hallazgos, fases, operation logs, scope y archivos de evidencia.
-
-**Descargá engagements listos para usar compartidos por la comunidad:**
-
-👉 **[community-engagements/](community-engagements/)** — Explorá, descargá, importá.
-
-| Archivo | Tipo | Descripción | Hallazgos | Autor |
-|---------|------|-------------|-----------|-------|
-| [RickdiculouslyEasy-CTF-Walkthrough.zip](community-engagements/RickdiculouslyEasy-CTF-Walkthrough.zip) | CTF · Pentesting | Walkthrough completo de la máquina RickdiculouslyEasy de VulnHub. 9 hallazgos, 22 entradas en el operation log. Modo pentesting estándar con fases PTES. | 9 | AllSafe |
-
-**¿Querés compartir el tuyo?**
-1. Abrí cualquier engagement → hacé clic en **Exportar ZIP** en el sidebar
-2. Revisá el ZIP — asegurate de que no contenga datos sensibles (credenciales reales, datos del cliente, IPs de producción)
-3. Abrí un Pull Request agregando tu `.zip` a `community-engagements/` con una descripción breve en el README
-
-El ZIP exportado contiene un archivo JSON (`engagement.json`) más los archivos de evidencia físicos. Podés inspeccionarlo antes de importar.
-
-> ⚠️ Siempre revisá los ZIPs de terceros antes de importarlos. El archivo `engagement.json` es texto plano y puede abrirse en cualquier editor.
 
 ---
 
