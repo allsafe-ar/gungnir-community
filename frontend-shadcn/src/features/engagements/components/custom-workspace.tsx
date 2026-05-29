@@ -1,5 +1,5 @@
 /**
- * Custom Workspace — Para engagements de modo 'custom'
+ * Custom Workspace - Para engagements de modo 'custom'
  * Fases editables, documentos adjuntos, plan de trabajo,
  * actualizaciones con bloques de texto + código + imágenes.
  */
@@ -7,6 +7,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import {
   Plus, ArrowLeft, Loader2,
   FileText, Upload, Trash2, Download, CheckCircle2,
@@ -719,6 +724,19 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleInput, setTitleInput]     = useState('')
   const [tecnicasOpen, setTecnicasOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleting, setDeleting]     = useState(false)
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      await apiFetch(`/engagements/${engagementId}`, { method: 'DELETE' })
+      toast.success('Engagement eliminado')
+      navigate({ to: '/engagements' })
+    } catch (e: any) {
+      toast.error(e.message ?? 'Error al eliminar')
+    } finally { setDeleting(false) }
+  }
 
   async function load() {
     try {
@@ -925,6 +943,31 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
             onClick={() => navigate({ to: '/engagements/$engagementId/editar', params: { engagementId } })}>
             <FileText className='mr-1.5 h-3 w-3' /> Editar engagement
           </Button>
+          <Button size='sm' variant='ghost' className='w-full justify-start text-xs h-8 text-muted-foreground'
+            onClick={() => {
+              const token = localStorage.getItem('gungnir_token')
+              const url = `/api/engagements/${engagementId}/export`
+              const a = document.createElement('a')
+              a.href = url
+              a.setAttribute('download', '')
+              // Pass token via fetch + blob para endpoints autenticados
+              fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+                .then(r => r.ok ? r.blob() : Promise.reject())
+                .then(blob => {
+                  const objUrl = URL.createObjectURL(blob)
+                  a.href = objUrl
+                  document.body.appendChild(a); a.click()
+                  document.body.removeChild(a)
+                  URL.revokeObjectURL(objUrl)
+                })
+                .catch(() => toast.error('Error al exportar'))
+            }}>
+            <Download className='mr-1.5 h-3 w-3' /> Exportar ZIP
+          </Button>
+          <Button size='sm' variant='ghost' className='w-full justify-start text-xs h-8 text-destructive/70 hover:text-destructive hover:bg-destructive/10'
+            onClick={() => setDeleteOpen(true)}>
+            <Trash2 className='mr-1.5 h-3 w-3' /> Eliminar
+          </Button>
         </div>
       </div>
 
@@ -947,6 +990,41 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
         engagementId={engagementId}
         currentPhaseId={selected?.id}
       />
+
+      {/* Delete confirmation */}
+      <AlertDialog open={deleteOpen} onOpenChange={v => { if (!v) setDeleteOpen(false) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar este engagement?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className='space-y-2'>
+                <p>
+                  Vas a eliminar permanentemente{' '}
+                  <span className='font-semibold text-foreground'>"{engagement?.title}"</span>
+                  {engagement?.client_name && (
+                    <span className='text-muted-foreground'> - {engagement.client_name}</span>
+                  )}
+                  .
+                </p>
+                <p>
+                  Se eliminarán todas las etapas, documentos, actualizaciones y datos asociados.{' '}
+                  <span className='text-destructive font-medium'>Esta acción no se puede deshacer.</span>
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className='bg-destructive hover:bg-destructive/90 text-destructive-foreground'
+            >
+              {deleting ? 'Eliminando...' : 'Sí, eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
