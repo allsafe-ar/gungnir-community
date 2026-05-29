@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import {
   CheckCircle2, Circle, Clock,
   ArrowLeft, Terminal, Upload, Crosshair,
-  ShieldAlert, Target, Settings, Pencil, Check, X,
+  ShieldAlert, Target, Settings, Pencil, Check, X, Download,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -290,6 +290,24 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
             onClick={() => navigate({ to: '/engagements/$engagementId/editar', params: { engagementId } })}>
             <Settings className='mr-1.5 size-3' />
             Editar
+          </Button>
+          <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
+            onClick={() => {
+              const token = localStorage.getItem('gungnir_token')
+              fetch(`/api/engagements/${engagementId}/export`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+              })
+                .then(r => r.ok ? r.blob() : Promise.reject())
+                .then(blob => {
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url; a.setAttribute('download', '')
+                  document.body.appendChild(a); a.click()
+                  document.body.removeChild(a); URL.revokeObjectURL(url)
+                })
+                .catch(() => toast.error('Error al exportar'))
+            }}>
+            <Download className='mr-1.5 size-3' />Exportar ZIP
           </Button>
         </div>
       </div>

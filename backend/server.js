@@ -16,6 +16,7 @@ const { v4: uuidv4 } = require("uuid");
 const multer   = require("multer");
 const fs       = require("fs");
 const rateLimit = require("express-rate-limit");
+const AdmZip   = require("adm-zip");
 
 // ── Integration modules ───────────────────────────────────────────────────────
 const reconInt   = require("./integrations/recon");
@@ -1896,6 +1897,139 @@ app.delete("/api/engagements/:id/custom-phases/:phaseId/updates/:updateId/images
     await qRun("DELETE FROM custom_phase_update_images WHERE id=?", [req.params.imageId]);
   }
   res.json({ ok: true });
+});
+
+// ── Export / Import de engagements ───────────────────────────────────────────
+
+app.get("/api/engagements/:id/export", auth(), async (req, res) => {
+  try {
+    const eng = await qRow(
+      "SELECT e.*, c.name AS client_name FROM engagements e JOIN clients c ON c.id=e.client_id WHERE e.id=?",
+      [req.params.id]
+    );
+    if (!eng) return res.status(404).json({ error: "Engagement no encontrado" });
+    const eid = eng.id;
+    const [scope, findings, logs, evidences, customPhases] = await Promise.all([
+      qRows("SELECT * FROM scope_items WHERE engagement_id=?", [eid]),
+      qRows("SELECT * FROM findings WHERE engagement_id=? ORDER BY created_at", [eid]),
+      qRows("SELECT * FROM operation_logs WHERE engagement_id=? ORDER BY logged_at", [eid]),
+      qRows("SELECT * FROM evidences WHERE engagement_id=? ORDER BY uploaded_at", [eid]),
+      qRows("SELECT * FROM custom_phases WHERE engagement_id=? ORDER BY order_index", [eid]),
+    ]);
+    const phaseDocs = [], updates = [], updateImgs = [];
+    for (const ph of customPhases) {
+      const docs = await qRows("SELECT * FROM custom_phase_docs WHERE phase_id=?", [ph.id]);
+      phaseDocs.push(...docs);
+      const upds = await qRows("SELECT * FROM custom_phase_updates WHERE phase_id=? ORDER BY created_at", [ph.id]);
+      for (const u of upds) {
+        const imgs = await qRows("SELECT * FROM custom_phase_update_images WHERE update_id=?", [u.id]);
+        updateImgs.push(...imgs);
+      }
+      updates.push(...upds);
+    }
+    const manifest = {
+      version: "1.0", exported_at: new Date().toISOString(), exported_by: req.user.username,
+      engagement: eng, scope, findings,
+      operation_logs: logs,
+      evidences: evidences.map(e => ({ ...e, zip_path: `files/${e.filename}` })),
+      custom_phases: customPhases,
+      phase_docs: phaseDocs.map(d => ({ ...d, zip_path: `files/${d.filename}` })),
+      phase_updates: updates,
+      phase_update_images: updateImgs.map(i => ({ ...i, zip_path: `files/${i.filename}` })),
+    };
+    const zip = new AdmZip();
+    zip.addFile("engagement.json", Buffer.from(JSON.stringify(manifest, null, 2), "utf8"));
+    for (const f of [
+      ...evidences.map(e => ({ filename: e.filename })),
+      ...phaseDocs.map(d => ({ filename: d.filename })),
+      ...updateImgs.map(i => ({ filename: i.filename })),
+    ]) {
+      const fp = path.join(UPLOADS_DIR, f.filename);
+      if (fs.existsSync(fp)) zip.addLocalFile(fp, "files", f.filename);
+    }
+    const zipBuffer = zip.toBuffer();
+    const safeName = (eng.codename || eng.title).replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 60);
+    const zipName  = `gungnir-${safeName}-${new Date().toISOString().slice(0, 10)}.zip`;
+    res.set({ "Content-Type": "application/zip", "Content-Disposition": `attachment; filename="${zipName}"`, "Content-Length": zipBuffer.length });
+    res.send(zipBuffer);
+  } catch (e) { console.error("Export error:", e); res.status(500).json({ error: "Error al generar el export" }); }
+});
+
+const importUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } });
+
+app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.single("file"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No se recibió ningún archivo" });
+  if (!req.file.originalname.endsWith(".zip")) return res.status(400).json({ error: "El archivo debe ser un .zip" });
+  try {
+    const zip = new AdmZip(req.file.buffer);
+    const manifestEntry = zip.getEntry("engagement.json");
+    if (!manifestEntry) return res.status(400).json({ error: "ZIP inválido: falta engagement.json" });
+    const manifest = JSON.parse(manifestEntry.getData().toString("utf8"));
+    if (!manifest.version || !manifest.engagement) return res.status(400).json({ error: "engagement.json inválido" });
+    const src = manifest.engagement;
+    const newEngId = uuidv4();
+    let clientId = null;
+    if (src.client_id) {
+      const existing = await qRow("SELECT id FROM clients WHERE id=?", [src.client_id]);
+      if (existing) { clientId = src.client_id; }
+      else if (src.client_name) {
+        const byName = await qRow("SELECT id FROM clients WHERE name=?", [src.client_name]);
+        if (byName) { clientId = byName.id; }
+        else { clientId = uuidv4(); await qRun("INSERT INTO clients (id, name, created_by) VALUES (?,?,?)", [clientId, src.client_name, req.user.id]); }
+      }
+    }
+    if (!clientId) return res.status(400).json({ error: "No se pudo resolver el cliente" });
+    await qRun(
+      `INSERT INTO engagements (id,client_id,title,codename,type,methodology,mode,status,current_phase,start_date,end_date,rules_of_engagement,notes,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [newEngId, clientId, `${src.title} (importado)`, src.codename||null, src.type||"web_app", src.methodology||"ptes", src.mode||"pentesting", "planned", src.current_phase||"planning", src.start_date||null, src.end_date||null, src.rules_of_engagement||null, src.notes||null, req.user.id]
+    );
+    const fileMap = {};
+    for (const entry of zip.getEntries().filter(e => e.entryName.startsWith("files/") && !e.isDirectory)) {
+      const oldFn = entry.entryName.replace("files/", "");
+      const newFn = uuidv4();
+      fs.writeFileSync(path.join(UPLOADS_DIR, newFn), entry.getData());
+      fileMap[oldFn] = newFn;
+    }
+    for (const s of (manifest.scope || [])) {
+      await qRun("INSERT INTO scope_items (id,engagement_id,type,value,in_scope,notes) VALUES (?,?,?,?,?,?)", [uuidv4(), newEngId, s.type, s.value, s.in_scope??1, s.notes||null]);
+    }
+    const findingIdMap = {};
+    for (const f of (manifest.findings || [])) {
+      const newFid = uuidv4(); findingIdMap[f.id] = newFid;
+      await qRun(
+        `INSERT INTO findings (id,engagement_id,phase_type,title,severity,business_risk,exploitability,status,owasp_category,owasp_year,description,steps_to_reproduce,affected_asset,recommendation,executive_summary,cvss_score_31,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        [newFid, newEngId, f.phase_type||null, f.title, f.severity||"medium", f.business_risk||null, f.exploitability||null, "open", f.owasp_category||null, f.owasp_year||null, f.description||null, f.steps_to_reproduce||null, f.affected_asset||null, f.recommendation||null, f.executive_summary||null, f.cvss_score_31||null, req.user.id]
+      );
+    }
+    for (const l of (manifest.operation_logs || [])) {
+      await qRun("INSERT INTO operation_logs (id,engagement_id,phase_type,tool,command,target,notes,created_by) VALUES (?,?,?,?,?,?,?,?)", [uuidv4(), newEngId, l.phase_type||null, l.tool||null, l.command||null, l.target||null, l.notes||null, req.user.id]);
+    }
+    for (const e of (manifest.evidences || [])) {
+      const newFn = fileMap[e.filename]; if (!newFn) continue;
+      await qRun("INSERT INTO evidences (id,engagement_id,finding_id,phase_type,filename,original_name,file_type,file_size,caption,uploaded_by) VALUES (?,?,?,?,?,?,?,?,?,?)", [uuidv4(), newEngId, findingIdMap[e.finding_id]||null, e.phase_type||null, newFn, e.original_name, e.file_type, e.file_size, e.caption||null, req.user.id]);
+    }
+    const phaseIdMap = {};
+    for (const ph of (manifest.custom_phases || [])) {
+      const newPhId = uuidv4(); phaseIdMap[ph.id] = newPhId;
+      await qRun("INSERT INTO custom_phases (id,engagement_id,name,description,work_plan,status,order_index,created_by) VALUES (?,?,?,?,?,?,?,?)", [newPhId, newEngId, ph.name, ph.description||null, ph.work_plan||null, ph.status||"not_started", ph.order_index||0, req.user.id]);
+    }
+    for (const d of (manifest.phase_docs || [])) {
+      const newFn = fileMap[d.filename]; if (!newFn || !phaseIdMap[d.phase_id]) continue;
+      await qRun("INSERT INTO custom_phase_docs (id,phase_id,engagement_id,filename,original_name,file_type,file_size,caption,uploaded_by) VALUES (?,?,?,?,?,?,?,?,?)", [uuidv4(), phaseIdMap[d.phase_id], newEngId, newFn, d.original_name, d.file_type, d.file_size, d.caption||null, req.user.id]);
+    }
+    const updateIdMap = {};
+    for (const u of (manifest.phase_updates || [])) {
+      if (!phaseIdMap[u.phase_id]) continue;
+      const newUid = uuidv4(); updateIdMap[u.id] = newUid;
+      await qRun("INSERT INTO custom_phase_updates (id,phase_id,content,author_name,created_by) VALUES (?,?,?,?,?)", [newUid, phaseIdMap[u.phase_id], u.content, u.author_name||req.user.username, req.user.id]);
+    }
+    for (const i of (manifest.phase_update_images || [])) {
+      const newFn = fileMap[i.filename]; if (!newFn || !updateIdMap[i.update_id]) continue;
+      await qRun("INSERT INTO custom_phase_update_images (id,update_id,filename,original_name,file_size) VALUES (?,?,?,?,?)", [uuidv4(), updateIdMap[i.update_id], newFn, i.original_name, i.file_size]);
+    }
+    const imported = await qRow("SELECT e.*, c.name AS client_name FROM engagements e JOIN clients c ON c.id=e.client_id WHERE e.id=?", [newEngId]);
+    res.status(201).json({ ok: true, engagement: imported });
+  } catch (e) { console.error("Import error:", e); res.status(500).json({ error: `Error al importar: ${e.message}` }); }
 });
 
 // ── Técnicas del engagement ───────────────────────────────────────────────────
