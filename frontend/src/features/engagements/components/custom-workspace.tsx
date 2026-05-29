@@ -716,6 +716,8 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
   const [savingNew, setSavingNew]   = useState(false)
   const [editing, setEditing]       = useState<string | null>(null)
   const [editName, setEditName]     = useState('')
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [titleInput, setTitleInput]     = useState('')
   const [tecnicasOpen, setTecnicasOpen] = useState(false)
 
   async function load() {
@@ -768,6 +770,16 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
     } catch { toast.error('Error') }
   }
 
+  async function saveTitle() {
+    if (!titleInput.trim() || titleInput.trim() === engagement?.title) { setEditingTitle(false); return }
+    try {
+      await apiFetch(`/engagements/${engagementId}/title`, { method: 'PATCH', body: { title: titleInput.trim() } })
+      setEngagement(prev => prev ? { ...prev, title: titleInput.trim() } : prev)
+      setEditingTitle(false)
+      toast.success('Nombre actualizado')
+    } catch { toast.error('Error al renombrar') }
+  }
+
   function onPhaseChange() {
     apiFetch<CustomPhase[]>(`/engagements/${engagementId}/custom-phases`)
       .then(ps => {
@@ -801,7 +813,28 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
             onClick={() => navigate({ to: '/engagements' })}>
             <ArrowLeft className='mr-1 h-3 w-3' /> Engagements
           </Button>
-          <p className='text-xs font-semibold text-zinc-200 truncate'>{engagement.title}</p>
+          {editingTitle ? (
+            <div className='flex items-center gap-1'>
+              <input
+                autoFocus
+                value={titleInput}
+                onChange={e => setTitleInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') setEditingTitle(false) }}
+                className='flex-1 min-w-0 bg-zinc-800 rounded px-1.5 py-0.5 text-xs text-zinc-100 border border-zinc-600 outline-none'
+              />
+              <button onClick={saveTitle} className='text-green-400 hover:text-green-300 shrink-0'><Check className='h-3 w-3' /></button>
+              <button onClick={() => setEditingTitle(false)} className='text-zinc-500 hover:text-zinc-300 shrink-0'><X className='h-3 w-3' /></button>
+            </div>
+          ) : (
+            <div className='group/title flex items-center gap-1'>
+              <p className='text-xs font-semibold text-zinc-200 truncate flex-1'>{engagement.title}</p>
+              <button
+                onClick={() => { setTitleInput(engagement.title); setEditingTitle(true) }}
+                className='opacity-0 group-hover/title:opacity-100 transition rounded p-0.5 text-zinc-600 hover:text-zinc-300 shrink-0'>
+                <Pencil className='h-2.5 w-2.5' />
+              </button>
+            </div>
+          )}
           <p className='text-[10px] text-zinc-500 mt-0.5 truncate'>{engagement.client_name}</p>
           <div className='mt-2'>
             <span className='rounded bg-blue-950/60 border border-blue-900/40 px-1.5 py-0.5 text-[10px] text-blue-300'>

@@ -985,6 +985,16 @@ app.put("/api/engagements/:id", auth(["admin","auditor"]), async (req, res) => {
   res.json(await qRow("SELECT e.*,c.name AS client_name FROM engagements e JOIN clients c ON c.id=e.client_id WHERE e.id=?", [req.params.id]));
 });
 
+// Renombrar engagement (solo título)
+app.patch("/api/engagements/:id/title", auth(["admin","auditor"]), async (req, res) => {
+  const { title } = req.body;
+  if (!title?.trim()) return res.status(400).json({ error: "El título no puede estar vacío" });
+  const eng = await qRow("SELECT id FROM engagements WHERE id=?", [req.params.id]);
+  if (!eng) return res.status(404).json({ error: "No encontrado" });
+  await qRun("UPDATE engagements SET title=? WHERE id=?", [title.trim(), req.params.id]);
+  res.json({ ok: true, title: title.trim() });
+});
+
 // Cambiar fase activa
 app.put("/api/engagements/:id/phase", auth(), async (req, res) => {
   const { phase } = req.body;

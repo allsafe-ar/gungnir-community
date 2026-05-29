@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import {
   CheckCircle2, Circle, Clock,
   ArrowLeft, Terminal, Upload, Crosshair,
-  ShieldAlert, Target, Settings,
+  ShieldAlert, Target, Settings, Pencil, Check, X,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -111,6 +111,20 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
   // Técnicas sheet
   const [tecnicasOpen, setTecnicasOpen]   = useState(false)
 
+  // Inline title edit
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [titleInput, setTitleInput]     = useState('')
+
+  const saveTitle = async () => {
+    if (!titleInput.trim() || titleInput.trim() === engagement?.title) { setEditingTitle(false); return }
+    try {
+      await apiFetch(`/engagements/${engagementId}/title`, { method: 'PATCH', body: { title: titleInput.trim() } })
+      setEngagement(prev => prev ? { ...prev, title: titleInput.trim() } : prev)
+      setEditingTitle(false)
+      toast.success('Nombre actualizado')
+    } catch { toast.error('Error al renombrar') }
+  }
+
   const load = () => {
     apiFetch(`/engagements/${engagementId}`)
       .then((eng: unknown) => {
@@ -189,7 +203,28 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
             onClick={() => navigate({ to: '/engagements' })}>
             <ArrowLeft className='mr-1 size-3' /> Engagements
           </Button>
-          <p className='font-semibold text-sm leading-tight truncate'>{engagement.title}</p>
+          {editingTitle ? (
+            <div className='flex items-center gap-1 mt-1'>
+              <input
+                autoFocus
+                value={titleInput}
+                onChange={e => setTitleInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') setEditingTitle(false) }}
+                className='flex-1 min-w-0 rounded bg-zinc-800 px-1.5 py-0.5 text-xs text-zinc-100 border border-zinc-600 outline-none'
+              />
+              <button onClick={saveTitle} className='text-green-400 hover:text-green-300 shrink-0'><Check className='size-3' /></button>
+              <button onClick={() => setEditingTitle(false)} className='text-zinc-500 hover:text-zinc-300 shrink-0'><X className='size-3' /></button>
+            </div>
+          ) : (
+            <div className='group/title flex items-center gap-1'>
+              <p className='font-semibold text-sm leading-tight truncate flex-1'>{engagement.title}</p>
+              <button
+                onClick={() => { setTitleInput(engagement.title); setEditingTitle(true) }}
+                className='opacity-0 group-hover/title:opacity-100 transition rounded p-0.5 text-zinc-600 hover:text-zinc-300 shrink-0'>
+                <Pencil className='size-3' />
+              </button>
+            </div>
+          )}
           <p className='text-xs text-muted-foreground truncate mt-0.5'>{engagement.client_name}</p>
         </div>
 
