@@ -2,12 +2,13 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 
 # Stage 1: build frontend
-FROM node:20-alpine AS frontend-builder
-RUN corepack enable && corepack prepare pnpm@latest --activate
+FROM node:22-alpine AS frontend-builder
+RUN corepack enable && corepack prepare pnpm@9 --activate
 WORKDIR /app
 COPY frontend-shadcn/package.json frontend-shadcn/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --silent
+RUN pnpm install --frozen-lockfile
 COPY frontend-shadcn/ ./
+RUN rm -f pnpm-workspace.yaml
 RUN pnpm run build
 
 # Stage 2: backend runtime
