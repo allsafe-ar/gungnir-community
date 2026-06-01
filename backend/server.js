@@ -146,6 +146,9 @@ function generateTotpSecret() {
 // ── App ───────────────────────────────────────────────────────────────────────
 const app = express();
 
+// Trust the first proxy (Nginx) so express-rate-limit reads the correct client IP.
+app.set('trust proxy', 1);
+
 const limiter = rateLimit({ windowMs: 15*60*1000, max: 200, standardHeaders: true, legacyHeaders: false });
 app.use(limiter);
 
@@ -1142,17 +1145,11 @@ app.post("/api/engagements/:id/findings", auth(), async (req, res) => {
 });
 
 app.put("/api/engagements/:id/findings/:fid", auth(), async (req, res) => {
-  const f = await qRow("SELECT id FROM findings WHERE id=? AND engagement_id=?", [req.params.fid, req.params.id]);
+  const f = await qRow("SELECT * FROM findings WHERE id=? AND engagement_id=?", [req.params.fid, req.params.id]);
   if (!f) return res.status(404).json({ error: "No encontrado" });
-  const {
-    title, description, steps_to_reproduce, affected_asset,
-    cvss_vector_31, cvss_score_31, cvss_vector_40, cvss_score_40,
-    severity, business_risk, exploitability,
-    cwe_id, cwe_name, owasp_category, owasp_year,
-    mitre_tactic, mitre_technique_id, mitre_technique_name,
-    recommendation, executive_summary, references_list,
-    phase_type, status,
-  } = req.body;
+  const b = req.body;
+  const v = (key, fallback = null) => b[key] !== undefined ? b[key] : (f[key] !== undefined ? f[key] : fallback);
+  const vn = (key) => b[key] !== undefined ? (b[key] || null) : (f[key] || null);
   await qRun(
     `UPDATE findings SET title=?,description=?,steps_to_reproduce=?,affected_asset=?,
       cvss_vector_31=?,cvss_score_31=?,cvss_vector_40=?,cvss_score_40=?,
@@ -1160,14 +1157,14 @@ app.put("/api/engagements/:id/findings/:fid", auth(), async (req, res) => {
       owasp_category=?,owasp_year=?,mitre_tactic=?,mitre_technique_id=?,mitre_technique_name=?,
       recommendation=?,executive_summary=?,references_list=?,phase_type=?,status=?
      WHERE id=?`,
-    [title, description||null, steps_to_reproduce||null, affected_asset||null,
-     cvss_vector_31||null, cvss_score_31||null, cvss_vector_40||null, cvss_score_40||null,
-     severity, business_risk, exploitability,
-     cwe_id||null, cwe_name||null, owasp_category||null, owasp_year||null,
-     mitre_tactic||null, mitre_technique_id||null, mitre_technique_name||null,
-     recommendation||null, executive_summary||null,
-     references_list?JSON.stringify(references_list):null,
-     phase_type||null, status, req.params.fid]
+    [v('title'), vn('description'), vn('steps_to_reproduce'), vn('affected_asset'),
+     vn('cvss_vector_31'), vn('cvss_score_31'), vn('cvss_vector_40'), vn('cvss_score_40'),
+     v('severity','medium'), v('business_risk','medium'), v('exploitability','theoretical'),
+     vn('cwe_id'), vn('cwe_name'), vn('owasp_category'), vn('owasp_year'),
+     vn('mitre_tactic'), vn('mitre_technique_id'), vn('mitre_technique_name'),
+     vn('recommendation'), vn('executive_summary'),
+     b.references_list !== undefined ? (b.references_list ? JSON.stringify(b.references_list) : null) : f.references_list,
+     vn('phase_type'), v('status','open'), req.params.fid]
   );
   res.json(await qRow("SELECT * FROM findings WHERE id=?", [req.params.fid]));
 });
