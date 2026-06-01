@@ -64,7 +64,7 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 - **Auth** - JWT (12h), TOTP 2FA (RFC 6238), lockout de cuenta, control de acceso por rol
 - **Internacionalización** - Español (por defecto) e Inglés, configurable por usuario
 
-> ¿Buscás **feeds de scanners Nessus/OpenVAS en vivo**, **sincronización con CRM AllSafe**, el **dashboard de Operaciones ejecutivo** o el **browser de papers de investigación Exploit-DB**? Esas funcionalidades están disponibles en [Gungnir Pro](https://www.allsafe.com.ar).
+> ¿Buscás **feeds de scanners Nessus/OpenVAS en vivo**, **sincronización con CRM AllSafe**, el **dashboard de Operaciones ejecutivo** o el **módulo Research Papers** (editor estructurado de investigación de vulnerabilidades + integración directa con Exploit-DB)? Esas funcionalidades están disponibles en [Gungnir Pro](https://www.allsafe.com.ar).
 
 ---
 
@@ -93,7 +93,7 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 | Sync CRM AllSafe | ❌ | ✅ |
 | Dashboard de Operaciones (métricas ejecutivas, gráficos) | ❌ | ✅ |
 | Branding PDF personalizado + logo de organización | ❌ | ✅ |
-| Browser de papers de investigación Exploit-DB | ❌ | ✅ |
+| Research Papers (editor estructurado + integración Exploit-DB) | ❌ | ✅ |
 
 > **Upgrade path**: Community y Pro comparten el mismo esquema de base de datos. Actualizar es un reemplazo de archivos - sin migraciones necesarias.
 
