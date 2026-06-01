@@ -3,11 +3,12 @@
 
 # Stage 1: build frontend
 FROM node:20-alpine AS frontend-builder
+RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
-COPY frontend-shadcn/package*.json ./
-RUN npm ci --silent
+COPY frontend-shadcn/package.json frontend-shadcn/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --silent
 COPY frontend-shadcn/ ./
-RUN npm run build
+RUN pnpm run build
 
 # Stage 2: backend runtime
 FROM node:20-alpine
