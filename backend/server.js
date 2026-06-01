@@ -2055,7 +2055,10 @@ app.delete("/api/engagements/:id/techniques/:techId", auth(["admin","auditor","p
 });
 
 // ── STATIC (producción) ───────────────────────────────────────────────────────
-const DIST = path.join(__dirname, "..", "frontend", "dist");
+// Docker: dist copiado a ./public. Dev/install.sh: ../frontend/dist
+const DIST = fs.existsSync(path.join(__dirname, "public"))
+  ? path.join(__dirname, "public")
+  : path.join(__dirname, "..", "frontend", "dist");
 // ── Scripts custom ───────────────────────────────────────────────────────────
 const parseScriptRow = r => ({
   ...r,
