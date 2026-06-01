@@ -113,6 +113,18 @@ Gungnir Community includes everything a pentest team needs to run professional e
 |:---:|:---:|
 | <img src="screenshots/2-editor-hallazgos.png" alt="Finding Editor" width="440"/> | <img src="screenshots/4-reportes.png" alt="PDF Report" width="440"/> |
 
+<br/>
+
+| **Command Arsenal (2,300+ commands)** | **Techniques Browser** |
+|:---:|:---:|
+| <img src="screenshots/3-arsenal-comandos.png" alt="Command Arsenal" width="440"/> | <img src="screenshots/5-tecnicas.png" alt="Techniques Browser" width="440"/> |
+
+<br/>
+
+| **OSINT / Recon** | **Notes** |
+|:---:|:---:|
+| <img src="screenshots/8-OSINT.png" alt="OSINT Recon" width="440"/> | <img src="screenshots/9-notas.png" alt="Notes" width="440"/> |
+
 </div>
 
 ---

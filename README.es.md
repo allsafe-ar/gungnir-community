@@ -113,6 +113,18 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 |:---:|:---:|
 | <img src="screenshots/2-editor-hallazgos.png" alt="Editor de Hallazgos" width="440"/> | <img src="screenshots/4-reportes.png" alt="Reporte PDF" width="440"/> |
 
+<br/>
+
+| **Arsenal de Comandos (2.300+ comandos)** | **Browser de Técnicas** |
+|:---:|:---:|
+| <img src="screenshots/3-arsenal-comandos.png" alt="Arsenal de Comandos" width="440"/> | <img src="screenshots/5-tecnicas.png" alt="Browser de Técnicas" width="440"/> |
+
+<br/>
+
+| **OSINT / Recon** | **Notas** |
+|:---:|:---:|
+| <img src="screenshots/8-OSINT.png" alt="OSINT Recon" width="440"/> | <img src="screenshots/9-notas.png" alt="Notas" width="440"/> |
+
 </div>
 
 ---
