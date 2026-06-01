@@ -3,11 +3,12 @@
 
 # Stage 1: build frontend
 FROM node:20-alpine AS frontend-builder
+RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
-COPY frontend/package*.json ./
-RUN npm ci --silent
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --silent
 COPY frontend/ ./
-RUN npm run build
+RUN pnpm run build
 
 # Stage 2: backend runtime
 FROM node:20-alpine
