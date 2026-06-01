@@ -249,7 +249,7 @@ export function generateWriteup(data: WriteupData) {
   // Footer on cover
   setFill(style.accent); doc.rect(M, PH - 10, W, 0.4, 'F')
   doc.setFontSize(7); doc.setFont('helvetica', 'normal'); setColor(GRAY)
-  doc.text('Generado con Gungnir · ', M, PH - 5)
+  doc.text('Generado con Gungnir', M, PH - 5)
   doc.text('1', PW - M, PH - 5, { align: 'right' })
 
   // ─────────────────────────────────────────────────────────────────────────

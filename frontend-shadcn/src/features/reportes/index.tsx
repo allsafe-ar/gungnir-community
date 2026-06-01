@@ -135,12 +135,24 @@ export function Reportes() {
   const [scope, setScope]                 = useState<ScopeItem[]>([])
   const [loadingDetail, setLoadingDetail] = useState(false)
   const [generating, setGenerating]       = useState(false)
+  const [orgSettings, setOrgSettings]     = useState<{ name?: string; email?: string; website?: string }>({})
 
   // Opciones del reporte
   const [includeSteps, setIncludeSteps]   = useState(true)
   const [includeScope, setIncludeScope]   = useState(true)
   const [onlyOpen, setOnlyOpen]           = useState(false)
   const [reportTemplate, setReportTemplate] = useState<'allsafe' | 'htb' | 'offsec' | 'ptes'>('allsafe')
+
+  // Cargar settings de org para el PDF
+  useEffect(() => {
+    apiFetch<Record<string, string>>('/settings')
+      .then(s => setOrgSettings({
+        name:    s['report_org_name']    || '',
+        email:   s['report_org_email']   || '',
+        website: s['report_org_website'] || '',
+      }))
+      .catch(() => {})
+  }, [])
 
   // Cargar lista de engagements
   useEffect(() => {
@@ -193,6 +205,7 @@ export function Reportes() {
         findings: displayedFindings,
         includeSteps,
         includeScope,
+        org: orgSettings,
       }
       await generatePentestReport(data, reportTemplate)
     } catch (e) {
