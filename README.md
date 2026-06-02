@@ -125,6 +125,12 @@ Gungnir Community includes everything a pentest team needs to run professional e
 |:---:|:---:|
 | <img src="screenshots/8-OSINT.png" alt="OSINT Recon" width="440"/> | <img src="screenshots/9-notas.png" alt="Notes" width="440"/> |
 
+<br/>
+
+| **Research Papers - Exploit-DB Integration** | **Research Papers - Structured Editor** |
+|:---:|:---:|
+| <img src="screenshots/10-explot-db.png" alt="Exploit-DB Integration" width="440"/> | <img src="screenshots/11-papers.png" alt="Research Papers Editor" width="440"/> |
+
 </div>
 
 ---

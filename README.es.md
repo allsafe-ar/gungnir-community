@@ -125,6 +125,12 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 |:---:|:---:|
 | <img src="screenshots/8-OSINT.png" alt="OSINT Recon" width="440"/> | <img src="screenshots/9-notas.png" alt="Notas" width="440"/> |
 
+<br/>
+
+| **Research Papers - Integración Exploit-DB** | **Research Papers - Editor estructurado** |
+|:---:|:---:|
+| <img src="screenshots/10-explot-db.png" alt="Integración Exploit-DB" width="440"/> | <img src="screenshots/11-papers.png" alt="Editor Research Papers" width="440"/> |
+
 </div>
 
 ---
