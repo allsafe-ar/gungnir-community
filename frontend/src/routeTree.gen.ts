@@ -29,6 +29,7 @@ import { Route as AuthenticatedScriptsIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedReportesIndexRouteImport } from './routes/_authenticated/reportes/index'
 import { Route as AuthenticatedReconIndexRouteImport } from './routes/_authenticated/recon/index'
 import { Route as AuthenticatedPerfilIndexRouteImport } from './routes/_authenticated/perfil/index'
+import { Route as AuthenticatedPapersIndexRouteImport } from './routes/_authenticated/papers/index'
 import { Route as AuthenticatedNotasIndexRouteImport } from './routes/_authenticated/notas/index'
 import { Route as AuthenticatedMiCuentaIndexRouteImport } from './routes/_authenticated/mi-cuenta/index'
 import { Route as AuthenticatedIntegracionesIndexRouteImport } from './routes/_authenticated/integraciones/index'
@@ -151,6 +152,12 @@ const AuthenticatedPerfilIndexRoute =
   AuthenticatedPerfilIndexRouteImport.update({
     id: '/perfil/',
     path: '/perfil/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPapersIndexRoute =
+  AuthenticatedPapersIndexRouteImport.update({
+    id: '/papers/',
+    path: '/papers/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedNotasIndexRoute = AuthenticatedNotasIndexRouteImport.update({
@@ -282,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/integraciones/': typeof AuthenticatedIntegracionesIndexRoute
   '/mi-cuenta/': typeof AuthenticatedMiCuentaIndexRoute
   '/notas/': typeof AuthenticatedNotasIndexRoute
+  '/papers/': typeof AuthenticatedPapersIndexRoute
   '/perfil/': typeof AuthenticatedPerfilIndexRoute
   '/recon/': typeof AuthenticatedReconIndexRoute
   '/reportes/': typeof AuthenticatedReportesIndexRoute
@@ -320,6 +328,7 @@ export interface FileRoutesByTo {
   '/integraciones': typeof AuthenticatedIntegracionesIndexRoute
   '/mi-cuenta': typeof AuthenticatedMiCuentaIndexRoute
   '/notas': typeof AuthenticatedNotasIndexRoute
+  '/papers': typeof AuthenticatedPapersIndexRoute
   '/perfil': typeof AuthenticatedPerfilIndexRoute
   '/recon': typeof AuthenticatedReconIndexRoute
   '/reportes': typeof AuthenticatedReportesIndexRoute
@@ -360,6 +369,7 @@ export interface FileRoutesById {
   '/_authenticated/integraciones/': typeof AuthenticatedIntegracionesIndexRoute
   '/_authenticated/mi-cuenta/': typeof AuthenticatedMiCuentaIndexRoute
   '/_authenticated/notas/': typeof AuthenticatedNotasIndexRoute
+  '/_authenticated/papers/': typeof AuthenticatedPapersIndexRoute
   '/_authenticated/perfil/': typeof AuthenticatedPerfilIndexRoute
   '/_authenticated/recon/': typeof AuthenticatedReconIndexRoute
   '/_authenticated/reportes/': typeof AuthenticatedReportesIndexRoute
@@ -400,6 +410,7 @@ export interface FileRouteTypes {
     | '/integraciones/'
     | '/mi-cuenta/'
     | '/notas/'
+    | '/papers/'
     | '/perfil/'
     | '/recon/'
     | '/reportes/'
@@ -438,6 +449,7 @@ export interface FileRouteTypes {
     | '/integraciones'
     | '/mi-cuenta'
     | '/notas'
+    | '/papers'
     | '/perfil'
     | '/recon'
     | '/reportes'
@@ -477,6 +489,7 @@ export interface FileRouteTypes {
     | '/_authenticated/integraciones/'
     | '/_authenticated/mi-cuenta/'
     | '/_authenticated/notas/'
+    | '/_authenticated/papers/'
     | '/_authenticated/perfil/'
     | '/_authenticated/recon/'
     | '/_authenticated/reportes/'
@@ -645,6 +658,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPerfilIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/papers/': {
+      id: '/_authenticated/papers/'
+      path: '/papers'
+      fullPath: '/papers/'
+      preLoaderRoute: typeof AuthenticatedPapersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/notas/': {
       id: '/_authenticated/notas/'
       path: '/notas'
@@ -784,6 +804,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIntegracionesIndexRoute: typeof AuthenticatedIntegracionesIndexRoute
   AuthenticatedMiCuentaIndexRoute: typeof AuthenticatedMiCuentaIndexRoute
   AuthenticatedNotasIndexRoute: typeof AuthenticatedNotasIndexRoute
+  AuthenticatedPapersIndexRoute: typeof AuthenticatedPapersIndexRoute
   AuthenticatedPerfilIndexRoute: typeof AuthenticatedPerfilIndexRoute
   AuthenticatedReconIndexRoute: typeof AuthenticatedReconIndexRoute
   AuthenticatedReportesIndexRoute: typeof AuthenticatedReportesIndexRoute
@@ -816,6 +837,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIntegracionesIndexRoute: AuthenticatedIntegracionesIndexRoute,
   AuthenticatedMiCuentaIndexRoute: AuthenticatedMiCuentaIndexRoute,
   AuthenticatedNotasIndexRoute: AuthenticatedNotasIndexRoute,
+  AuthenticatedPapersIndexRoute: AuthenticatedPapersIndexRoute,
   AuthenticatedPerfilIndexRoute: AuthenticatedPerfilIndexRoute,
   AuthenticatedReconIndexRoute: AuthenticatedReconIndexRoute,
   AuthenticatedReportesIndexRoute: AuthenticatedReportesIndexRoute,

@@ -13,6 +13,7 @@ import {
   Globe,
   Brain,
   StickyNote,
+  GraduationCap,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -45,6 +46,7 @@ export const sidebarData: SidebarData = {
         { title: 'nav.reports',    url: '/reportes',   icon: FileText },
         { title: 'nav.writeups',   url: '/writeups',   icon: PenSquare },
         { title: 'nav.notes',      url: '/notas',      icon: StickyNote },
+        { title: 'nav.papers',     url: '/papers',     icon: GraduationCap },
       ],
     },
     {

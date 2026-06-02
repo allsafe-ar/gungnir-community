@@ -17,6 +17,7 @@ const multer   = require("multer");
 const fs       = require("fs");
 const rateLimit = require("express-rate-limit");
 const AdmZip   = require("adm-zip");
+const https    = require("https");
 
 // ── Integration modules ───────────────────────────────────────────────────────
 const reconInt   = require("./integrations/recon");
@@ -598,6 +599,57 @@ async function initDB() {
     PRIMARY KEY (note_id, user_id),
     FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
+  // ── Papers (research vulnerability papers) ───────────────────────────────
+  await qRun(`CREATE TABLE IF NOT EXISTS papers (
+    id                  VARCHAR(36)   NOT NULL PRIMARY KEY,
+    user_id             VARCHAR(36)   NOT NULL,
+    title               VARCHAR(512)  NOT NULL DEFAULT '',
+    template            VARCHAR(64)   NOT NULL DEFAULT 'blackhat',
+    category            VARCHAR(64)   NOT NULL DEFAULT 'vuln_research',
+    tags                VARCHAR(512)  DEFAULT '',
+    authors             VARCHAR(512)  DEFAULT '',
+    date                VARCHAR(64)   DEFAULT '',
+    cve_id              VARCHAR(64)   DEFAULT NULL,
+    advisory_url        VARCHAR(512)  DEFAULT NULL,
+    cvss_vector         VARCHAR(255)  DEFAULT NULL,
+    cvss_score          DECIMAL(3,1)  DEFAULT NULL,
+    abstract_text       TEXT,
+    introduction        TEXT,
+    background          TEXT,
+    threat_model        TEXT,
+    methodology         TEXT,
+    vuln_description    TEXT,
+    root_cause          TEXT,
+    impact              TEXT,
+    evidence            TEXT,
+    severity_section    TEXT,
+    mitigations         TEXT,
+    ethics              TEXT,
+    conclusions         TEXT,
+    references_text     TEXT,
+    disclosure_timeline TEXT,
+    appendices          TEXT,
+    status              VARCHAR(32)   NOT NULL DEFAULT 'draft',
+    created_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
+  // ── Saved Exploit-DB papers ───────────────────────────────────────────────
+  await qRun(`CREATE TABLE IF NOT EXISTS saved_edb_papers (
+    id          VARCHAR(36)   NOT NULL PRIMARY KEY,
+    user_id     VARCHAR(36)   NOT NULL,
+    edb_id      VARCHAR(32)   NOT NULL,
+    title       VARCHAR(512)  NOT NULL DEFAULT '',
+    author      VARCHAR(255)  DEFAULT '',
+    edb_date    VARCHAR(32)   DEFAULT '',
+    notes       TEXT,
+    pdf_data    MEDIUMBLOB,
+    saved_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY uq_user_edb (user_id, edb_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
   // ── Migración: engagements mode + tipos ampliados ─────────────────────────
@@ -2474,6 +2526,252 @@ app.delete("/api/notes/:id/share/:userId", auth(), async (req, res) => {
   if (!note) return res.status(403).json({ error: "Solo el dueño puede revocar accesos" });
   await qRun("DELETE FROM note_shares WHERE note_id=? AND user_id=?", [req.params.id, req.params.userId]);
   res.json({ ok: true });
+});
+
+// ── Papers ────────────────────────────────────────────────────────────────────
+app.get("/api/papers", auth(), async (req, res) => {
+  const rows = await qRows(
+    `SELECT id, title, template, category, tags, authors, date, cve_id, cvss_score, status, created_at, updated_at
+     FROM papers WHERE user_id=? ORDER BY updated_at DESC`,
+    [req.user.id]
+  );
+  res.json(rows);
+});
+
+app.get("/api/papers/:id", auth(), async (req, res) => {
+  const row = await qRow("SELECT * FROM papers WHERE id=? AND user_id=?", [req.params.id, req.user.id]);
+  if (!row) return res.status(404).json({ error: "Paper no encontrado" });
+  res.json(row);
+});
+
+app.post("/api/papers", auth(), async (req, res) => {
+  const id = uuidv4();
+  const {
+    title='', template='blackhat', category='vuln_research',
+    tags='', authors='', date='',
+    cve_id=null, advisory_url=null, cvss_vector=null, cvss_score=null,
+    abstract_text='', introduction='', background='', threat_model='',
+    methodology='', vuln_description='', root_cause='', impact='',
+    evidence='', severity_section='', mitigations='', ethics='',
+    conclusions='', references_text='', disclosure_timeline='', appendices='',
+    status='draft',
+  } = req.body;
+  await qRun(
+    `INSERT INTO papers
+      (id,user_id,title,template,category,tags,authors,date,cve_id,advisory_url,cvss_vector,cvss_score,
+       abstract_text,introduction,background,threat_model,methodology,vuln_description,root_cause,impact,
+       evidence,severity_section,mitigations,ethics,conclusions,references_text,disclosure_timeline,appendices,status)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    [id, req.user.id, title, template, category, tags, authors, date, cve_id, advisory_url, cvss_vector, cvss_score,
+     abstract_text, introduction, background, threat_model, methodology, vuln_description, root_cause, impact,
+     evidence, severity_section, mitigations, ethics, conclusions, references_text, disclosure_timeline, appendices, status]
+  );
+  res.json({ id });
+});
+
+app.put("/api/papers/:id", auth(), async (req, res) => {
+  const row = await qRow("SELECT id FROM papers WHERE id=? AND user_id=?", [req.params.id, req.user.id]);
+  if (!row) return res.status(404).json({ error: "Paper no encontrado" });
+  const {
+    title, template, category, tags, authors, date,
+    cve_id, advisory_url, cvss_vector, cvss_score,
+    abstract_text, introduction, background, threat_model, methodology,
+    vuln_description, root_cause, impact, evidence, severity_section,
+    mitigations, ethics, conclusions, references_text, disclosure_timeline,
+    appendices, status,
+  } = req.body;
+  await qRun(
+    `UPDATE papers SET
+      title=?,template=?,category=?,tags=?,authors=?,date=?,
+      cve_id=?,advisory_url=?,cvss_vector=?,cvss_score=?,
+      abstract_text=?,introduction=?,background=?,threat_model=?,methodology=?,
+      vuln_description=?,root_cause=?,impact=?,evidence=?,severity_section=?,
+      mitigations=?,ethics=?,conclusions=?,references_text=?,disclosure_timeline=?,
+      appendices=?,status=?
+     WHERE id=?`,
+    [title, template, category, tags, authors, date,
+     cve_id, advisory_url, cvss_vector, cvss_score,
+     abstract_text, introduction, background, threat_model, methodology,
+     vuln_description, root_cause, impact, evidence, severity_section,
+     mitigations, ethics, conclusions, references_text, disclosure_timeline,
+     appendices, status, req.params.id]
+  );
+  res.json({ ok: true });
+});
+
+app.delete("/api/papers/:id", auth(), async (req, res) => {
+  const row = await qRow("SELECT id FROM papers WHERE id=? AND user_id=?", [req.params.id, req.user.id]);
+  if (!row) return res.status(404).json({ error: "Paper no encontrado" });
+  await qRun("DELETE FROM papers WHERE id=?", [req.params.id]);
+  res.json({ ok: true });
+});
+
+// ── Exploit-DB proxy ──────────────────────────────────────────────────────────
+function edbFetch(urlStr, redirects = 3) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(urlStr);
+    const opts = {
+      hostname: u.hostname,
+      path:     u.pathname + u.search,
+      headers: {
+        "Accept":            "application/json, text/html, */*",
+        "Accept-Language":   "en-US,en;q=0.9",
+        "X-Requested-With":  "XMLHttpRequest",
+        "User-Agent":        "Mozilla/5.0 (X11; Linux x86_64) Gungnir/1.0 SecurityResearch",
+        "Referer":           "https://www.exploit-db.com/papers",
+        "Cache-Control":     "no-cache",
+      },
+    };
+    const req = https.get(opts, (res) => {
+      if ((res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307) && res.headers.location && redirects > 0) {
+        const next = res.headers.location.startsWith("http") ? res.headers.location : `https://${u.hostname}${res.headers.location}`;
+        return edbFetch(next, redirects - 1).then(resolve).catch(reject);
+      }
+      const chunks = [];
+      res.on("data", c => chunks.push(c));
+      res.on("end", () => resolve({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks) }));
+    });
+    req.on("error", reject);
+    req.setTimeout(15000, () => { req.destroy(); reject(new Error("Timeout Exploit-DB")); });
+  });
+}
+
+app.get("/api/exploitdb/search", auth(), async (req, res) => {
+  const q = String(req.query.q || "").trim();
+  if (!q || q.length < 2)  return res.status(400).json({ error: "Ingresá al menos 2 caracteres" });
+  if (q.length > 120)       return res.status(400).json({ error: "Query demasiado larga" });
+  try {
+    const url = `https://www.exploit-db.com/search?action=search&q=${encodeURIComponent(q)}&papers=1`;
+    const r   = await edbFetch(url);
+    if (r.status !== 200) return res.status(502).json({ error: `Exploit-DB respondió HTTP ${r.status}` });
+    let data;
+    try { data = JSON.parse(r.body.toString("utf8")); }
+    catch { return res.status(502).json({ error: "Respuesta inesperada de Exploit-DB" }); }
+    const papers = (data.data || []).map(p => ({
+      id:     p.id,
+      title:  p.title || p.description || "(sin título)",
+      author: p.author?.name || p.author || "",
+      date:   p.date || p.date_published || "",
+      file:   p.file || "",
+      edb_id: p.id,
+    }));
+    res.json({ total: data.recordsFiltered || papers.length, papers });
+  } catch (e) {
+    console.error("[EDB SEARCH]", e.message);
+    res.status(502).json({ error: `Error al consultar Exploit-DB: ${e.message}` });
+  }
+});
+
+app.get("/api/exploitdb/paper/:id", auth(), async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!id || id < 1 || id > 9999999) return res.status(400).json({ error: "ID inválido" });
+  try {
+    const r = await edbFetch(`https://www.exploit-db.com/download/${id}`);
+    if (r.status === 200) {
+      const ct = (r.headers["content-type"] || "").toLowerCase();
+      if (ct.includes("pdf")) {
+        res.set({ "Content-Type": "application/pdf", "Content-Disposition": `attachment; filename="exploitdb_paper_${id}.pdf"`, "Content-Length": r.body.length });
+        return res.send(r.body);
+      }
+      return res.status(422).json({ error: "Este entry no tiene versión PDF.", hint: `https://www.exploit-db.com/papers/${id}`, type: ct || "text" });
+    }
+    if (r.status === 404) return res.status(404).json({ error: "Paper no encontrado en Exploit-DB" });
+  } catch (e) {
+    console.error("[EDB DOWNLOAD]", e.message);
+    res.status(502).json({ error: `Error al descargar: ${e.message}` });
+    return;
+  }
+  res.status(404).json({ error: "Paper no encontrado en Exploit-DB" });
+});
+
+app.get("/api/exploitdb/saved", auth(), async (req, res) => {
+  try {
+    const rows = await qRows(
+      "SELECT id, edb_id, title, author, edb_date, notes, saved_at FROM saved_edb_papers WHERE user_id=? ORDER BY saved_at DESC",
+      [req.user.id]
+    );
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post("/api/exploitdb/saved/:edb_id", auth(), async (req, res) => {
+  try {
+    const edbId = String(req.params.edb_id || "").replace(/\D/g, "");
+    if (!edbId) return res.status(400).json({ error: "edb_id inválido" });
+    const { title="", author="", edb_date="", notes="" } = req.body || {};
+    const existing = await qRow("SELECT id FROM saved_edb_papers WHERE user_id=? AND edb_id=?", [req.user.id, edbId]);
+    if (existing) return res.status(409).json({ error: "Este paper ya está guardado", id: existing.id });
+    let pdfBuf = null;
+    const timeout = (url) => Promise.race([edbFetch(url), new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000))]);
+    try {
+      const gr = await timeout(`https://www.exploit-db.com/download/${edbId}`);
+      if (gr.status === 200 && gr.headers["content-type"]?.includes("application/pdf")) pdfBuf = gr.body;
+    } catch (_) {}
+    if (!pdfBuf) {
+      try {
+        const hr = await timeout(`https://www.exploit-db.com/papers/${edbId}`);
+        if (hr.status === 200) {
+          const match = hr.body.toString("utf8").match(/href="(\/download\/\d+|[^"]+\.pdf[^"]*)"/i);
+          if (match) {
+            const pdfUrl = match[1].startsWith("http") ? match[1] : `https://www.exploit-db.com${match[1]}`;
+            const pr = await timeout(pdfUrl);
+            if (pr.status === 200 && pr.headers["content-type"]?.includes("pdf")) pdfBuf = pr.body;
+          }
+        }
+      } catch (_) {}
+    }
+    const id = uuidv4();
+    await qRun("INSERT INTO saved_edb_papers (id, user_id, edb_id, title, author, edb_date, notes, pdf_data) VALUES (?,?,?,?,?,?,?,?)",
+      [id, req.user.id, edbId, title, author, edb_date, notes, pdfBuf]);
+    res.json({ id, edb_id: edbId, pdf_available: !!pdfBuf });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put("/api/exploitdb/saved/:id", auth(), async (req, res) => {
+  const row = await qRow("SELECT id FROM saved_edb_papers WHERE id=? AND user_id=?", [req.params.id, req.user.id]);
+  if (!row) return res.status(404).json({ error: "No encontrado" });
+  await qRun("UPDATE saved_edb_papers SET notes=? WHERE id=?", [req.body.notes || "", req.params.id]);
+  res.json({ ok: true });
+});
+
+app.delete("/api/exploitdb/saved/:id", auth(), async (req, res) => {
+  const row = await qRow("SELECT id FROM saved_edb_papers WHERE id=? AND user_id=?", [req.params.id, req.user.id]);
+  if (!row) return res.status(404).json({ error: "No encontrado" });
+  await qRun("DELETE FROM saved_edb_papers WHERE id=?", [req.params.id]);
+  res.json({ ok: true });
+});
+
+app.get("/api/exploitdb/saved/:id/pdf", auth(), async (req, res) => {
+  try {
+    const row = await qRow("SELECT id, edb_id, title, pdf_data FROM saved_edb_papers WHERE id=? AND user_id=?", [req.params.id, req.user.id]);
+    if (!row) return res.status(404).json({ error: "No encontrado" });
+    if (row.pdf_data) {
+      res.set({ "Content-Type": "application/pdf", "Content-Disposition": `attachment; filename="exploitdb_${row.edb_id}.pdf"`, "Content-Length": row.pdf_data.length });
+      return res.send(row.pdf_data);
+    }
+    let pdfBuf = null;
+    try {
+      const gr = await edbFetch(`https://www.exploit-db.com/download/${row.edb_id}`);
+      if (gr.status === 200 && gr.headers["content-type"]?.includes("application/pdf")) pdfBuf = gr.body;
+    } catch (_) {}
+    if (!pdfBuf) {
+      try {
+        const hr = await edbFetch(`https://www.exploit-db.com/papers/${row.edb_id}`);
+        if (hr.status === 200) {
+          const match = hr.body.toString("utf8").match(/href="(\/download\/\d+|[^"]+\.pdf[^"]*)"/i);
+          if (match) {
+            const pdfUrl = match[1].startsWith("http") ? match[1] : `https://www.exploit-db.com${match[1]}`;
+            const pr = await edbFetch(pdfUrl);
+            if (pr.status === 200 && pr.headers["content-type"]?.includes("pdf")) pdfBuf = pr.body;
+          }
+        }
+      } catch (_) {}
+    }
+    if (!pdfBuf) return res.status(404).json({ error: "PDF no disponible" });
+    try { await qRun("UPDATE saved_edb_papers SET pdf_data=? WHERE id=?", [pdfBuf, row.id]); } catch (_) {}
+    res.set({ "Content-Type": "application/pdf", "Content-Disposition": `attachment; filename="exploitdb_${row.edb_id}.pdf"`, "Content-Length": pdfBuf.length });
+    res.send(pdfBuf);
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 if (fs.existsSync(DIST)) {

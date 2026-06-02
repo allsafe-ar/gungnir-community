@@ -24,6 +24,7 @@
     "users": "Users",
     "settings": "Settings",
     "notes": "Notes",
+    "papers": "Papers",
     "admin_menu": {
       "title": "Administration",
       "subtitle": "System settings",

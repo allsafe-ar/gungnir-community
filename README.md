@@ -61,10 +61,11 @@ Gungnir Community includes everything a pentest team needs to run professional e
 - **Finding templates** - 15 built-in templates (SQLi, XSS, CSRF, SSRF, XXE, RCE, path traversal, default credentials, open redirect, etc.) + custom library
 - **OSINT / Recon** - Shodan, VirusTotal, Censys, crt.sh, RDAP, DNS using your own API keys (no vendor lock-in)
 - **Notes** - personal markdown notes with tag system, pin support and note sharing between users
+- **Research Papers** - structured vulnerability research editor (Black Hat / academic / technical templates) with direct Exploit-DB integration - search, preview and save papers to your local library
 - **Auth** - JWT (12h), TOTP 2FA (RFC 6238), account lockout, role-based access
 - **Internationalization** - Spanish (default) and English, switchable per user
 
-> Looking for **live Nessus/OpenVAS scanner feeds**, **AllSafe CRM sync**, the **executive Operations dashboard**, or the **Research Papers module** (structured vulnerability research editor + direct Exploit-DB integration)? Those features are available in [Gungnir Pro](https://www.allsafe.com.ar).
+> Looking for **live Nessus/OpenVAS scanner feeds**, **AllSafe CRM sync**, or the **executive Operations dashboard**? Those features are available in [Gungnir Pro](https://www.allsafe.com.ar).
 
 ---
 
@@ -93,7 +94,7 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | AllSafe CRM sync | ❌ | ✅ |
 | Operations dashboard (exec metrics, charts) | ❌ | ✅ |
 | Custom PDF branding + org logo | ❌ | ✅ |
-| Research Papers (structured editor + Exploit-DB integration) | ❌ | ✅ |
+| Research Papers (structured editor + Exploit-DB integration) | ✅ | ✅ |
 
 > **Upgrade path**: Community and Pro share the same database schema. Upgrading is a file replacement - no migrations needed.
 
