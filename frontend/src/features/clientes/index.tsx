@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Building2, Plus, Search, ClipboardList } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,6 +22,7 @@ interface Cliente {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export function Clientes() {
+  const { t } = useTranslation()
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
@@ -45,13 +47,13 @@ export function Clientes() {
     <div className='space-y-6'>
       <div className='flex items-center justify-between gap-3 flex-wrap'>
         <div>
-          <h1 className='text-2xl font-bold tracking-tight'>Clientes</h1>
-          <p className='text-sm text-muted-foreground'>{clientes.length} clientes registrados</p>
+          <h1 className='text-2xl font-bold tracking-tight'>{t('client.title')}</h1>
+          <p className='text-sm text-muted-foreground'>{t('client.subtitle', { count: clientes.length })}</p>
         </div>
         <Button asChild>
           <Link to='/clientes/nuevo'>
             <Plus className='mr-2 size-4' />
-            Nuevo Cliente
+            {t('client.new')}
           </Link>
         </Button>
       </div>
@@ -59,7 +61,7 @@ export function Clientes() {
       <div className='relative'>
         <Search className='absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
         <Input
-          placeholder='Buscar por nombre o industria...'
+          placeholder={t('client.search_placeholder')}
           className='pl-9'
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -74,7 +76,7 @@ export function Clientes() {
         <div className='flex flex-col items-center gap-3 py-16 text-center'>
           <Building2 className='size-12 text-muted-foreground/40' />
           <p className='text-sm text-muted-foreground'>
-            {search ? 'Sin resultados para esa búsqueda.' : 'No hay clientes aún.'}
+            {search ? t('client.no_search_results') : t('client.empty')}
           </p>
         </div>
       ) : (

@@ -5,6 +5,7 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import {
   Plus, Pencil, Trash2, ShieldOff, ToggleLeft, ToggleRight,
   KeyRound, ShieldCheck,
@@ -24,7 +25,6 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import { cn } from '@/lib/utils'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 interface User {
@@ -43,20 +43,22 @@ type DialogMode = 'create' | 'edit'
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const ROLES: User['role'][] = ['admin', 'auditor', 'pentester', 'lector']
-const ROLE_LABELS: Record<User['role'], string> = {
-  admin:     'Admin',
-  auditor:   'Auditor',
-  pentester: 'Pentester',
-  lector:    'Lector',
-}
 
 const EMPTY_FORM = { username: '', email: '', full_name: '', role: 'pentester' as User['role'], password: '' }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 export function Usuarios() {
+  const { t } = useTranslation()
   const qc = useQueryClient()
   const { auth } = useAuthStore()
   const currentId = auth.user?.id
+
+  const ROLE_LABELS: Record<User['role'], string> = {
+    admin:     t('users.role_admin'),
+    auditor:   t('users.role_auditor'),
+    pentester: t('users.role_pentester'),
+    lector:    t('users.role_lector'),
+  }
 
   const [open, setOpen]       = useState(false)
   const [mode, setMode]       = useState<DialogMode>('create')
@@ -89,7 +91,7 @@ export function Usuarios() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['gungnir-users'] })
       setOpen(false)
-      toast.success(mode === 'create' ? 'Usuario creado' : 'Usuario actualizado')
+      toast.success(mode === 'create' ? t('users.toast_created') : t('users.toast_updated'))
     },
     onError: (e: Error) => toast.error(e.message),
   })
@@ -98,7 +100,7 @@ export function Usuarios() {
     mutationFn: (id: string) => apiFetch(`/usuarios/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['gungnir-users'] })
-      toast.success('Usuario eliminado')
+      toast.success(t('users.toast_deleted'))
     },
     onError: (e: Error) => toast.error(e.message),
   })
@@ -113,7 +115,7 @@ export function Usuarios() {
     mutationFn: (id: string) => apiFetch(`/usuarios/${id}/totp`, { method: 'DELETE' }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['gungnir-users'] })
-      toast.success('2FA desactivado para el usuario')
+      toast.success(t('users.toast_2fa_disabled'))
     },
     onError: (e: Error) => toast.error(e.message),
   })
@@ -131,12 +133,12 @@ export function Usuarios() {
   }
 
   function handleDelete(user: User) {
-    if (!confirm(`¿Eliminar al usuario "${user.username}"? Esta acción no se puede deshacer.`)) return
+    if (!confirm(t('users.delete_confirm', { username: user.username }))) return
     deleteMutation.mutate(user.id)
   }
 
   function handleResetTotp(user: User) {
-    if (!confirm(`¿Desactivar el 2FA de "${user.username}"?`)) return
+    if (!confirm(t('users.totp_reset_confirm', { username: user.username }))) return
     resetTotpMutation.mutate(user.id)
   }
 
@@ -147,12 +149,12 @@ export function Usuarios() {
       {/* Header — estándar AllSafe */}
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-xl font-bold'>Usuarios</h1>
-          <p className='text-sm text-muted-foreground'>Gestión de acceso al sistema Gungnir</p>
+          <h1 className='text-xl font-bold'>{t('users.title')}</h1>
+          <p className='text-sm text-muted-foreground'>{t('users.subtitle')}</p>
         </div>
         <Button size='sm' onClick={openCreate} disabled={isBusy} className='gap-1.5'>
           <Plus className='h-3.5 w-3.5' />
-          Nuevo usuario
+          {t('users.new')}
         </Button>
       </div>
 
@@ -164,18 +166,18 @@ export function Usuarios() {
           </div>
         ) : users.length === 0 ? (
           <div className='flex flex-col items-center py-16 text-center gap-2 text-muted-foreground'>
-            <p className='text-sm'>Sin usuarios registrados</p>
+            <p className='text-sm'>{t('users.empty')}</p>
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow className='border-border hover:bg-transparent'>
-                <TableHead className='text-xs font-semibold'>Nombre</TableHead>
-                <TableHead className='text-xs font-semibold'>Usuario</TableHead>
-                <TableHead className='text-xs font-semibold'>Rol</TableHead>
-                <TableHead className='text-xs font-semibold'>2FA</TableHead>
-                <TableHead className='text-xs font-semibold'>Estado</TableHead>
-                <TableHead className='text-xs font-semibold'>Creado</TableHead>
+                <TableHead className='text-xs font-semibold'>{t('users.col_name')}</TableHead>
+                <TableHead className='text-xs font-semibold'>{t('users.col_username')}</TableHead>
+                <TableHead className='text-xs font-semibold'>{t('users.col_role')}</TableHead>
+                <TableHead className='text-xs font-semibold'>{t('users.col_2fa')}</TableHead>
+                <TableHead className='text-xs font-semibold'>{t('users.col_status')}</TableHead>
+                <TableHead className='text-xs font-semibold'>{t('users.col_created')}</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -217,11 +219,11 @@ export function Usuarios() {
                     <TableCell>
                       {user.is_active ? (
                         <span className='inline-flex items-center rounded-full bg-green-500/20 px-2 py-0.5 text-[11px] font-semibold text-green-400 ring-1 ring-green-500/30'>
-                          Activo
+                          {t('users.status_active')}
                         </span>
                       ) : (
                         <span className='inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground'>
-                          Inactivo
+                          {t('users.status_inactive')}
                         </span>
                       )}
                     </TableCell>
@@ -238,7 +240,7 @@ export function Usuarios() {
                           {/* Editar */}
                           <button
                             onClick={() => openEdit(user)}
-                            title='Editar'
+                            title={t('common.edit')}
                             className='rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors'
                           >
                             <Pencil className='h-3.5 w-3.5' />
@@ -246,7 +248,7 @@ export function Usuarios() {
                           {/* Toggle activo/inactivo */}
                           <button
                             onClick={() => toggleMutation.mutate(user.id)}
-                            title={user.is_active ? 'Desactivar usuario' : 'Activar usuario'}
+                            title={user.is_active ? t('users.action_deactivate') : t('users.action_activate')}
                             className='rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors'
                           >
                             {user.is_active
@@ -258,7 +260,7 @@ export function Usuarios() {
                           {!!user.totp_enabled && (
                             <button
                               onClick={() => handleResetTotp(user)}
-                              title='Desactivar 2FA'
+                              title={t('users.action_disable_2fa')}
                               className='rounded p-1.5 text-amber-500/70 hover:bg-accent hover:text-amber-400 transition-colors'
                             >
                               <ShieldOff className='h-3.5 w-3.5' />
@@ -267,7 +269,7 @@ export function Usuarios() {
                           {/* Eliminar */}
                           <button
                             onClick={() => handleDelete(user)}
-                            title='Eliminar usuario'
+                            title={t('users.action_delete')}
                             className='rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive transition-colors'
                           >
                             <Trash2 className='h-3.5 w-3.5' />
@@ -289,14 +291,14 @@ export function Usuarios() {
           <DialogHeader>
             <DialogTitle className='flex items-center gap-2'>
               <KeyRound className='h-4 w-4' />
-              {mode === 'create' ? 'Nuevo usuario' : `Editar — @${editing?.username}`}
+              {mode === 'create' ? t('users.dialog_title_create') : t('users.dialog_title_edit', { username: editing?.username })}
             </DialogTitle>
           </DialogHeader>
 
           <div className='space-y-4 py-2'>
             {mode === 'create' && (
               <div className='space-y-1.5'>
-                <Label htmlFor='username' className='text-xs'>Usuario *</Label>
+                <Label htmlFor='username' className='text-xs'>{t('users.label_username')} *</Label>
                 <Input
                   id='username'
                   value={form.username}
@@ -307,7 +309,7 @@ export function Usuarios() {
               </div>
             )}
             <div className='space-y-1.5'>
-              <Label htmlFor='full_name' className='text-xs'>Nombre completo</Label>
+              <Label htmlFor='full_name' className='text-xs'>{t('users.label_full_name')}</Label>
               <Input
                 id='full_name'
                 value={form.full_name}
@@ -317,7 +319,7 @@ export function Usuarios() {
               />
             </div>
             <div className='space-y-1.5'>
-              <Label htmlFor='email' className='text-xs'>Email</Label>
+              <Label htmlFor='email' className='text-xs'>{t('users.label_email')}</Label>
               <Input
                 id='email'
                 type='email'
@@ -328,7 +330,7 @@ export function Usuarios() {
               />
             </div>
             <div className='space-y-1.5'>
-              <Label className='text-xs'>Rol *</Label>
+              <Label className='text-xs'>{t('users.label_role')} *</Label>
               <Select value={form.role} onValueChange={v => setForm(f => ({ ...f, role: v as User['role'] }))}>
                 <SelectTrigger className='h-8 text-sm'>
                   <SelectValue />
@@ -342,19 +344,19 @@ export function Usuarios() {
                 </SelectContent>
               </Select>
               <p className='text-[10px] text-muted-foreground'>
-                Admin: acceso total · Auditor: gestiona engagements · Pentester: opera · Lector: solo lectura
+                {t('users.role_hint')}
               </p>
             </div>
             <div className='space-y-1.5'>
               <Label htmlFor='password' className='text-xs'>
-                Contraseña {mode === 'edit' && <span className='text-muted-foreground'>(dejar vacío para no cambiar)</span>}
+                {t('users.label_password')} {mode === 'edit' && <span className='text-muted-foreground'>({t('users.password_edit_hint')})</span>}
               </Label>
               <Input
                 id='password'
                 type='password'
                 value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                placeholder={mode === 'create' ? 'Mínimo 8 caracteres' : '••••••••'}
+                placeholder={mode === 'create' ? t('users.password_placeholder') : '••••••••'}
                 className='h-8 text-sm'
               />
             </div>
@@ -362,14 +364,14 @@ export function Usuarios() {
 
           <DialogFooter>
             <Button variant='outline' size='sm' onClick={() => setOpen(false)}>
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button
               size='sm'
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending || (mode === 'create' && (!form.username || !form.password))}
             >
-              {saveMutation.isPending ? 'Guardando...' : mode === 'create' ? 'Crear usuario' : 'Guardar cambios'}
+              {saveMutation.isPending ? t('common.loading') : mode === 'create' ? t('users.btn_create') : t('users.btn_save')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Building2, ClipboardList, Edit, Plus, Shield, ArrowLeft, CheckCircle2, XCircle, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,7 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { apiFetch } from '@/lib/api'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
-import { TYPE_LABEL, STATUS_LABEL, STATUS_VARIANT } from '@/features/engagements'
+import { getTypeLabel, getStatusLabel, STATUS_VARIANT } from '@/features/engagements'
 
 interface Cliente {
   id: string
@@ -29,11 +30,8 @@ interface Cliente {
   }[]
 }
 
-const SIZE_LABEL: Record<string, string> = {
-  small: 'Pequeña', medium: 'Mediana', large: 'Grande', enterprise: 'Corporativa',
-}
-
 export function ClienteDetail({ clienteId }: { clienteId: string }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { auth } = useAuthStore()
   const isAdmin = auth.user?.role === 'admin'
@@ -41,15 +39,25 @@ export function ClienteDetail({ clienteId }: { clienteId: string }) {
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState(false)
 
+  const typeLabel   = getTypeLabel(t)
+  const statusLabel = getStatusLabel(t)
+
+  const SIZE_LABEL: Record<string, string> = {
+    small:      t('client.size_small'),
+    medium:     t('client.size_medium'),
+    large:      t('client.size_large'),
+    enterprise: t('client.size_enterprise'),
+  }
+
   const handleDelete = async () => {
-    if (!confirm(`¿Eliminar el cliente "${cliente?.name}"? Esta acción no se puede deshacer.`)) return
+    if (!confirm(t('client.delete_confirm', { name: cliente?.name }))) return
     setDeleting(true)
     try {
       await apiFetch(`/clientes/${clienteId}`, { method: 'DELETE' })
-      toast.success('Cliente eliminado')
+      toast.success(t('client.deleted'))
       navigate({ to: '/clientes' })
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Error al eliminar')
+      toast.error(err instanceof Error ? err.message : t('common.error'))
       setDeleting(false)
     }
   }
@@ -62,7 +70,7 @@ export function ClienteDetail({ clienteId }: { clienteId: string }) {
   }, [clienteId])
 
   if (loading) return <div className='flex h-64 items-center justify-center'><div className='h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent' /></div>
-  if (!cliente) return <div className='py-16 text-center text-muted-foreground'>Cliente no encontrado.</div>
+  if (!cliente) return <div className='py-16 text-center text-muted-foreground'>{t('common.no_results')}</div>
 
   return (
     <div className='space-y-6 max-w-3xl'>
@@ -70,13 +78,13 @@ export function ClienteDetail({ clienteId }: { clienteId: string }) {
         <div className='flex items-center gap-3'>
           <Button variant='ghost' size='sm' className='text-muted-foreground -ml-2'
             onClick={() => navigate({ to: '/clientes' })}>
-            <ArrowLeft className='mr-1 size-3' /> Clientes
+            <ArrowLeft className='mr-1 size-3' /> {t('client.title')}
           </Button>
         </div>
         <div className='flex items-center gap-2'>
           <Button variant='outline' size='sm' asChild>
             <Link to='/clientes/$clienteId/editar' params={{ clienteId }}>
-              <Edit className='mr-2 size-3.5' /> Editar
+              <Edit className='mr-2 size-3.5' /> {t('common.edit')}
             </Link>
           </Button>
           {isAdmin && (
@@ -88,7 +96,7 @@ export function ClienteDetail({ clienteId }: { clienteId: string }) {
               className='text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10'
             >
               <Trash2 className='mr-2 size-3.5' />
-              {deleting ? 'Eliminando...' : 'Eliminar'}
+              {deleting ? t('client.deleting') : t('common.delete')}
             </Button>
           )}
         </div>
@@ -106,8 +114,8 @@ export function ClienteDetail({ clienteId }: { clienteId: string }) {
             {cliente.country && <span className='text-sm text-muted-foreground'>{cliente.country}</span>}
             <div className='flex items-center gap-1'>
               {cliente.nda_signed
-                ? <><CheckCircle2 className='size-3.5 text-green-500' /><span className='text-xs text-green-500'>NDA firmado</span></>
-                : <><XCircle className='size-3.5 text-muted-foreground' /><span className='text-xs text-muted-foreground'>Sin NDA</span></>}
+                ? <><CheckCircle2 className='size-3.5 text-green-500' /><span className='text-xs text-green-500'>{t('client.nda_signed')}</span></>
+                : <><XCircle className='size-3.5 text-muted-foreground' /><span className='text-xs text-muted-foreground'>{t('client.no_nda')}</span></>}
             </div>
           </div>
         </div>
@@ -117,7 +125,7 @@ export function ClienteDetail({ clienteId }: { clienteId: string }) {
         {cliente.contact_name && (
           <Card>
             <CardHeader className='pb-2'>
-              <CardTitle className='text-xs uppercase tracking-wide text-muted-foreground'>Contacto técnico</CardTitle>
+              <CardTitle className='text-xs uppercase tracking-wide text-muted-foreground'>{t('client.tech_contact')}</CardTitle>
             </CardHeader>
             <CardContent className='space-y-1 text-sm'>
               <p className='font-medium'>{cliente.contact_name}</p>
@@ -129,7 +137,7 @@ export function ClienteDetail({ clienteId }: { clienteId: string }) {
         {cliente.exec_contact_name && (
           <Card>
             <CardHeader className='pb-2'>
-              <CardTitle className='text-xs uppercase tracking-wide text-muted-foreground'>Contacto ejecutivo</CardTitle>
+              <CardTitle className='text-xs uppercase tracking-wide text-muted-foreground'>{t('client.exec_contact')}</CardTitle>
             </CardHeader>
             <CardContent className='space-y-1 text-sm'>
               <p className='font-medium'>{cliente.exec_contact_name}</p>
@@ -141,7 +149,7 @@ export function ClienteDetail({ clienteId }: { clienteId: string }) {
 
       {cliente.notes && (
         <Card>
-          <CardHeader className='pb-2'><CardTitle className='text-xs uppercase tracking-wide text-muted-foreground'>Notas</CardTitle></CardHeader>
+          <CardHeader className='pb-2'><CardTitle className='text-xs uppercase tracking-wide text-muted-foreground'>{t('client.notes')}</CardTitle></CardHeader>
           <CardContent><p className='text-sm whitespace-pre-wrap'>{cliente.notes}</p></CardContent>
         </Card>
       )}
@@ -151,11 +159,11 @@ export function ClienteDetail({ clienteId }: { clienteId: string }) {
       <div className='flex items-center justify-between'>
         <h2 className='font-semibold flex items-center gap-2'>
           <ClipboardList className='size-4' />
-          Engagements ({cliente.engagements?.length ?? 0})
+          {t('client.engagements_count', { count: cliente.engagements?.length ?? 0 })}
         </h2>
         <Button size='sm' asChild>
           <Link to='/engagements/nuevo' search={{ client_id: clienteId }}>
-            <Plus className='mr-1.5 size-3.5' /> Nuevo
+            <Plus className='mr-1.5 size-3.5' /> {t('client.new_engagement')}
           </Link>
         </Button>
       </div>
@@ -163,7 +171,7 @@ export function ClienteDetail({ clienteId }: { clienteId: string }) {
       {!cliente.engagements?.length ? (
         <div className='flex flex-col items-center gap-2 py-10 text-center'>
           <Shield className='size-10 text-muted-foreground/30' />
-          <p className='text-sm text-muted-foreground'>No hay engagements para este cliente.</p>
+          <p className='text-sm text-muted-foreground'>{t('client.no_engagements')}</p>
         </div>
       ) : (
         <div className='space-y-2'>
@@ -172,9 +180,9 @@ export function ClienteDetail({ clienteId }: { clienteId: string }) {
               className='flex items-center gap-3 rounded-lg border border-border px-4 py-3 hover:bg-accent transition-colors'>
               <div className='flex-1 min-w-0'>
                 <p className='font-medium text-sm truncate'>{eng.title}</p>
-                <p className='text-xs text-muted-foreground'>{TYPE_LABEL[eng.type] ?? eng.type}</p>
+                <p className='text-xs text-muted-foreground'>{typeLabel[eng.type] ?? eng.type}</p>
               </div>
-              <Badge variant={STATUS_VARIANT[eng.status] ?? 'outline'}>{STATUS_LABEL[eng.status] ?? eng.status}</Badge>
+              <Badge variant={STATUS_VARIANT[eng.status] ?? 'outline'}>{statusLabel[eng.status] ?? eng.status}</Badge>
             </Link>
           ))}
         </div>

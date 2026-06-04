@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { ClipboardList, Plus, Search, Filter, Trash2, Upload, Download, Loader2 } from 'lucide-react'
+import { ClipboardList, Plus, Search, Filter, Trash2, Upload, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
 import { apiFetch, API_BASE } from '@/lib/api'
+import { useTranslation } from 'react-i18next'
 
 export interface Engagement {
   id: string
@@ -32,30 +33,66 @@ export interface Engagement {
   updated_at: string
 }
 
+export function getTypeLabel(t: (k: string) => string): Record<string, string> {
+  return {
+    external_pt:   t('eng.type_external_pt'),
+    internal_pt:   t('eng.type_internal_pt'),
+    web_app:       t('eng.type_web_app'),
+    api:           t('eng.type_api'),
+    mobile:        t('eng.type_mobile'),
+    red_team:      t('eng.type_red_team'),
+    social_eng:    t('eng.type_social_eng'),
+    physical:      t('eng.type_physical'),
+  }
+}
+
+export function getStatusLabel(t: (k: string) => string): Record<string, string> {
+  return {
+    planned:      t('eng.status_planned'),
+    in_progress:  t('eng.status_in_progress'),
+    reporting:    t('eng.status_reporting'),
+    qa:           t('eng.status_qa'),
+    delivered:    t('eng.status_delivered'),
+    archived:     t('eng.status_archived'),
+  }
+}
+
+export function getPhaseLabel(t: (k: string) => string): Record<string, string> {
+  return {
+    planning:          t('phase.planning'),
+    recon:             t('phase.recon'),
+    scanning:          t('phase.scanning'),
+    exploitation:      t('phase.exploitation'),
+    post_exploitation: t('phase.post_exploitation'),
+    reporting:         t('phase.reporting'),
+  }
+}
+
+// Legacy static exports kept for backward compat
 export const TYPE_LABEL: Record<string, string> = {
-  external_pt:   'Externo',
-  internal_pt:   'Interno',
+  external_pt:   'External PT',
+  internal_pt:   'Internal PT',
   web_app:       'Web App',
   api:           'API',
   mobile:        'Mobile',
   red_team:      'Red Team',
-  social_eng:    'Ingeniería Social',
-  physical:      'Físico',
+  social_eng:    'Social Engineering',
+  physical:      'Physical',
 }
 export const STATUS_LABEL: Record<string, string> = {
-  planned:      'Planificado',
-  in_progress:  'En curso',
-  reporting:    'Reportando',
+  planned:      'Planned',
+  in_progress:  'In Progress',
+  reporting:    'Reporting',
   qa:           'QA',
-  delivered:    'Entregado',
-  archived:     'Archivado',
+  delivered:    'Delivered',
+  archived:     'Archived',
 }
 export const PHASE_LABEL: Record<string, string> = {
-  planning:          'Planificación',
-  recon:             'Reconocimiento',
-  scanning:          'Escaneo',
-  exploitation:      'Explotación',
-  post_exploitation: 'Post-explotación',
+  planning:          'Planning',
+  recon:             'Reconnaissance',
+  scanning:          'Scanning',
+  exploitation:      'Exploitation',
+  post_exploitation: 'Post-exploitation',
   reporting:         'Reporting',
 }
 export const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -68,6 +105,7 @@ export const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructi
 }
 
 export function Engagements() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [engagements, setEngagements] = useState<Engagement[]>([])
   const [search, setSearch] = useState('')
@@ -82,6 +120,10 @@ export function Engagements() {
   const importRef = useRef<HTMLInputElement>(null)
   const [importing, setImporting] = useState(false)
 
+  const typeLabel  = getTypeLabel(t)
+  const statusLabel = getStatusLabel(t)
+  const phaseLabel  = getPhaseLabel(t)
+
   useEffect(() => {
     apiFetch<Engagement[]>('/engagements')
       .then((d) => setEngagements(d))
@@ -90,7 +132,7 @@ export function Engagements() {
   }, [])
 
   const handleImport = async (file: File) => {
-    if (!file.name.endsWith('.zip')) { toast.error('El archivo debe ser un .zip'); return }
+    if (!file.name.endsWith('.zip')) { toast.error(t('engs.import_zip_error')); return }
     setImporting(true)
     const token = localStorage.getItem('gungnir_token')
     const fd = new FormData()
@@ -106,19 +148,19 @@ export function Engagements() {
       toast.success(`Engagement importado: ${data.engagement.title}`)
       navigate({ to: '/engagements/$engagementId', params: { engagementId: data.engagement.id } })
     } catch (e: any) {
-      toast.error(e.message ?? 'Error al importar')
+      toast.error(e.message ?? t('engs.import_error'))
     } finally {
       setImporting(false)
       if (importRef.current) importRef.current.value = ''
     }
   }
 
-  const filtered = engagements.filter((e) => {
+  const filtered = engagements.filter((eng) => {
     const matchSearch =
-      e.title.toLowerCase().includes(search.toLowerCase()) ||
-      e.client_name.toLowerCase().includes(search.toLowerCase()) ||
-      e.codename?.toLowerCase().includes(search.toLowerCase())
-    const matchStatus = filterStatus === 'all' || e.status === filterStatus
+      eng.title.toLowerCase().includes(search.toLowerCase()) ||
+      eng.client_name.toLowerCase().includes(search.toLowerCase()) ||
+      eng.codename?.toLowerCase().includes(search.toLowerCase())
+    const matchStatus = filterStatus === 'all' || eng.status === filterStatus
     return matchSearch && matchStatus
   })
 
@@ -127,11 +169,11 @@ export function Engagements() {
     setDeleting(true)
     try {
       await apiFetch(`/engagements/${deleteTarget.id}`, { method: 'DELETE' })
-      setEngagements(prev => prev.filter(e => e.id !== deleteTarget.id))
-      toast.success(`Engagement "${deleteTarget.title}" eliminado`)
+      setEngagements(prev => prev.filter(eng => eng.id !== deleteTarget.id))
+      toast.success(t('eng.deleted'))
       setDeleteTarget(null)
     } catch (e: any) {
-      toast.error(e.message ?? 'Error al eliminar')
+      toast.error(e.message ?? t('eng.error_delete'))
     } finally {
       setDeleting(false)
     }
@@ -141,21 +183,21 @@ export function Engagements() {
     <div className='space-y-6'>
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-2xl font-bold tracking-tight'>Engagements</h1>
-          <p className='text-sm text-muted-foreground'>{engagements.length} engagements registrados</p>
+          <h1 className='text-2xl font-bold tracking-tight'>{t('engs.title')}</h1>
+          <p className='text-sm text-muted-foreground'>{t('engs.subtitle', { count: engagements.length })}</p>
         </div>
         <div className='flex gap-2'>
           <input ref={importRef} type='file' accept='.zip' className='hidden'
             onChange={e => { const f = e.target.files?.[0]; if (f) handleImport(f) }} />
           <Button variant='outline' onClick={() => importRef.current?.click()} disabled={importing}>
             {importing
-              ? <><Loader2 className='mr-2 size-4 animate-spin' />Importando...</>
-              : <><Upload className='mr-2 size-4' />Importar</>}
+              ? <><Loader2 className='mr-2 size-4 animate-spin' />{t('engs.importing')}</>
+              : <><Upload className='mr-2 size-4' />{t('engs.import')}</>}
           </Button>
           <Button asChild>
             <Link to='/engagements/nuevo'>
               <Plus className='mr-2 size-4' />
-              Nuevo Engagement
+              {t('engs.new')}
             </Link>
           </Button>
         </div>
@@ -165,7 +207,7 @@ export function Engagements() {
         <div className='relative flex-1'>
           <Search className='absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
           <Input
-            placeholder='Buscar por título, cliente o codename...'
+            placeholder={t('engs.search_placeholder')}
             className='pl-9'
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -177,8 +219,8 @@ export function Engagements() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='all'>Todos los estados</SelectItem>
-            {Object.entries(STATUS_LABEL).map(([v, l]) => (
+            <SelectItem value='all'>{t('engs.all_statuses')}</SelectItem>
+            {Object.entries(statusLabel).map(([v, l]) => (
               <SelectItem key={v} value={v}>{l}</SelectItem>
             ))}
           </SelectContent>
@@ -193,7 +235,7 @@ export function Engagements() {
         <div className='flex flex-col items-center gap-3 py-16 text-center'>
           <ClipboardList className='size-12 text-muted-foreground/40' />
           <p className='text-sm text-muted-foreground'>
-            {search || filterStatus !== 'all' ? 'Sin resultados.' : 'No hay engagements aún.'}
+            {search || filterStatus !== 'all' ? t('common.no_results') : t('engs.empty')}
           </p>
         </div>
       ) : (
@@ -214,7 +256,7 @@ export function Engagements() {
                       )}
                     </div>
                     <p className='text-xs text-muted-foreground truncate'>
-                      {eng.client_name} · {TYPE_LABEL[eng.type] ?? eng.type}
+                      {eng.client_name} · {typeLabel[eng.type] ?? eng.type}
                     </p>
                   </div>
                   <div className='flex items-center gap-3 shrink-0'>
@@ -225,11 +267,11 @@ export function Engagements() {
                     )}
                     {eng.current_phase && (
                       <span className='text-xs text-muted-foreground hidden md:block'>
-                        {PHASE_LABEL[eng.current_phase] ?? eng.current_phase}
+                        {phaseLabel[eng.current_phase] ?? eng.current_phase}
                       </span>
                     )}
                     <Badge variant={STATUS_VARIANT[eng.status] ?? 'outline'}>
-                      {STATUS_LABEL[eng.status] ?? eng.status}
+                      {statusLabel[eng.status] ?? eng.status}
                     </Badge>
                   </div>
                 </div>
@@ -239,7 +281,7 @@ export function Engagements() {
               <button
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget(eng) }}
                 className='absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive'
-                title='Eliminar engagement'
+                title={t('eng.delete_tooltip')}
               >
                 <Trash2 className='size-3.5' />
               </button>
@@ -252,11 +294,11 @@ export function Engagements() {
       <AlertDialog open={!!deleteTarget} onOpenChange={open => { if (!open) setDeleteTarget(null) }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar este engagement?</AlertDialogTitle>
+            <AlertDialogTitle>{t('eng.delete_title')}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className='space-y-2'>
                 <p>
-                  Vas a eliminar permanentemente{' '}
+                  {t('eng.delete_desc1')}{' '}
                   <span className='font-semibold text-foreground'>"{deleteTarget?.title}"</span>
                   {deleteTarget?.client_name && (
                     <span className='text-muted-foreground'> - {deleteTarget.client_name}</span>
@@ -264,20 +306,20 @@ export function Engagements() {
                   .
                 </p>
                 <p>
-                  Se eliminarán todas las fases, logs de operaciones, hallazgos, evidencias y
-                  documentos asociados. <span className='text-destructive font-medium'>Esta acción no se puede deshacer.</span>
+                  {t('eng.delete_desc2')}{' '}
+                  <span className='text-destructive font-medium'>{t('eng.irreversible')}</span>
                 </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
               className='bg-destructive hover:bg-destructive/90 text-destructive-foreground'
             >
-              {deleting ? 'Eliminando...' : 'Sí, eliminar'}
+              {deleting ? t('eng.deleting') : t('eng.confirm_delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

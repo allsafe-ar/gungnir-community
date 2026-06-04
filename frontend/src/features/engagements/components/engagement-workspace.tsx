@@ -12,12 +12,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { apiFetch } from '@/lib/api'
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next'
 import { HallazgoSheet } from '@/features/hallazgos/components/hallazgo-sheet'
 import { ScannerImportDialog } from '@/features/hallazgos/components/scanner-import-dialog'
 import { ScopeSheet } from './scope-sheet'
 import { EvidenceSheet } from './evidence-sheet'
 import { CustomWorkspace } from './custom-workspace'
 import { TecnicasSheet } from './tecnicas-sheet'
+import { getPhaseLabel } from '@/features/engagements'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 interface Phase {
@@ -57,22 +59,17 @@ interface EngagementDetail {
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const PHASES_ORDER = ['planning','recon','scanning','exploitation','post_exploitation','reporting']
 
-const PHASE_LABEL: Record<string, string> = {
-  planning:          'Planificación',
-  recon:             'Reconocimiento',
-  scanning:          'Escaneo',
-  exploitation:      'Explotación',
-  post_exploitation: 'Post-explotación',
-  reporting:         'Reporting',
+function getPhaseDesc(t: (k: string, o?: Record<string, unknown>) => string): Record<string, string> {
+  return {
+    planning:          t('planning.objectives_label'),
+    recon:             'OSINT, enumeración de activos, superficie de ataque',
+    scanning:          'Nmap, Nessus, Burp, nuclei, análisis de vulnerabilidades',
+    exploitation:      'Explotación controlada, evidencias, impacto demostrado',
+    post_exploitation: 'Solo si autorizado: escalamiento, movimiento lateral',
+    reporting:         'Consolidación de hallazgos, informe ejecutivo y técnico',
+  }
 }
-const PHASE_DESC: Record<string, string> = {
-  planning:          'Pre-engagement, alcance, RoE, contactos, autorización',
-  recon:             'OSINT, enumeración de activos, superficie de ataque',
-  scanning:          'Nmap, Nessus, Burp, nuclei, análisis de vulnerabilidades',
-  exploitation:      'Explotación controlada, evidencias, impacto demostrado',
-  post_exploitation: 'Solo si autorizado: escalamiento, movimiento lateral',
-  reporting:         'Consolidación de hallazgos, informe ejecutivo y técnico',
-}
+
 const SEV_COLOR: Record<string, string> = {
   critical: 'bg-red-500/10 text-red-500 border-red-500/20',
   high:     'bg-orange-500/10 text-orange-500 border-orange-500/20',
@@ -80,12 +77,20 @@ const SEV_COLOR: Record<string, string> = {
   low:      'bg-blue-500/10 text-blue-500 border-blue-500/20',
   info:     'bg-muted text-muted-foreground border-border',
 }
-const SEV_LABEL: Record<string, string> = {
-  critical: 'CRÍTICO', high: 'ALTO', medium: 'MEDIO', low: 'BAJO', info: 'INFO',
+
+function getSevLabel(t: (k: string) => string): Record<string, string> {
+  return {
+    critical: t('finding.sev_critical').toUpperCase(),
+    high:     t('finding.sev_high').toUpperCase(),
+    medium:   t('finding.sev_medium').toUpperCase(),
+    low:      t('finding.sev_low').toUpperCase(),
+    info:     'INFO',
+  }
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 export function EngagementWorkspace({ engagementId }: { engagementId: string }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [engagement, setEngagement] = useState<EngagementDetail | null>(null)
   const [activePhase, setActivePhase] = useState<string>('')
@@ -115,14 +120,17 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleInput, setTitleInput]     = useState('')
 
+  const phaseLabel = getPhaseLabel(t)
+  const sevLabel   = getSevLabel(t)
+
   const saveTitle = async () => {
     if (!titleInput.trim() || titleInput.trim() === engagement?.title) { setEditingTitle(false); return }
     try {
       await apiFetch(`/engagements/${engagementId}/title`, { method: 'PATCH', body: { title: titleInput.trim() } })
       setEngagement(prev => prev ? { ...prev, title: titleInput.trim() } : prev)
       setEditingTitle(false)
-      toast.success('Nombre actualizado')
-    } catch { toast.error('Error al renombrar') }
+      toast.success(t('eng.title_updated'))
+    } catch { toast.error(t('eng.title_error')) }
   }
 
   const load = () => {
@@ -169,7 +177,29 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
         body: JSON.stringify({ phase }),
       })
       load()
-    } catch { toast.error('Error al cambiar fase') }
+    } catch { toast.error(t('eng.phase_change_error')) }
+  }
+
+  const handleExport = () => {
+    const token = localStorage.getItem('gungnir_token')
+    fetch(`/api/engagements/${engagementId}/export`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(r => {
+        if (!r.ok) return Promise.reject()
+        const cd = r.headers.get('Content-Disposition')
+        const match = cd?.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+        const filename = match ? match[1].replace(/['"]/g, '') : `engagement-${engagementId}.zip`
+        return r.blob().then(blob => ({ blob, filename }))
+      })
+      .then(({ blob, filename }) => {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url; a.download = filename
+        document.body.appendChild(a); a.click()
+        document.body.removeChild(a); URL.revokeObjectURL(url)
+      })
+      .catch(() => toast.error(t('eng.export_error')))
   }
 
   if (loading) {
@@ -183,8 +213,8 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
   if (!engagement) {
     return (
       <div className='flex flex-col items-center gap-4 py-16'>
-        <p className='text-muted-foreground'>Engagement no encontrado.</p>
-        <Button variant='outline' onClick={() => navigate({ to: '/engagements' })}>Volver</Button>
+        <p className='text-muted-foreground'>{t('eng.not_found')}</p>
+        <Button variant='outline' onClick={() => navigate({ to: '/engagements' })}>{t('eng.go_back')}</Button>
       </div>
     )
   }
@@ -201,7 +231,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
         <div className='p-4 border-b border-border'>
           <Button variant='ghost' size='sm' className='mb-3 -ml-2 h-7 text-xs text-muted-foreground'
             onClick={() => navigate({ to: '/engagements' })}>
-            <ArrowLeft className='mr-1 size-3' /> Engagements
+            <ArrowLeft className='mr-1 size-3' /> {t('engs.title')}
           </Button>
           {editingTitle ? (
             <div className='flex items-center gap-1 mt-1'>
@@ -252,7 +282,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
                   ) : (
                     <Circle className='size-3.5 shrink-0 opacity-40' />
                   )}
-                  <span className='text-xs font-medium'>{PHASE_LABEL[phaseKey]}</span>
+                  <span className='text-xs font-medium'>{phaseLabel[phaseKey] ?? phaseKey}</span>
                 </div>
                 {phaseData && (phaseData.logs_count > 0 || phaseData.findings_count > 0) && (
                   <div className='ml-5 mt-0.5 flex gap-2 text-[10px] text-muted-foreground'>
@@ -269,45 +299,31 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
           <Button size='sm' variant='outline' className='w-full text-xs h-8'
             onClick={() => { setHallazgoId(undefined); setHallazgoOpen(true) }}>
             <ShieldAlert className='mr-1.5 size-3' />
-            + Hallazgo
+            {t('eng.new_finding')}
           </Button>
           <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
             onClick={() => setScannerOpen(true)}>
             <Upload className='mr-1.5 size-3' />
-            Importar scan
+            {t('eng.import_scan')}
           </Button>
           <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
             onClick={() => setScopeOpen(true)}>
             <Target className='mr-1.5 size-3' />
-            Scope
+            {t('scope.title')}
           </Button>
           <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
             onClick={() => setTecnicasOpen(true)}>
             <Crosshair className='mr-1.5 size-3' />
-            Técnicas
+            {t('eng.techniques')}
           </Button>
           <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
             onClick={() => navigate({ to: '/engagements/$engagementId/editar', params: { engagementId } })}>
             <Settings className='mr-1.5 size-3' />
-            Editar
+            {t('eng.edit_engagement')}
           </Button>
           <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
-            onClick={() => {
-              const token = localStorage.getItem('gungnir_token')
-              fetch(`/api/engagements/${engagementId}/export`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
-              })
-                .then(r => r.ok ? r.blob() : Promise.reject())
-                .then(blob => {
-                  const url = URL.createObjectURL(blob)
-                  const a = document.createElement('a')
-                  a.href = url; a.setAttribute('download', '')
-                  document.body.appendChild(a); a.click()
-                  document.body.removeChild(a); URL.revokeObjectURL(url)
-                })
-                .catch(() => toast.error('Error al exportar'))
-            }}>
-            <Download className='mr-1.5 size-3' />Exportar ZIP
+            onClick={handleExport}>
+            <Download className='mr-1.5 size-3' />{t('eng.export_zip')}
           </Button>
         </div>
       </div>
@@ -319,16 +335,15 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
           <div className='flex items-start justify-between'>
             <div>
               <div className='flex items-center gap-2'>
-                <h2 className='text-xl font-bold'>{PHASE_LABEL[activePhase]}</h2>
+                <h2 className='text-xl font-bold'>{phaseLabel[activePhase] ?? activePhase}</h2>
                 {engagement.current_phase === activePhase && (
-                  <Badge variant='default' className='text-xs'>Activa</Badge>
+                  <Badge variant='default' className='text-xs'>{t('eng.activate')}</Badge>
                 )}
               </div>
-              <p className='text-sm text-muted-foreground mt-0.5'>{PHASE_DESC[activePhase]}</p>
             </div>
             {engagement.current_phase !== activePhase && (
               <Button size='sm' variant='outline' onClick={() => setPhaseActive(activePhase)}>
-                Activar fase
+                {t('eng.activate')}
               </Button>
             )}
           </div>
@@ -350,12 +365,12 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
               <Textarea placeholder='Notas / resultado relevante...' value={logNotes} onChange={(e) => setLogNotes(e.target.value)} className='text-xs resize-none' rows={2} />
               <div className='flex gap-2'>
                 <Button size='sm' onClick={saveLog} disabled={savingLog || (!logCommand && !logNotes)} className='text-xs h-7'>
-                  {savingLog ? 'Guardando...' : 'Guardar log'}
+                  {savingLog ? t('common.loading') : 'Guardar log'}
                 </Button>
                 <Button size='sm' variant='outline' className='text-xs h-7'
                   onClick={() => setEvidenceOpen(true)}>
                   <Upload className='mr-1.5 size-3' />
-                  Evidencia
+                  {t('eng.evidence')}
                 </Button>
               </div>
             </div>
@@ -365,7 +380,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
           {logs.length > 0 && (
             <div>
               <h3 className='text-sm font-semibold mb-3'>
-                Operation Log — {PHASE_LABEL[activePhase]}
+                Operation Log — {phaseLabel[activePhase] ?? activePhase}
               </h3>
               <div className='space-y-2'>
                 {logs.slice(0, 10).map((log) => (
@@ -395,7 +410,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
                     onClick={() => { setHallazgoId(f.id); setHallazgoOpen(true) }}
                   >
                     <span className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold ${SEV_COLOR[f.severity]}`}>
-                      {SEV_LABEL[f.severity]}
+                      {sevLabel[f.severity] ?? f.severity}
                     </span>
                     <span className='text-sm flex-1 truncate'>{f.title}</span>
                     {f.cvss_score_31 && (

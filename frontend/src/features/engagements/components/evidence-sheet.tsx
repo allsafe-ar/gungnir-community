@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { Upload, X, FileText, Image, File, Trash2, Loader2, Paperclip, Download } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,16 +37,6 @@ interface EvidenceSheetProps {
   currentPhase?: string
 }
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
-const PHASE_LABELS: Record<string, string> = {
-  planning:          'Planificación',
-  recon:             'Reconocimiento',
-  scanning:          'Escaneo',
-  exploitation:      'Explotación',
-  post_exploitation: 'Post-explotación',
-  reporting:         'Reporting',
-}
-
 const MAX_SIZE_MB = 20
 
 function formatBytes(bytes: number): string {
@@ -65,6 +56,7 @@ function fileIcon(type?: string) {
 
 // ─── Drop zone ────────────────────────────────────────────────────────────────
 function DropZone({ onFile }: { onFile: (f: File) => void }) {
+  const { t } = useTranslation()
   const [over, setOver] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -90,8 +82,8 @@ function DropZone({ onFile }: { onFile: (f: File) => void }) {
     >
       <Upload className={cn('h-6 w-6 transition-colors', over ? 'text-red-500' : 'text-zinc-600')} />
       <div>
-        <p className='text-sm text-zinc-400'>Arrastrá un archivo o hacé click</p>
-        <p className='text-xs text-zinc-600 mt-0.5'>Imágenes, capturas, scripts, logs · máx {MAX_SIZE_MB} MB</p>
+        <p className='text-sm text-zinc-400'>{t('evidence.dropzone')}</p>
+        <p className='text-xs text-zinc-600 mt-0.5'>{t('evidence.dropzone_hint')}</p>
       </div>
       <input
         ref={inputRef}
@@ -109,6 +101,7 @@ function DropZone({ onFile }: { onFile: (f: File) => void }) {
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }: EvidenceSheetProps) {
+  const { t } = useTranslation()
   const [evidences, setEvidences] = useState<Evidence[]>([])
   const [loading, setLoading]     = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -117,6 +110,15 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
   const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [caption, setCaption]         = useState('')
   const [phase, setPhase]             = useState(currentPhase || 'recon')
+
+  const PHASE_LABELS: Record<string, string> = {
+    planning:          t('phase.planning'),
+    recon:             t('phase.recon'),
+    scanning:          t('phase.scanning'),
+    exploitation:      t('phase.exploitation'),
+    post_exploitation: t('phase.post_exploitation'),
+    reporting:         t('phase.reporting'),
+  }
 
   // Sync phase when workspace phase changes
   useEffect(() => {
@@ -166,7 +168,7 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
       setEvidences(prev => [ev, ...prev])
       setPendingFile(null)
       setCaption('')
-      toast.success('Evidencia subida correctamente')
+      toast.success(t('evidence.uploaded'))
     } catch {
       toast.error('Error al subir el archivo')
     } finally {
@@ -176,11 +178,11 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
 
   // Delete
   async function handleDelete(ev: Evidence) {
-    if (!confirm(`¿Eliminar "${ev.original_name}"?`)) return
+    if (!confirm(t('evidence.delete_confirm'))) return
     try {
       await apiFetch(`/engagements/${engagementId}/evidences/${ev.id}`, { method: 'DELETE' })
       setEvidences(prev => prev.filter(e => e.id !== ev.id))
-      toast.success('Evidencia eliminada')
+      toast.success(t('evidence.deleted'))
     } catch {
       toast.error('Error al eliminar')
     }
@@ -209,7 +211,7 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
         <SheetHeader className='border-b border-border px-6 py-4'>
           <SheetTitle className='flex items-center gap-2 text-sm'>
             <Paperclip className='h-4 w-4 text-muted-foreground' />
-            Evidencias del Engagement
+            {t('evidence.title')}
             {evidences.length > 0 && (
               <span className='ml-auto rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-normal text-zinc-400'>
                 {evidences.length}
@@ -251,7 +253,7 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
 
                 {/* Fase */}
                 <div className='space-y-1'>
-                  <Label className='text-xs text-zinc-400'>Fase</Label>
+                  <Label className='text-xs text-zinc-400'>{t('evidence.phase_label')}</Label>
                   <Select value={phase} onValueChange={setPhase}>
                     <SelectTrigger className='h-8 text-xs'>
                       <SelectValue />
@@ -283,8 +285,8 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
                   className='w-full bg-red-700 hover:bg-red-600 text-white text-xs'
                 >
                   {uploading
-                    ? <><Loader2 className='mr-2 h-3.5 w-3.5 animate-spin' /> Subiendo...</>
-                    : <><Upload className='mr-2 h-3.5 w-3.5' /> Subir evidencia</>
+                    ? <><Loader2 className='mr-2 h-3.5 w-3.5 animate-spin' /> {t('common.loading')}</>
+                    : <><Upload className='mr-2 h-3.5 w-3.5' /> {t('evidence.upload')}</>
                   }
                 </Button>
               </div>
@@ -299,7 +301,7 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
           ) : evidences.length === 0 ? (
             <div className='flex flex-col items-center py-8 text-center text-zinc-600 gap-2'>
               <Paperclip className='h-6 w-6' />
-              <p className='text-xs'>Sin evidencias subidas aún</p>
+              <p className='text-xs'>{t('evidence.no_files')}</p>
             </div>
           ) : (
             <div className='space-y-5'>
@@ -335,14 +337,14 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
                             <button
                               onClick={() => handleDownload(ev)}
                               className='rounded p-1 text-zinc-600 hover:text-zinc-300 transition'
-                              title='Descargar'
+                              title={t('evidence.download')}
                             >
                               <Download className='h-3.5 w-3.5' />
                             </button>
                             <button
                               onClick={() => handleDelete(ev)}
                               className='rounded p-1 text-zinc-600 hover:text-red-400 transition'
-                              title='Eliminar'
+                              title={t('common.delete')}
                             >
                               <Trash2 className='h-3.5 w-3.5' />
                             </button>

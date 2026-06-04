@@ -6,6 +6,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Search, Plus, Trash2, ExternalLink, Crosshair, ChevronDown, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
+import { useTranslation } from 'react-i18next'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -48,6 +49,7 @@ const PHASE_COLOR: Record<string, string> = {
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId, currentPhaseType }: Props) {
+  const { t } = useTranslation()
   const [techniques, setTechniques] = useState<EngTechnique[]>([])
   const [loading, setLoading]       = useState(false)
   const [mode, setMode]             = useState<'list' | 'catalog' | 'custom'>('list')
@@ -73,17 +75,17 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
     if (!q) return TECHNIQUES
-    return TECHNIQUES.filter(t =>
-      t.id.toLowerCase().includes(q) ||
-      t.name.toLowerCase().includes(q) ||
-      t.tactic.toLowerCase().includes(q) ||
-      t.tools.some(tool => tool.toLowerCase().includes(q))
+    return TECHNIQUES.filter(tech =>
+      tech.id.toLowerCase().includes(q) ||
+      tech.name.toLowerCase().includes(q) ||
+      tech.tactic.toLowerCase().includes(q) ||
+      tech.tools.some(tool => tool.toLowerCase().includes(q))
     )
   }, [search])
 
   const byTactic = useMemo(() =>
     TACTICS_ORDER
-      .map(tactic => ({ tactic, items: filtered.filter(t => t.tactic === tactic) }))
+      .map(tactic => ({ tactic, items: filtered.filter(tech => tech.tactic === tactic) }))
       .filter(g => g.items.length > 0),
     [filtered]
   )
@@ -103,16 +105,16 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
           phase_type: currentPhaseType ?? null,
         },
       })
-      toast.success(`Técnica ${tech.id} agregada`)
+      toast.success(t('techniques.added'))
       load()
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Error al agregar técnica')
+      toast.error(e instanceof Error ? e.message : t('common.error'))
     } finally { setSaving(false) }
   }
 
   // ── Agregar técnica custom ───────────────────────────────────────────────────
   const addCustom = async () => {
-    if (!customName.trim()) { toast.error('El nombre es requerido'); return }
+    if (!customName.trim()) { toast.error(t('techniques.label_name') + ' requerido'); return }
     setSaving(true)
     try {
       await apiFetch(`/engagements/${engagementId}/techniques`, {
@@ -125,12 +127,12 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
           phase_type: currentPhaseType ?? null,
         },
       })
-      toast.success('Técnica agregada')
+      toast.success(t('techniques.added'))
       setCustomName(''); setCustomTool(''); setCustomNotes('')
       load()
       setMode('list')
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Error al agregar')
+      toast.error(e instanceof Error ? e.message : t('common.error'))
     } finally { setSaving(false) }
   }
 
@@ -138,8 +140,9 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
   const remove = async (techId: string) => {
     try {
       await apiFetch(`/engagements/${engagementId}/techniques/${techId}`, { method: 'DELETE' })
-      setTechniques(prev => prev.filter(t => t.id !== techId))
-    } catch { toast.error('Error al eliminar') }
+      setTechniques(prev => prev.filter(item => item.id !== techId))
+      toast.success(t('techniques.removed'))
+    } catch { toast.error(t('common.error')) }
   }
 
   // ─── Render ───────────────────────────────────────────────────────────────────
@@ -150,7 +153,7 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
         <SheetHeader className='p-4 border-b border-border flex-row items-center justify-between space-y-0'>
           <SheetTitle className='text-sm font-semibold flex items-center gap-2'>
             <Crosshair className='size-4 text-primary' />
-            Técnicas del engagement
+            {t('techniques.title')}
           </SheetTitle>
           <Button variant='ghost' size='icon' className='size-7' onClick={() => onOpenChange(false)}>
             ✕
@@ -165,7 +168,11 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
                 'flex-1 px-3 py-2 text-xs font-medium transition-colors',
                 mode === m ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground hover:text-foreground'
               )}>
-              {m === 'list' ? `Agregadas (${techniques.length})` : m === 'catalog' ? 'Catálogo MITRE' : 'Técnica manual'}
+              {m === 'list'
+                ? `${t('techniques.tab_current')} (${techniques.length})`
+                : m === 'catalog'
+                  ? t('techniques.tab_catalog')
+                  : t('techniques.tab_custom')}
             </button>
           ))}
         </div>
@@ -183,40 +190,40 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
               {!loading && techniques.length === 0 && (
                 <div className='flex flex-col items-center gap-3 py-12 text-center'>
                   <Crosshair className='size-10 text-muted-foreground/20' />
-                  <p className='text-sm text-muted-foreground'>Sin técnicas registradas.</p>
-                  <p className='text-xs text-muted-foreground'>Agregá desde el catálogo MITRE o una técnica manual.</p>
+                  <p className='text-sm text-muted-foreground'>{t('techniques.no_techniques')}</p>
+                  <p className='text-xs text-muted-foreground'>{t('techniques.custom_add')}</p>
                 </div>
               )}
-              {techniques.map(t => (
-                <div key={t.id} className='group flex items-start gap-3 rounded-lg border border-border bg-card p-3'>
+              {techniques.map(item => (
+                <div key={item.id} className='group flex items-start gap-3 rounded-lg border border-border bg-card p-3'>
                   <div className='flex-1 min-w-0'>
                     <div className='flex items-center gap-2 flex-wrap'>
-                      {t.mitre_id && (
+                      {item.mitre_id && (
                         <span className='font-mono text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20'>
-                          {t.mitre_id}
+                          {item.mitre_id}
                         </span>
                       )}
-                      <span className='text-xs font-semibold truncate'>{t.name}</span>
+                      <span className='text-xs font-semibold truncate'>{item.name}</span>
                     </div>
-                    {t.tactic && (
-                      <p className='text-[10px] text-muted-foreground mt-0.5'>{t.tactic}</p>
+                    {item.tactic && (
+                      <p className='text-[10px] text-muted-foreground mt-0.5'>{item.tactic}</p>
                     )}
-                    {t.tool && (
-                      <code className='text-[10px] font-mono text-muted-foreground mt-1 block'>{t.tool}</code>
+                    {item.tool && (
+                      <code className='text-[10px] font-mono text-muted-foreground mt-1 block'>{item.tool}</code>
                     )}
-                    {t.notes && (
-                      <p className='text-xs text-muted-foreground mt-1 leading-relaxed'>{t.notes}</p>
+                    {item.notes && (
+                      <p className='text-xs text-muted-foreground mt-1 leading-relaxed'>{item.notes}</p>
                     )}
                   </div>
                   <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0'>
-                    {t.mitre_id && (
-                      <a href={`https://attack.mitre.org/techniques/${t.mitre_id}/`}
+                    {item.mitre_id && (
+                      <a href={`https://attack.mitre.org/techniques/${item.mitre_id}/`}
                         target='_blank' rel='noreferrer'
                         className='p-1 rounded hover:bg-accent transition-colors text-muted-foreground hover:text-foreground'>
                         <ExternalLink className='size-3' />
                       </a>
                     )}
-                    <button onClick={() => remove(t.id)}
+                    <button onClick={() => remove(item.id)}
                       className='p-1 rounded hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive'>
                       <Trash2 className='size-3' />
                     </button>
@@ -233,7 +240,7 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
                 <div className='relative'>
                   <Search className='absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground' />
                   <Input value={search} onChange={e => setSearch(e.target.value)}
-                    placeholder='Buscar técnica, ID o herramienta...' className='pl-8 h-8 text-xs' />
+                    placeholder={t('techniques.search_placeholder')} className='pl-8 h-8 text-xs' />
                 </div>
               </div>
               <div className='flex-1 overflow-y-auto py-1'>
@@ -252,7 +259,7 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
                     </button>
 
                     {expandedTactic === tactic && items.map(tech => {
-                      const already = techniques.some(t => t.mitre_id === tech.id)
+                      const already = techniques.some(item => item.mitre_id === tech.id)
                       return (
                         <div key={tech.id}
                           className='mx-3 mb-1 flex items-start justify-between gap-2 rounded border border-border bg-card px-3 py-2'>
@@ -274,7 +281,7 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
                             className='size-6 shrink-0'
                             disabled={already || saving}
                             onClick={() => addFromCatalog(tech)}
-                            title={already ? 'Ya agregada' : 'Agregar al engagement'}
+                            title={already ? t('techniques.added') : t('techniques.add')}
                           >
                             {already ? '✓' : <Plus className='size-3' />}
                           </Button>
@@ -291,26 +298,26 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
           {mode === 'custom' && (
             <div className='p-4 space-y-4'>
               <p className='text-xs text-muted-foreground'>
-                Agregá una técnica, herramienta o metodología que no esté en el catálogo MITRE.
+                {t('techniques.custom_add')}
               </p>
               <div className='space-y-3'>
                 <div className='space-y-1'>
-                  <label className='text-xs font-medium'>Nombre <span className='text-destructive'>*</span></label>
+                  <label className='text-xs font-medium'>{t('techniques.label_name')} <span className='text-destructive'>*</span></label>
                   <Input value={customName} onChange={e => setCustomName(e.target.value)}
                     placeholder='Ej: OWASP WSTG — Authentication Testing, ZAP Spider...' className='text-xs h-8' />
                 </div>
                 <div className='space-y-1'>
-                  <label className='text-xs font-medium'>Herramienta</label>
+                  <label className='text-xs font-medium'>{t('techniques.label_tool')}</label>
                   <Input value={customTool} onChange={e => setCustomTool(e.target.value)}
                     placeholder='Ej: OWASP ZAP, Burp Suite, manual...' className='text-xs h-8 font-mono' />
                 </div>
                 <div className='space-y-1'>
-                  <label className='text-xs font-medium'>Notas</label>
+                  <label className='text-xs font-medium'>{t('techniques.label_notes')}</label>
                   <Textarea value={customNotes} onChange={e => setCustomNotes(e.target.value)}
                     placeholder='Descripción, variantes, contexto...' rows={3} className='text-xs resize-none' />
                 </div>
                 <Button onClick={addCustom} disabled={saving || !customName.trim()} className='w-full' size='sm'>
-                  {saving ? 'Guardando...' : 'Agregar técnica'}
+                  {saving ? t('common.loading') : t('techniques.add')}
                 </Button>
               </div>
             </div>

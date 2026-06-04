@@ -5,7 +5,8 @@
 
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { X, Plus, Trash2, ShieldCheck, ShieldOff, Target } from 'lucide-react'
+import { X, Plus, Trash2, ShieldCheck, ShieldOff, Target, RefreshCw } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -29,14 +30,16 @@ interface ScopeSheetProps {
   engagementId: string
 }
 
-const TYPES = [
-  { value: 'ip',          label: 'IP' },
-  { value: 'cidr',        label: 'CIDR' },
-  { value: 'domain',      label: 'Dominio' },
-  { value: 'url',         label: 'URL' },
-  { value: 'application', label: 'Aplicación' },
-  { value: 'other',       label: 'Otro' },
-]
+function getTypes(t: (k: string) => string) {
+  return [
+    { value: 'ip',          label: 'IP' },
+    { value: 'cidr',        label: 'CIDR' },
+    { value: 'domain',      label: t('scope.type_domain') },
+    { value: 'url',         label: 'URL' },
+    { value: 'application', label: t('scope.type_application') },
+    { value: 'other',       label: t('scope.type_other') },
+  ]
+}
 
 const TYPE_BADGE: Record<string, string> = {
   ip:          'font-mono text-[10px] bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -49,13 +52,17 @@ const TYPE_BADGE: Record<string, string> = {
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 export function ScopeSheet({ open, onOpenChange, engagementId }: ScopeSheetProps) {
-  const [items, setItems]   = useState<ScopeItem[]>([])
+  const { t } = useTranslation()
+  const TYPES = getTypes(t)
+
+  const [items, setItems]     = useState<ScopeItem[]>([])
   const [loading, setLoading] = useState(false)
-  const [type, setType]     = useState('domain')
-  const [value, setValue]   = useState('')
+  const [type, setType]       = useState('domain')
+  const [value, setValue]     = useState('')
   const [inScope, setInScope] = useState(true)
-  const [notes, setNotes]   = useState('')
-  const [adding, setAdding] = useState(false)
+  const [notes, setNotes]     = useState('')
+  const [adding, setAdding]   = useState(false)
+  const [syncing, setSyncing] = useState(false)
 
   const load = () => {
     setLoading(true)
@@ -69,8 +76,29 @@ export function ScopeSheet({ open, onOpenChange, engagementId }: ScopeSheetProps
     if (open) load()
   }, [open, engagementId])
 
+  const handleSyncFromPhases = async () => {
+    setSyncing(true)
+    try {
+      const res = await apiFetch<{ ok: boolean; created: number; updated: number }>(
+        `/engagements/${engagementId}/scope/sync-from-phases`,
+        { method: 'POST', body: '{}' }
+      )
+      const total = (res.created ?? 0) + (res.updated ?? 0)
+      if (total === 0) {
+        toast.info(t('scope.sync_up_to_date'))
+      } else {
+        const parts: string[] = []
+        if (res.created > 0) parts.push(t('scope.sync_created', { count: res.created }))
+        if (res.updated > 0) parts.push(t('scope.sync_updated', { count: res.updated }))
+        toast.success(t('scope.sync_done', { detail: parts.join(', ') }))
+        load()
+      }
+    } catch { toast.error(t('scope.error_sync')) }
+    finally { setSyncing(false) }
+  }
+
   const handleAdd = async () => {
-    if (!value.trim()) { toast.error('El valor es requerido'); return }
+    if (!value.trim()) { toast.error(t('scope.value_required')); return }
     setAdding(true)
     try {
       await apiFetch(`/engagements/${engagementId}/scope`, {
@@ -79,9 +107,11 @@ export function ScopeSheet({ open, onOpenChange, engagementId }: ScopeSheetProps
       })
       setValue(''); setNotes('')
       load()
-      toast.success(`${inScope ? 'In-scope' : 'Out-of-scope'}: ${value.trim()}`)
+      toast.success(inScope
+        ? t('scope.added_in_scope', { value: value.trim() })
+        : t('scope.added_excluded', { value: value.trim() }))
     } catch {
-      toast.error('Error al agregar')
+      toast.error(t('scope.error_add'))
     } finally {
       setAdding(false)
     }
@@ -91,9 +121,9 @@ export function ScopeSheet({ open, onOpenChange, engagementId }: ScopeSheetProps
     try {
       await apiFetch(`/engagements/${engagementId}/scope/${id}`, { method: 'DELETE' })
       setItems(prev => prev.filter(i => i.id !== id))
-      toast.success(`Eliminado: ${val}`)
+      toast.success(t('scope.deleted', { value: val }))
     } catch {
-      toast.error('Error al eliminar')
+      toast.error(t('scope.error_delete'))
     }
   }
 
@@ -107,30 +137,43 @@ export function ScopeSheet({ open, onOpenChange, engagementId }: ScopeSheetProps
         <SheetHeader className='px-6 py-4 border-b border-border flex-row items-center justify-between space-y-0'>
           <SheetTitle className='text-base font-semibold flex items-center gap-2'>
             <Target className='size-4 text-primary' />
-            Alcance / Scope
+            {t('scope.title')}
           </SheetTitle>
-          <Button variant='ghost' size='icon' className='h-7 w-7' onClick={() => onOpenChange(false)}>
-            <X className='size-4' />
-          </Button>
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='ghost'
+              size='sm'
+              className='h-7 gap-1.5 text-xs text-muted-foreground'
+              onClick={handleSyncFromPhases}
+              disabled={syncing}
+              title={t('scope.sync_phases_title')}
+            >
+              <RefreshCw className={cn('size-3', syncing && 'animate-spin')} />
+              {syncing ? t('scope.syncing') : t('scope.sync_phases')}
+            </Button>
+            <Button variant='ghost' size='icon' className='h-7 w-7' onClick={() => onOpenChange(false)}>
+              <X className='size-4' />
+            </Button>
+          </div>
         </SheetHeader>
 
         {/* Add form */}
         <div className='px-6 py-4 border-b border-border bg-muted/30 space-y-3'>
-          <p className='text-xs font-semibold text-muted-foreground uppercase tracking-wide'>Agregar objetivo</p>
+          <p className='text-xs font-semibold text-muted-foreground uppercase tracking-wide'>{t('scope.add_objective')}</p>
           <div className='flex gap-2'>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger className='w-32 h-8 text-xs'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {TYPES.map(t => <SelectItem key={t.value} value={t.value} className='text-xs'>{t.label}</SelectItem>)}
+                {TYPES.map(item => <SelectItem key={item.value} value={item.value} className='text-xs'>{item.label}</SelectItem>)}
               </SelectContent>
             </Select>
             <Input
               value={value}
               onChange={e => setValue(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleAdd()}
-              placeholder={type === 'ip' ? '192.168.1.0' : type === 'cidr' ? '10.0.0.0/8' : type === 'domain' ? 'ejemplo.com' : type === 'url' ? 'https://app.ejemplo.com' : 'valor...'}
+              placeholder={type === 'ip' ? '192.168.1.0' : type === 'cidr' ? '10.0.0.0/8' : type === 'domain' ? 'ejemplo.com' : type === 'url' ? 'https://app.ejemplo.com' : t('scope.placeholder_value')}
               className='flex-1 h-8 text-xs font-mono'
             />
           </div>
@@ -142,7 +185,7 @@ export function ScopeSheet({ open, onOpenChange, engagementId }: ScopeSheetProps
                   inScope ? 'bg-green-500/10 text-green-500 border-r border-green-500/20' : 'text-muted-foreground hover:bg-muted border-r border-border'
                 )}
               >
-                <ShieldCheck className='size-3' /> In-scope
+                <ShieldCheck className='size-3' /> {t('scope.in_scope')}
               </button>
               <button
                 onClick={() => setInScope(false)}
@@ -150,13 +193,13 @@ export function ScopeSheet({ open, onOpenChange, engagementId }: ScopeSheetProps
                   !inScope ? 'bg-red-500/10 text-red-500' : 'text-muted-foreground hover:bg-muted'
                 )}
               >
-                <ShieldOff className='size-3' /> Excluido
+                <ShieldOff className='size-3' /> {t('scope.excluded')}
               </button>
             </div>
             <Input
               value={notes}
               onChange={e => setNotes(e.target.value)}
-              placeholder='Nota opcional...'
+              placeholder={t('scope.note_optional')}
               className='flex-1 h-8 text-xs'
             />
             <Button size='sm' onClick={handleAdd} disabled={adding || !value.trim()} className='h-8 shrink-0'>
@@ -174,8 +217,8 @@ export function ScopeSheet({ open, onOpenChange, engagementId }: ScopeSheetProps
           ) : items.length === 0 ? (
             <div className='flex flex-col items-center gap-2 py-12 text-center'>
               <Target className='size-10 text-muted-foreground/30' />
-              <p className='text-sm text-muted-foreground'>Sin objetivos definidos.</p>
-              <p className='text-xs text-muted-foreground'>Agregá IPs, dominios o URLs al alcance del engagement.</p>
+              <p className='text-sm text-muted-foreground'>{t('scope.no_items')}</p>
+              <p className='text-xs text-muted-foreground'>{t('scope.no_items_hint')}</p>
             </div>
           ) : (
             <>
@@ -183,7 +226,9 @@ export function ScopeSheet({ open, onOpenChange, engagementId }: ScopeSheetProps
                 <div>
                   <div className='flex items-center gap-2 mb-2'>
                     <ShieldCheck className='size-3.5 text-green-500' />
-                    <p className='text-xs font-semibold text-green-500 uppercase tracking-wide'>In-scope ({inScopeItems.length})</p>
+                    <p className='text-xs font-semibold text-green-500 uppercase tracking-wide'>
+                      {t('scope.in_scope_section', { count: inScopeItems.length })}
+                    </p>
                   </div>
                   <div className='space-y-1.5'>
                     {inScopeItems.map(item => (
@@ -197,7 +242,9 @@ export function ScopeSheet({ open, onOpenChange, engagementId }: ScopeSheetProps
                 <div>
                   <div className='flex items-center gap-2 mb-2'>
                     <ShieldOff className='size-3.5 text-red-500' />
-                    <p className='text-xs font-semibold text-red-500 uppercase tracking-wide'>Excluido ({outOfScope.length})</p>
+                    <p className='text-xs font-semibold text-red-500 uppercase tracking-wide'>
+                      {t('scope.excluded_section', { count: outOfScope.length })}
+                    </p>
                   </div>
                   <div className='space-y-1.5'>
                     {outOfScope.map(item => (

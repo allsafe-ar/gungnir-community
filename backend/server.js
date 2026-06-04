@@ -665,6 +665,30 @@ async function initDB() {
   try {
     await qRun(`ALTER TABLE engagements MODIFY COLUMN current_phase VARCHAR(50) DEFAULT 'planning'`);
   } catch(e) { /* ya migrado */ }
+  // ── Migración: metadata por fase ─────────────────────────────────────────
+  try {
+    await qRun(`ALTER TABLE phases ADD COLUMN metadata TEXT NULL`);
+  } catch(e) { /* columna ya existe */ }
+  // ── Migración: operation_logs - campo outcome ─────────────────────────────
+  try {
+    await qRun(`ALTER TABLE operation_logs ADD COLUMN outcome VARCHAR(20) NULL`);
+  } catch(e) { /* columna ya existe */ }
+  // ── Migración: scope_items — enriquecimiento ──────────────────────────────
+  try { await qRun(`ALTER TABLE scope_items ADD COLUMN os_type VARCHAR(30) NULL DEFAULT NULL`); } catch(_) {}
+  try { await qRun(`ALTER TABLE scope_items ADD COLUMN pwned TINYINT(1) NOT NULL DEFAULT 0`); } catch(_) {}
+  try { await qRun(`ALTER TABLE scope_items ADD COLUMN ports JSON NULL DEFAULT NULL`); } catch(_) {}
+  try { await qRun(`ALTER TABLE scope_items ADD COLUMN vuln_summary TEXT NULL DEFAULT NULL`); } catch(_) {}
+
+  // ── Fases - notas y comandos por fase del engagement ─────────────────────
+  await qRun(`CREATE TABLE IF NOT EXISTS engagement_phases (
+    engagement_id VARCHAR(36) NOT NULL,
+    phase         VARCHAR(50) NOT NULL,
+    notes         TEXT,
+    commands      TEXT,
+    updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (engagement_id, phase),
+    FOREIGN KEY (engagement_id) REFERENCES engagements(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
   // ── Seed finding templates built-in ──────────────────────────────────────
   const tplCount = await qRow("SELECT COUNT(*) AS c FROM finding_templates WHERE is_builtin=1");
@@ -1100,22 +1124,193 @@ app.put("/api/engagements/:id/phases/:phase/status", auth(), async (req, res) =>
 });
 
 // ── SCOPE ─────────────────────────────────────────────────────────────────────
+// ── Scope helpers ─────────────────────────────────────────────────────────────
+function parsePortsFromNotes(notes) {
+  if (!notes) return [];
+  const ports  = [];
+  const seen   = new Set();
+  const SKIP   = new Set(['open','closed','filtered','unfiltered','tcp','udp','sctp']);
+  const re = /(?<![\/\.\d])(\d{1,5})\/(tcp|udp|sctp|[a-z][a-z0-9\-]{1,20})\b/gi;
+  let m;
+  while ((m = re.exec(notes)) !== null) {
+    const port = parseInt(m[1]);
+    if (!port || port < 1 || port > 65535) continue;
+    const rawProto = m[2].toLowerCase();
+    const proto    = ['tcp','udp','sctp'].includes(rawProto) ? rawProto : 'tcp';
+    const protoSvc = !['tcp','udp','sctp'].includes(rawProto) ? rawProto : null;
+    const rest     = notes.slice(m.index + m[0].length);
+    const svcPat1  = rest.match(/^[:\s]+open\s+([A-Za-z][A-Za-z0-9_\-\/]{1,30})/i);
+    const svcPat2  = !svcPat1 && rest.match(/^[:\s]+([A-Za-z][A-Za-z0-9_\-\/]{1,30})/i);
+    const rawSvc   = (svcPat1 ? svcPat1[1] : (svcPat2 ? svcPat2[1] : null));
+    const service  = (rawSvc && !SKIP.has(rawSvc.toLowerCase())) ? rawSvc : protoSvc;
+    const key = `${port}/${proto}`;
+    if (!seen.has(key)) { seen.add(key); ports.push({ port, proto, service: service || null }); }
+  }
+  return ports;
+}
+
+function inferOsFromText(text) {
+  if (!text) return null;
+  const t = text.toLowerCase();
+  if (t.includes('parrot'))                                      return 'parrot';
+  if (t.includes('kali'))                                        return 'kali';
+  if (t.includes('ubuntu'))                                      return 'ubuntu';
+  if (t.includes('debian'))                                      return 'debian';
+  if (t.includes('windows server') || /windows\s+20\d\d/.test(t)) return 'windowsserver';
+  if (t.includes('windows'))                                     return 'windows';
+  if (t.includes('macos') || t.includes('mac os'))              return 'macos';
+  if (t.includes('linux'))                                       return 'linux';
+  return null;
+}
+
+function normalizeTarget(val) {
+  if (!val) return null;
+  const m = val.match(/^(\d{1,3}(?:\.\d{1,3}){3})(?::\d+)?$/);
+  return m ? m[1] : val;
+}
+
+function isValidScopeTarget(val) {
+  if (!val || val.length > 512) return false;
+  if (/^\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?$/.test(val)) return true;
+  if (/^\d{1,3}(?:\.\d{1,3}){3}\/\d{1,2}$/.test(val)) return true;
+  if (/^https?:\/\/[^\s]+/.test(val)) return true;
+  if (/^[a-zA-Z0-9][a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}$/.test(val)) return true;
+  return false;
+}
+
+function parseScopeItem(s) {
+  if (!s) return s;
+  return { ...s, ports: s.ports ? (typeof s.ports === 'string' ? JSON.parse(s.ports) : s.ports) : [] };
+}
+
+// ── SCOPE ─────────────────────────────────────────────────────────────────────
 app.get("/api/engagements/:id/scope", auth(), async (req, res) => {
-  res.json(await qRows("SELECT * FROM scope_items WHERE engagement_id=? ORDER BY in_scope DESC, value", [req.params.id]));
+  const rows = await qRows("SELECT * FROM scope_items WHERE engagement_id=? ORDER BY in_scope DESC, value", [req.params.id]);
+  res.json(rows.map(parseScopeItem));
 });
 
 app.post("/api/engagements/:id/scope", auth(), async (req, res) => {
-  const { type, value, in_scope, notes } = req.body;
+  const { type, value, in_scope, notes, os_type, ports, pwned } = req.body;
   if (!value) return res.status(400).json({ error: "value es requerido" });
   const sid = uuidv4();
-  await qRun("INSERT INTO scope_items (id,engagement_id,type,value,in_scope,notes) VALUES (?,?,?,?,?,?)",
-    [sid, req.params.id, type||'domain', value, in_scope!==false?1:0, notes||null]);
-  res.status(201).json(await qRow("SELECT * FROM scope_items WHERE id=?", [sid]));
+  await qRun(
+    "INSERT INTO scope_items (id,engagement_id,type,value,in_scope,notes,os_type,ports,pwned) VALUES (?,?,?,?,?,?,?,?,?)",
+    [sid, req.params.id, type||'domain', value, in_scope!==false?1:0, notes||null,
+     os_type||null, ports ? JSON.stringify(ports) : null, pwned ? 1 : 0]
+  );
+  res.status(201).json(parseScopeItem(await qRow("SELECT * FROM scope_items WHERE id=?", [sid])));
+});
+
+app.patch("/api/engagements/:id/scope/:sid", auth(), async (req, res) => {
+  const item = await qRow("SELECT id FROM scope_items WHERE id=? AND engagement_id=?", [req.params.sid, req.params.id]);
+  if (!item) return res.status(404).json({ error: "No encontrado" });
+  const { os_type, pwned, ports, vuln_summary } = req.body;
+  const updates = {};
+  if (os_type      !== undefined) updates.os_type      = os_type || null;
+  if (pwned        !== undefined) updates.pwned         = pwned ? 1 : 0;
+  if (ports        !== undefined) updates.ports         = ports ? JSON.stringify(ports) : null;
+  if (vuln_summary !== undefined) updates.vuln_summary  = vuln_summary || null;
+  const keys = Object.keys(updates);
+  if (keys.length) {
+    const setClause = keys.map(k => `${k}=?`).join(', ');
+    await qRun(`UPDATE scope_items SET ${setClause} WHERE id=?`, [...keys.map(k => updates[k]), req.params.sid]);
+  }
+  res.json(parseScopeItem(await qRow("SELECT * FROM scope_items WHERE id=?", [req.params.sid])));
 });
 
 app.delete("/api/engagements/:id/scope/:sid", auth(), async (req, res) => {
   await qRun("DELETE FROM scope_items WHERE id=? AND engagement_id=?", [req.params.sid, req.params.id]);
   res.json({ ok: true });
+});
+
+// ── Sync Scope from phase logs ────────────────────────────────────────────────
+app.post("/api/engagements/:id/scope/sync-from-phases", auth(), async (req, res) => {
+  const eid = req.params.id;
+  try {
+    const [logs, existingScope] = await Promise.all([
+      qRows("SELECT target, phase_type, command, notes, outcome FROM operation_logs WHERE engagement_id=? ORDER BY logged_at", [eid]),
+      qRows("SELECT id, value, type, ports, os_type, pwned FROM scope_items WHERE engagement_id=?", [eid]),
+    ]);
+    const scopeByValue = new Map();
+    for (const s of existingScope) {
+      scopeByValue.set(s.value, s);
+      const norm = normalizeTarget(s.value);
+      if (norm && norm !== s.value) scopeByValue.set(norm, s);
+    }
+    const targetPortsMap = new Map();
+    const targetTypes    = new Map();
+    const ownedTargets   = new Set();
+    for (const log of logs) {
+      if (!log.target) continue;
+      const normalized = normalizeTarget(log.target);
+      if (!normalized) continue;
+      if (!isValidScopeTarget(normalized)) continue;
+      if (!targetTypes.has(normalized)) {
+        let type = 'ip';
+        if (/^https?:\/\//i.test(normalized)) type = 'url';
+        else if (/^[a-zA-Z]/.test(normalized) && !/^\d/.test(normalized)) type = 'domain';
+        targetTypes.set(normalized, type);
+      }
+      const ports = parsePortsFromNotes(log.notes);
+      if (!targetPortsMap.has(normalized)) targetPortsMap.set(normalized, new Map());
+      const portMap = targetPortsMap.get(normalized);
+      for (const p of ports) {
+        const key = `${p.port}/${p.proto}`;
+        if (!portMap.has(key)) portMap.set(key, p);
+      }
+      if (log.phase_type === 'exploitation' && log.outcome === 'success') {
+        ownedTargets.add(normalized);
+      }
+    }
+    let created = 0, updated = 0;
+    for (const [targetVal, portMap] of targetPortsMap) {
+      const ports   = [...portMap.values()];
+      const type    = targetTypes.get(targetVal) || 'ip';
+      const isPwned = ownedTargets.has(targetVal) ? 1 : 0;
+      const relevantNotes = logs.filter(l => normalizeTarget(l.target) === targetVal).map(l => l.notes || '').join(' ');
+      const inferredOs    = inferOsFromText(relevantNotes);
+      const existing = scopeByValue.get(targetVal);
+      if (!existing) {
+        const sid = uuidv4();
+        await qRun(
+          "INSERT INTO scope_items (id,engagement_id,type,value,in_scope,ports,pwned,os_type) VALUES (?,?,?,?,1,?,?,?)",
+          [sid, eid, type, targetVal, ports.length ? JSON.stringify(ports) : null, isPwned, inferredOs || null]
+        );
+        created++;
+      } else {
+        const existPorts = existing.ports ? (typeof existing.ports === 'string' ? JSON.parse(existing.ports) : existing.ports) : [];
+        const merged = [...existPorts];
+        let changed = false;
+        for (const p of ports) {
+          if (!merged.find(ep => ep.port === p.port)) { merged.push(p); changed = true; }
+        }
+        const upd = {};
+        if (changed) upd.ports = JSON.stringify(merged);
+        if (!existing.pwned && isPwned) upd.pwned = 1;
+        if (inferredOs && (!existing.os_type || existing.os_type === 'other')) upd.os_type = inferredOs;
+        if (Object.keys(upd).length) {
+          const setClause = Object.keys(upd).map(k => `${k}=?`).join(', ');
+          await qRun(`UPDATE scope_items SET ${setClause} WHERE id=?`, [...Object.values(upd), existing.id]);
+          updated++;
+        }
+      }
+    }
+    for (const [targetVal, type] of targetTypes) {
+      if (targetPortsMap.has(targetVal)) continue;
+      if (scopeByValue.has(targetVal)) continue;
+      const isPwned = ownedTargets.has(targetVal) ? 1 : 0;
+      const sid = uuidv4();
+      await qRun(
+        "INSERT INTO scope_items (id,engagement_id,type,value,in_scope,pwned) VALUES (?,?,?,?,1,?)",
+        [sid, eid, type, targetVal, isPwned]
+      );
+      created++;
+    }
+    res.json({ ok: true, created, updated });
+  } catch(e) {
+    console.error('scope/sync-from-phases error:', e);
+    res.status(500).json({ error: 'Error al sincronizar scope desde fases' });
+  }
 });
 
 // ── OPERATION LOGS ────────────────────────────────────────────────────────────
@@ -1948,6 +2143,35 @@ app.delete("/api/engagements/:id/custom-phases/:phaseId/updates/:updateId/images
   res.json({ ok: true });
 });
 
+// ── FASES - notas y comandos ──────────────────────────────────────────────────
+const VALID_PHASES = ["recon","scanning","exploitation","post_exploitation"];
+
+app.get("/api/engagements/:id/phases", auth(), async (req, res) => {
+  const rows = await qRows(
+    "SELECT phase, notes, commands FROM engagement_phases WHERE engagement_id=?",
+    [req.params.id]
+  );
+  const result = {};
+  VALID_PHASES.forEach(p => { result[p] = { notes: "", commands: "" }; });
+  rows.forEach(r => { if (result[r.phase]) result[r.phase] = { notes: r.notes||"", commands: r.commands||"" }; });
+  res.json(result);
+});
+
+app.put("/api/engagements/:id/phases", auth(), async (req, res) => {
+  const phases = req.body;
+  for (const phase of VALID_PHASES) {
+    const pd = phases[phase];
+    if (!pd) continue;
+    await qRun(
+      `INSERT INTO engagement_phases (engagement_id, phase, notes, commands)
+       VALUES (?,?,?,?)
+       ON DUPLICATE KEY UPDATE notes=VALUES(notes), commands=VALUES(commands)`,
+      [req.params.id, phase, pd.notes||null, pd.commands||null]
+    );
+  }
+  res.json({ ok: true });
+});
+
 // ── Export / Import de engagements ───────────────────────────────────────────
 
 app.get("/api/engagements/:id/export", auth(), async (req, res) => {
@@ -1958,12 +2182,15 @@ app.get("/api/engagements/:id/export", auth(), async (req, res) => {
     );
     if (!eng) return res.status(404).json({ error: "Engagement no encontrado" });
     const eid = eng.id;
-    const [scope, findings, logs, evidences, customPhases] = await Promise.all([
+    const [scope, findings, logs, evidences, customPhases, phases, engPhases, techniques] = await Promise.all([
       qRows("SELECT * FROM scope_items WHERE engagement_id=?", [eid]),
       qRows("SELECT * FROM findings WHERE engagement_id=? ORDER BY created_at", [eid]),
       qRows("SELECT * FROM operation_logs WHERE engagement_id=? ORDER BY logged_at", [eid]),
       qRows("SELECT * FROM evidences WHERE engagement_id=? ORDER BY uploaded_at", [eid]),
       qRows("SELECT * FROM custom_phases WHERE engagement_id=? ORDER BY order_index", [eid]),
+      qRows("SELECT * FROM phases WHERE engagement_id=?", [eid]),
+      qRows("SELECT * FROM engagement_phases WHERE engagement_id=?", [eid]),
+      qRows("SELECT * FROM engagement_techniques WHERE engagement_id=? ORDER BY added_at", [eid]),
     ]);
     const phaseDocs = [], updates = [], updateImgs = [];
     for (const ph of customPhases) {
@@ -1977,7 +2204,7 @@ app.get("/api/engagements/:id/export", auth(), async (req, res) => {
       updates.push(...upds);
     }
     const manifest = {
-      version: "1.0", exported_at: new Date().toISOString(), exported_by: req.user.username,
+      version: "2.0", exported_at: new Date().toISOString(), exported_by: req.user.username,
       engagement: eng, scope, findings,
       operation_logs: logs,
       evidences: evidences.map(e => ({ ...e, zip_path: `files/${e.filename}` })),
@@ -1985,6 +2212,9 @@ app.get("/api/engagements/:id/export", auth(), async (req, res) => {
       phase_docs: phaseDocs.map(d => ({ ...d, zip_path: `files/${d.filename}` })),
       phase_updates: updates,
       phase_update_images: updateImgs.map(i => ({ ...i, zip_path: `files/${i.filename}` })),
+      phases,
+      engagement_phases: engPhases,
+      techniques,
     };
     const zip = new AdmZip();
     zip.addFile("engagement.json", Buffer.from(JSON.stringify(manifest, null, 2), "utf8"));
@@ -1997,8 +2227,9 @@ app.get("/api/engagements/:id/export", auth(), async (req, res) => {
       if (fs.existsSync(fp)) zip.addLocalFile(fp, "files", f.filename);
     }
     const zipBuffer = zip.toBuffer();
-    const safeName = (eng.codename || eng.title).replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 60);
-    const zipName  = `gungnir-${safeName}-${new Date().toISOString().slice(0, 10)}.zip`;
+    const safeName = eng.title.replace(/[^a-zA-Z0-9_\- ]/g, "").trim().replace(/\s+/g, "_").slice(0, 80) || "engagement";
+    const dateStr  = new Date().toISOString().slice(0, 10);
+    const zipName  = `${safeName}_${dateStr}.zip`;
     res.set({ "Content-Type": "application/zip", "Content-Disposition": `attachment; filename="${zipName}"`, "Content-Length": zipBuffer.length });
     res.send(zipBuffer);
   } catch (e) { console.error("Export error:", e); res.status(500).json({ error: "Error al generar el export" }); }
@@ -2040,18 +2271,37 @@ app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.sing
       fileMap[oldFn] = newFn;
     }
     for (const s of (manifest.scope || [])) {
-      await qRun("INSERT INTO scope_items (id,engagement_id,type,value,in_scope,notes) VALUES (?,?,?,?,?,?)", [uuidv4(), newEngId, s.type, s.value, s.in_scope??1, s.notes||null]);
+      await qRun(
+        "INSERT INTO scope_items (id,engagement_id,type,value,in_scope,notes,os_type,ports,pwned) VALUES (?,?,?,?,?,?,?,?,?)",
+        [uuidv4(), newEngId, s.type||'domain', s.value, s.in_scope??1, s.notes||null,
+         s.os_type||null, s.ports ? JSON.stringify(s.ports) : null, s.pwned ? 1 : 0]
+      );
     }
     const findingIdMap = {};
     for (const f of (manifest.findings || [])) {
       const newFid = uuidv4(); findingIdMap[f.id] = newFid;
       await qRun(
-        `INSERT INTO findings (id,engagement_id,phase_type,title,severity,business_risk,exploitability,status,owasp_category,owasp_year,description,steps_to_reproduce,affected_asset,recommendation,executive_summary,cvss_score_31,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-        [newFid, newEngId, f.phase_type||null, f.title, f.severity||"medium", f.business_risk||null, f.exploitability||null, "open", f.owasp_category||null, f.owasp_year||null, f.description||null, f.steps_to_reproduce||null, f.affected_asset||null, f.recommendation||null, f.executive_summary||null, f.cvss_score_31||null, req.user.id]
+        `INSERT INTO findings
+         (id,engagement_id,phase_type,title,severity,business_risk,exploitability,status,
+          owasp_category,owasp_year,description,steps_to_reproduce,affected_asset,
+          recommendation,executive_summary,cvss_score_31,cvss_vector_31,
+          cwe_id,cwe_name,mitre_tactic,mitre_technique_id,mitre_technique_name,created_by)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        [newFid, newEngId, f.phase_type||null, f.title, f.severity||"medium", f.business_risk||null,
+         f.exploitability||null, f.status||"open", f.owasp_category||null, f.owasp_year||null,
+         f.description||null, f.steps_to_reproduce||null, f.affected_asset||null,
+         f.recommendation||null, f.executive_summary||null, f.cvss_score_31||null,
+         f.cvss_vector_31||null, f.cwe_id||null, f.cwe_name||null,
+         f.mitre_tactic||null, f.mitre_technique_id||null, f.mitre_technique_name||null,
+         req.user.id]
       );
     }
     for (const l of (manifest.operation_logs || [])) {
-      await qRun("INSERT INTO operation_logs (id,engagement_id,phase_type,tool,command,target,notes,created_by) VALUES (?,?,?,?,?,?,?,?)", [uuidv4(), newEngId, l.phase_type||null, l.tool||null, l.command||null, l.target||null, l.notes||null, req.user.id]);
+      await qRun(
+        "INSERT INTO operation_logs (id,engagement_id,phase_type,logged_at,tool,command,target,notes,outcome,created_by) VALUES (?,?,?,?,?,?,?,?,?,?)",
+        [uuidv4(), newEngId, l.phase_type||null, l.logged_at||new Date().toISOString(),
+         l.tool||null, l.command||null, l.target||null, l.notes||null, l.outcome||null, req.user.id]
+      );
     }
     for (const e of (manifest.evidences || [])) {
       const newFn = fileMap[e.filename]; if (!newFn) continue;
@@ -2075,6 +2325,30 @@ app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.sing
     for (const i of (manifest.phase_update_images || [])) {
       const newFn = fileMap[i.filename]; if (!newFn || !updateIdMap[i.update_id]) continue;
       await qRun("INSERT INTO custom_phase_update_images (id,update_id,filename,original_name,file_size) VALUES (?,?,?,?,?)", [uuidv4(), updateIdMap[i.update_id], newFn, i.original_name, i.file_size]);
+    }
+    // Restore phases status metadata
+    for (const ph of (manifest.phases || [])) {
+      await qRun(
+        "UPDATE phases SET status=?, started_at=?, completed_at=?, metadata=? WHERE engagement_id=? AND phase_type=?",
+        [ph.status||'pending', ph.started_at||null, ph.completed_at||null, ph.metadata||null, newEngId, ph.phase_type]
+      );
+    }
+    // Restore engagement_phases (notes/commands per phase)
+    for (const ep of (manifest.engagement_phases || [])) {
+      await qRun(
+        `INSERT INTO engagement_phases (engagement_id, phase, notes, commands)
+         VALUES (?,?,?,?)
+         ON DUPLICATE KEY UPDATE notes=VALUES(notes), commands=VALUES(commands)`,
+        [newEngId, ep.phase, ep.notes||null, ep.commands||null]
+      );
+    }
+    // Restore techniques
+    for (const tech of (manifest.techniques || [])) {
+      await qRun(
+        "INSERT INTO engagement_techniques (id,engagement_id,phase_type,mitre_id,name,tactic,tool,notes,added_by) VALUES (?,?,?,?,?,?,?,?,?)",
+        [uuidv4(), newEngId, tech.phase_type||null, tech.mitre_id||null, tech.name||'',
+         tech.tactic||null, tech.tool||null, tech.notes||null, req.user.id]
+      );
     }
     const imported = await qRow("SELECT e.*, c.name AS client_name FROM engagements e JOIN clients c ON c.id=e.client_id WHERE e.id=?", [newEngId]);
     res.status(201).json({ ok: true, engagement: imported });

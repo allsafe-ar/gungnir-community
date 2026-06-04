@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import {
   ClipboardList, Building2, ShieldAlert, AlertTriangle,
   Crosshair, Activity, Terminal,
@@ -10,6 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { apiFetch } from '@/lib/api'
+import { getStatusLabel, STATUS_VARIANT } from '@/features/engagements'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 interface DashboardStats {
@@ -34,20 +36,6 @@ interface DashboardStats {
   }[]
 }
 
-// ─── Constantes ───────────────────────────────────────────────────────────────
-const STATUS_LABEL: Record<string, string> = {
-  planned: 'Planificado', in_progress: 'En curso', reporting: 'Reportando',
-  qa: 'QA', delivered: 'Entregado', archived: 'Archivado',
-}
-const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  planned: 'outline', in_progress: 'default', reporting: 'secondary',
-  qa: 'secondary', delivered: 'outline', archived: 'outline',
-}
-const PHASE_LABEL: Record<string, string> = {
-  planning: 'Planificación', recon: 'Reconocimiento', scanning: 'Escaneo',
-  exploitation: 'Explotación', post_exploitation: 'Post-Explotación', reporting: 'Reporting',
-}
-
 // Severity colors (bar chart)
 const SEV_COLORS: Record<string, string> = {
   critical: '#dc2626',
@@ -60,33 +48,54 @@ const SEV_COLORS: Record<string, string> = {
 // Engagement status colors (pie)
 const STATUS_COLORS: string[] = ['#dc2626', '#ea580c', '#ca8a04', '#2563eb', '#16a34a', '#64748b']
 
-const SEV_LABEL: Record<string, string> = {
-  critical: 'Crítico', high: 'Alto', medium: 'Medio', low: 'Bajo', info: 'Info',
-}
-const FIND_STATUS_LABEL: Record<string, string> = {
-  open: 'Abierto', in_progress: 'En progreso', closed: 'Cerrado', remediated: 'Remediado',
-}
-
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
-function SevTooltip({ active, payload }: { active?: boolean; payload?: { payload: { severity: string; count: number } }[] }) {
+function SevTooltip({ active, payload }: { active?: boolean; payload?: { payload: { severity: string; count: number; label: string } }[] }) {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (
     <div className='rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs shadow'>
       <p className='font-semibold' style={{ color: SEV_COLORS[d.severity] }}>
-        {SEV_LABEL[d.severity] ?? d.severity}
+        {d.label}
       </p>
-      <p className='text-zinc-400'>{d.count} hallazgo{d.count !== 1 ? 's' : ''} abiertos</p>
+      <p className='text-zinc-400'>{d.count}</p>
     </div>
   )
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 export function Dashboard() {
+  const { t } = useTranslation()
+
+  const statusLabel = getStatusLabel(t)
+
+  const SEV_LABEL: Record<string, string> = {
+    critical: t('dash.sev_critical'),
+    high:     t('dash.sev_high'),
+    medium:   t('dash.sev_medium'),
+    low:      t('dash.sev_low'),
+    info:     t('dash.sev_info'),
+  }
+
+  const FIND_STATUS_LABEL: Record<string, string> = {
+    open:        t('dash.find_open'),
+    in_progress: t('dash.find_in_progress'),
+    closed:      t('dash.find_closed'),
+    remediated:  t('dash.find_remediated'),
+  }
+
+  const PHASE_LABEL: Record<string, string> = {
+    planning:          t('dash.phase_planning'),
+    recon:             t('dash.phase_recon'),
+    scanning:          t('dash.phase_scanning'),
+    exploitation:      t('dash.phase_exploitation'),
+    post_exploitation: t('dash.phase_post_exploitation'),
+    reporting:         t('dash.phase_reporting'),
+  }
+
   const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ['gungnir-dashboard'],
     queryFn: () => apiFetch<DashboardStats>('/dashboard'),
-    staleTime: 60_000,   // 1 min cached — no recarga en cada navegación
+    staleTime: 60_000,
     retry: 1,
   })
 
@@ -106,7 +115,7 @@ export function Dashboard() {
   }))
 
   const engStatusData = (stats?.engagements_by_status ?? []).map(d => ({
-    name: STATUS_LABEL[d.status] ?? d.status,
+    name: statusLabel[d.status] ?? d.status,
     value: Number(d.count),
   }))
 
@@ -121,50 +130,50 @@ export function Dashboard() {
     <div className='space-y-6'>
       {/* Header */}
       <div>
-        <h1 className='text-2xl font-bold tracking-tight'>Panel de Control</h1>
-        <p className='text-sm text-muted-foreground'>Vista general de operaciones de pentesting</p>
+        <h1 className='text-2xl font-bold tracking-tight'>{t('dash.title')}</h1>
+        <p className='text-sm text-muted-foreground'>{t('dash.subtitle')}</p>
       </div>
 
       {/* KPI Cards */}
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Engagements activos</CardTitle>
+            <CardTitle className='text-sm font-medium'>{t('dash.kpi_active_engagements')}</CardTitle>
             <ClipboardList className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-3xl font-bold'>{stats?.active_engagements ?? 0}</div>
-            <p className='text-xs text-muted-foreground'>de {stats?.total_engagements ?? 0} totales</p>
+            <p className='text-xs text-muted-foreground'>{t('dash.kpi_of_total', { total: stats?.total_engagements ?? 0 })}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Clientes</CardTitle>
+            <CardTitle className='text-sm font-medium'>{t('dash.kpi_clients')}</CardTitle>
             <Building2 className='size-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-3xl font-bold'>{stats?.total_clients ?? 0}</div>
-            <p className='text-xs text-muted-foreground'>registrados</p>
+            <p className='text-xs text-muted-foreground'>{t('dash.kpi_registered')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Críticos abiertos</CardTitle>
+            <CardTitle className='text-sm font-medium'>{t('dash.kpi_critical_open')}</CardTitle>
             <ShieldAlert className='size-4 text-destructive' />
           </CardHeader>
           <CardContent>
             <div className='text-3xl font-bold text-destructive'>{stats?.critical_open ?? 0}</div>
-            <p className='text-xs text-muted-foreground'>sin remediar</p>
+            <p className='text-xs text-muted-foreground'>{t('dash.kpi_unremediated')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Altos abiertos</CardTitle>
+            <CardTitle className='text-sm font-medium'>{t('dash.kpi_high_open')}</CardTitle>
             <AlertTriangle className='size-4 text-orange-500' />
           </CardHeader>
           <CardContent>
             <div className='text-3xl font-bold text-orange-500'>{stats?.high_open ?? 0}</div>
-            <p className='text-xs text-muted-foreground'>sin remediar</p>
+            <p className='text-xs text-muted-foreground'>{t('dash.kpi_unremediated')}</p>
           </CardContent>
         </Card>
       </div>
@@ -176,7 +185,7 @@ export function Dashboard() {
           {sevData.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className='text-sm font-medium'>Hallazgos abiertos por severidad</CardTitle>
+                <CardTitle className='text-sm font-medium'>{t('dash.chart_findings_by_severity')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width='100%' height={180}>
@@ -210,7 +219,7 @@ export function Dashboard() {
           {engStatusData.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className='text-sm font-medium'>Engagements por estado</CardTitle>
+                <CardTitle className='text-sm font-medium'>{t('dash.chart_engagements_by_status')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width='100%' height={180}>
@@ -229,7 +238,7 @@ export function Dashboard() {
                       width={20}
                     />
                     <Tooltip
-                      formatter={(v: number) => [v, 'Engagements']}
+                      formatter={(v: number) => [v, t('dash.engagements_label')]}
                       contentStyle={{ background: '#18181b', border: '1px solid #3f3f46', borderRadius: 6, fontSize: 11 }}
                       labelStyle={{ color: '#e4e4e7' }}
                       cursor={{ fill: 'rgba(255,255,255,0.04)' }}
@@ -249,7 +258,7 @@ export function Dashboard() {
           {findStatusData.length > 0 && (
             <Card className='col-span-full'>
               <CardHeader>
-                <CardTitle className='text-sm font-medium'>Estado de hallazgos</CardTitle>
+                <CardTitle className='text-sm font-medium'>{t('dash.chart_findings_status')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className='flex flex-wrap gap-4'>
@@ -261,7 +270,7 @@ export function Dashboard() {
                     </div>
                   ))}
                   <div className='ml-auto flex items-center gap-2'>
-                    <span className='text-xs text-muted-foreground'>Total</span>
+                    <span className='text-xs text-muted-foreground'>{t('dash.total')}</span>
                     <span className='text-sm font-bold'>{stats?.total_findings ?? 0}</span>
                   </div>
                 </div>
@@ -275,16 +284,16 @@ export function Dashboard() {
         {/* Recent engagements */}
         <Card className='lg:col-span-3'>
           <CardHeader>
-            <CardTitle className='text-sm font-medium'>Engagements recientes</CardTitle>
+            <CardTitle className='text-sm font-medium'>{t('dash.recent_engagements')}</CardTitle>
           </CardHeader>
           <CardContent>
             {!stats?.recent_engagements?.length ? (
               <div className='flex flex-col items-center gap-3 py-8 text-center'>
                 <Crosshair className='size-10 text-muted-foreground/40' />
                 <p className='text-sm text-muted-foreground'>
-                  No hay engagements aún.{' '}
+                  {t('dash.no_engagements_yet')}{' '}
                   <Link to='/engagements/nuevo' className='text-primary underline-offset-4 hover:underline'>
-                    Crear el primero
+                    {t('dash.create_first')}
                   </Link>
                 </p>
               </div>
@@ -308,7 +317,7 @@ export function Dashboard() {
                         </span>
                       )}
                       <Badge variant={STATUS_VARIANT[eng.status] ?? 'outline'}>
-                        {STATUS_LABEL[eng.status] ?? eng.status}
+                        {statusLabel[eng.status] ?? eng.status}
                       </Badge>
                     </div>
                   </Link>
@@ -323,14 +332,14 @@ export function Dashboard() {
           <CardHeader>
             <CardTitle className='text-sm font-medium flex items-center gap-2'>
               <Activity className='size-3.5' />
-              Actividad reciente
+              {t('dash.recent_activity')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {!stats?.recent_logs?.length ? (
               <div className='flex flex-col items-center gap-2 py-8 text-center'>
                 <Terminal className='size-8 text-muted-foreground/30' />
-                <p className='text-xs text-muted-foreground'>Sin actividad registrada aún</p>
+                <p className='text-xs text-muted-foreground'>{t('dash.no_activity')}</p>
               </div>
             ) : (
               <div className='space-y-3'>
