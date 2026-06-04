@@ -2235,6 +2235,15 @@ app.get("/api/engagements/:id/export", auth(), async (req, res) => {
   } catch (e) { console.error("Export error:", e); res.status(500).json({ error: "Error al generar el export" }); }
 });
 
+// Helper: convierte cualquier valor de fecha a formato MySQL DATETIME (YYYY-MM-DD HH:MM:SS)
+function toMysqlDatetime(val) {
+  if (!val) return null;
+  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(val)) return val;
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 const importUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } });
 
 app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.single("file"), async (req, res) => {
@@ -2299,7 +2308,7 @@ app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.sing
     for (const l of (manifest.operation_logs || [])) {
       await qRun(
         "INSERT INTO operation_logs (id,engagement_id,phase_type,logged_at,tool,command,target,notes,outcome,created_by) VALUES (?,?,?,?,?,?,?,?,?,?)",
-        [uuidv4(), newEngId, l.phase_type||null, l.logged_at||new Date().toISOString(),
+        [uuidv4(), newEngId, l.phase_type||null, toMysqlDatetime(l.logged_at)||toMysqlDatetime(new Date()),
          l.tool||null, l.command||null, l.target||null, l.notes||null, l.outcome||null, req.user.id]
       );
     }
