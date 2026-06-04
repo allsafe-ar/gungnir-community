@@ -32,14 +32,7 @@ Gungnir has a built-in engagement exchange: **export any engagement as a ZIP and
 
 The community shares walkthroughs, CTF write-ups and methodology templates in the [`community-engagements/`](community-engagements/) folder of this repository. Download one, import it, and you have a fully-documented engagement ready to explore.
 
-| File | Type | Description | Findings | Author |
-|------|------|-------------|----------|--------|
-| [Vulnhub_-_RickdiculouslyEasy_2026-06-04.zip](community-engagements/Vulnhub_-_RickdiculouslyEasy_2026-06-04.zip) | CTF · VulnHub | Complete walkthrough of [RickdiculouslyEasy](https://www.vulnhub.com/entry/rickdiculouslyeasy-1,207/). 9 findings, 22 operation logs, 17 MITRE techniques. | 9 | AllSafe |
-| [HTB_-_Blue_2026-06-04.zip](community-engagements/HTB_-_Blue_2026-06-04.zip) | CTF · HackTheBox | HTB Blue — EternalBlue (MS17-010) + SYSTEM shell + mimikatz. 3 findings, 10 logs, 3 MITRE techniques. Official PDF writeup included as evidence. | 3 | AllSafe |
-| [HTB_-_Bounty_2026-06-04.zip](community-engagements/HTB_-_Bounty_2026-06-04.zip) | CTF · HackTheBox | HTB Bounty — IIS upload bypass + XLST RCE + Juicy Potato. 3 findings, 11 logs. | 3 | AllSafe |
-| [HTB_-_Optimum_2026-06-04.zip](community-engagements/HTB_-_Optimum_2026-06-04.zip) | CTF · HackTheBox | HTB Optimum — HFS Remote Code Execution + MS16-098 local privesc. 2 findings, 20 logs. | 2 | AllSafe |
-| [HTB_-_Querier_2026-06-04.zip](community-engagements/HTB_-_Querier_2026-06-04.zip) | CTF · HackTheBox | HTB Querier — MSSQL creds in Excel macro + NTLM hash capture + GPP password. 3 findings, 13 logs. | 3 | AllSafe |
-| [HTB_-_ScriptKiddie_2026-06-04.zip](community-engagements/HTB_-_ScriptKiddie_2026-06-04.zip) | CTF · HackTheBox | HTB ScriptKiddie — Metasploit APK template injection + sudo PWD privesc. 3 findings, 8 logs. | 3 | AllSafe |
+Browse the full list in [`community-engagements/`](community-engagements/) — CTF walkthroughs (HTB, VulnHub), training scenarios and methodology templates, growing with each community contribution.
 
 **How to import:** Engagements → **Import** → select the `.zip`. Everything is recreated automatically with new IDs.
 

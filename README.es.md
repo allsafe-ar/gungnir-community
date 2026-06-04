@@ -32,14 +32,7 @@ Gungnir tiene un intercambio de engagements integrado: **exportá cualquier enga
 
 La comunidad comparte walkthroughs, writeups CTF y templates metodológicos en la carpeta [`community-engagements/`](community-engagements/) de este repositorio. Descargá uno, importalo, y tenés un engagement completamente documentado listo para explorar.
 
-| Archivo | Tipo | Descripción | Hallazgos | Autor |
-|---------|------|-------------|-----------|-------|
-| [Vulnhub_-_RickdiculouslyEasy_2026-06-04.zip](community-engagements/Vulnhub_-_RickdiculouslyEasy_2026-06-04.zip) | CTF · VulnHub | Walkthrough completo de [RickdiculouslyEasy](https://www.vulnhub.com/entry/rickdiculouslyeasy-1,207/). 9 hallazgos, 22 logs, 17 técnicas MITRE. | 9 | AllSafe |
-| [HTB_-_Blue_2026-06-04.zip](community-engagements/HTB_-_Blue_2026-06-04.zip) | CTF · HackTheBox | HTB Blue — EternalBlue (MS17-010) + shell SYSTEM + mimikatz. 3 hallazgos, 10 logs, 3 técnicas MITRE. Incluye PDF oficial como evidencia. | 3 | AllSafe |
-| [HTB_-_Bounty_2026-06-04.zip](community-engagements/HTB_-_Bounty_2026-06-04.zip) | CTF · HackTheBox | HTB Bounty — IIS upload bypass + XLST RCE + Juicy Potato. 3 hallazgos, 11 logs. | 3 | AllSafe |
-| [HTB_-_Optimum_2026-06-04.zip](community-engagements/HTB_-_Optimum_2026-06-04.zip) | CTF · HackTheBox | HTB Optimum — HFS Remote Code Execution + MS16-098 privesc local. 2 hallazgos, 20 logs. | 2 | AllSafe |
-| [HTB_-_Querier_2026-06-04.zip](community-engagements/HTB_-_Querier_2026-06-04.zip) | CTF · HackTheBox | HTB Querier — MSSQL creds en macro Excel + captura hash NTLM + GPP password. 3 hallazgos, 13 logs. | 3 | AllSafe |
-| [HTB_-_ScriptKiddie_2026-06-04.zip](community-engagements/HTB_-_ScriptKiddie_2026-06-04.zip) | CTF · HackTheBox | HTB ScriptKiddie — Metasploit APK template injection + sudo PWD privesc. 3 hallazgos, 8 logs. | 3 | AllSafe |
+El listado completo está en [`community-engagements/`](community-engagements/) — walkthroughs CTF (HTB, VulnHub), escenarios de entrenamiento y templates metodológicos, con nuevas contribuciones de la comunidad.
 
 **Cómo importar:** Engagements → **Importar** → seleccioná el `.zip`. Todo se recrea automáticamente con nuevos IDs.
 
