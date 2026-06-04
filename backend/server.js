@@ -2336,10 +2336,11 @@ app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.sing
       await qRun("INSERT INTO custom_phase_update_images (id,update_id,filename,original_name,file_size) VALUES (?,?,?,?,?)", [uuidv4(), updateIdMap[i.update_id], newFn, i.original_name, i.file_size]);
     }
     // Restore phases status metadata
+    await ensurePhases(newEngId); // crea las 6 filas con status not_started si no existen
     for (const ph of (manifest.phases || [])) {
       await qRun(
         "UPDATE phases SET status=?, started_at=?, completed_at=?, metadata=? WHERE engagement_id=? AND phase_type=?",
-        [ph.status||'pending', ph.started_at||null, ph.completed_at||null, ph.metadata||null, newEngId, ph.phase_type]
+        [ph.status||'not_started', toMysqlDatetime(ph.started_at), toMysqlDatetime(ph.completed_at), ph.metadata||null, newEngId, ph.phase_type]
       );
     }
     // Restore engagement_phases (notes/commands per phase)
