@@ -1376,7 +1376,8 @@
       "tip2": "Importá desde un engagement para pre-cargar scope y hallazgos",
       "tip3": "Usá el editor Markdown para formatear el contenido con bloques de código, links y listas",
       "tip4": "Exportá a PDF para documentación profesional o portfolio"
-    }
+    },
+    "fieldName_ctf": "Nombre del CTF"
   },
   "biblioteca": {
     "title": "Biblioteca de Hallazgos",
