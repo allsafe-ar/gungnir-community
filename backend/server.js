@@ -2243,6 +2243,13 @@ function toMysqlDatetime(val) {
   if (isNaN(d.getTime())) return null;
   return d.toISOString().slice(0, 19).replace('T', ' ');
 }
+function toMysqlDate(val) {
+  if (!val) return null;
+  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString().slice(0, 10);
+}
 
 const importUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } });
 
@@ -2270,7 +2277,7 @@ app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.sing
     if (!clientId) return res.status(400).json({ error: "No se pudo resolver el cliente" });
     await qRun(
       `INSERT INTO engagements (id,client_id,title,codename,type,methodology,mode,status,current_phase,start_date,end_date,rules_of_engagement,notes,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [newEngId, clientId, `${src.title} (importado)`, src.codename||null, src.type||"web_app", src.methodology||"ptes", src.mode||"pentesting", "planned", src.current_phase||"planning", src.start_date||null, src.end_date||null, src.rules_of_engagement||null, src.notes||null, req.user.id]
+      [newEngId, clientId, `${src.title} (importado)`, src.codename||null, src.type||"web_app", src.methodology||"ptes", src.mode||"pentesting", "planned", src.current_phase||"planning", toMysqlDate(src.start_date), toMysqlDate(src.end_date), src.rules_of_engagement||null, src.notes||null, req.user.id]
     );
     const fileMap = {};
     for (const entry of zip.getEntries().filter(e => e.entryName.startsWith("files/") && !e.isDirectory)) {
