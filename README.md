@@ -72,7 +72,8 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | Feature | Community | Pro |
 |---|:---:|:---:|
 | Client management | ✅ | ✅ |
-| Engagement lifecycle (phases, logs, scope, evidence) | ✅ | ✅ |
+| Engagement lifecycle (phases, logs, scope, evidence per phase) | ✅ | ✅ |
+| Custom engagement mode (fully custom phases) | ✅ | ✅ |
 | Export/Import engagements (ZIP) | ✅ | ✅ |
 | Community engagement repository | ✅ | ✅ |
 | Finding editor (CVSS 3.1, CWE, OWASP, MITRE) | ✅ | ✅ |
@@ -87,6 +88,7 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | Roles: admin / auditor / pentester | ✅ | ✅ |
 | i18n: Spanish + English | ✅ | ✅ |
 | Audit log | ✅ | ✅ |
+| Attack Map (interactive network topology canvas) | ❌ | ✅ |
 | Nessus live scan feed | ❌ | ✅ |
 | OpenVAS live task feed | ❌ | ✅ |
 | AllSafe CRM sync | ❌ | ✅ |
