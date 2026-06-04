@@ -52,7 +52,7 @@ The community shares walkthroughs, CTF write-ups and methodology templates in th
 Gungnir Community includes everything a pentest team needs to run professional engagements:
 
 - **Full engagement lifecycle** - clients, phases (Planning → Recon → Scanning → Exploitation → Post-Exploitation → Reporting), operation logs, scope management, evidence uploads, MITRE ATT&CK mapping
-- **Export/Import engagements (ZIP)** - export any engagement as a portable ZIP and import it on any Gungnir instance; all data included: findings, phases, operation logs, scope and evidence files
+- **Export/Import engagements (ZIP)** - full-fidelity export: findings (CVSS, MITRE, CWE, status), operation logs (timestamps preserved), scope with ports/OS/pwned, techniques, phase metadata; import on any instance with one click
 - **Finding editor** with CVSS 3.1 visual calculator, CWE + OWASP classification, and status tracking
 - **CVE auto-populate** - enter a CVE ID and Gungnir auto-fills CVSS vector, score, description and CWE from the NVD API
 - **PDF pentest report** - professional output with executive and technical sections
@@ -141,10 +141,11 @@ Gungnir Community includes everything a pentest team needs to run professional e
 ### Engagement Lifecycle
 - **Client management** - company, industry, contact, engagement history
 - **Engagements** - full lifecycle with structured phases: Planning → Recon → Scanning → Exploitation → Post-Exploitation → Reporting
-- **Operation logs** - timestamped command/tool logs per phase, with target, tool, command and notes
-- **Scope management** - in-scope/out-of-scope assets with annotations
+- **Operation logs** - timestamped command/tool logs per phase, with target, tool, command, notes and outcome; **Scope sync** - one-click import of all unique targets from logs into the scope sheet with inferred ports and OS
+- **Scope management** - in/out-of-scope assets with OS type, port list, pwned flag, and vulnerability summary
 - **Evidence uploads** - file attachments per engagement
 - **MITRE ATT&CK mapping** - techniques linked directly to the engagement
+- **i18n** - full English/Spanish interface, switchable at runtime
 
 ### Findings
 - **Full finding editor** with severity (Critical/High/Medium/Low/Info), status tracking, affected asset, description, steps to reproduce, and executive summary
@@ -168,8 +169,8 @@ Gungnir Community includes everything a pentest team needs to run professional e
 - **Notes** - personal markdown notes with tag system, pin support, and read-only formatted viewer; optionally linked to a specific engagement; shareable with other users
 
 ### Engagement Export/Import
-- **Export ZIP** - export any engagement (findings, phases, operation logs, scope, evidence files) as a portable ZIP from the engagement sidebar
-- **Import ZIP** - import an engagement ZIP on any Gungnir instance; all data is re-created with new IDs; clients are matched by name or created automatically
+- **Export ZIP** - export any engagement as a portable ZIP from the engagement sidebar; full fidelity: findings (CVSS, MITRE, CWE, original status), operation logs (timestamps preserved), scope with ports/OS/pwned, techniques, phase metadata and notes; filename uses engagement title
+- **Import ZIP** - import an engagement ZIP on any Gungnir instance; all data is re-created with new IDs; clients are matched by name or created automatically; compatible with v1.0 and v2.0 ZIP format
 - **Community repository** - share and download engagement templates via [`community-engagements/`](community-engagements/); ideal for CTF walkthroughs, training scenarios and methodology examples
 
 ### Scanner XML Import

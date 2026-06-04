@@ -141,10 +141,11 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 ### Ciclo de vida del Engagement
 - **Gestión de clientes** - empresa, industria, contacto, historial de engagements
 - **Engagements** - ciclo de vida completo con fases estructuradas: Planificación → Reconocimiento → Escaneo → Explotación → Post-Explotación → Reporte
-- **Operation logs** - registro con timestamp de comandos/herramientas por fase, con objetivo, herramienta, comando y notas
-- **Gestión de scope** - activos en scope/out-of-scope con anotaciones
+- **Operation logs** - registro con timestamp de comandos/herramientas por fase, con objetivo, herramienta, comando, notas y resultado (exito/fallo); **Sync de scope** - importacion de todos los targets unicos desde los logs al scope con puertos y OS inferidos
+- **Gestión de scope** - activos en/fuera de scope con tipo de OS, lista de puertos, flag pwned y resumen de vulnerabilidades
 - **Carga de evidencias** - adjuntos de archivos por engagement
 - **Mapeo MITRE ATT&CK** - técnicas vinculadas directamente al engagement
+- **i18n** - interfaz completa en español e inglés, switcheable por usuario
 
 ### Hallazgos
 - **Editor completo de hallazgos** con severidad (Crítico/Alto/Medio/Bajo/Info), seguimiento de estado, activo afectado, descripción, pasos para reproducir y resumen ejecutivo
@@ -168,8 +169,8 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 - **Notas** - notas personales en markdown con sistema de tags, pin y visor read-only con renderizado formateado; vinculables a un engagement; compartibles entre usuarios
 
 ### Exportar/Importar Engagements
-- **Exportar ZIP** - exportá cualquier engagement (hallazgos, fases, operation logs, scope, archivos de evidencia) como ZIP portátil desde el sidebar del engagement
-- **Importar ZIP** - importá un ZIP en cualquier instancia de Gungnir; todos los datos se recrean con nuevos IDs; el cliente se busca por nombre o se crea automáticamente
+- **Exportar ZIP** - exportá cualquier engagement con fidelidad completa: hallazgos (CVSS, MITRE, CWE, estado original), operation logs (timestamps preservados), scope con puertos/OS/pwned, técnicas, metadata de fases; el nombre del archivo usa el titulo del engagement
+- **Importar ZIP** - importá un ZIP en cualquier instancia de Gungnir; todos los datos se recrean con nuevos IDs; compatible con formato v1.0 y v2.0; el cliente se busca por nombre o se crea automáticamente
 - **Repositorio community** - compartí y descargá templates de engagements vía [`community-engagements/`](community-engagements/); ideal para walkthroughs CTF, escenarios de entrenamiento y ejemplos metodológicos
 
 ### Importación XML de Scanners
