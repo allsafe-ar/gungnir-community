@@ -2277,7 +2277,7 @@ app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.sing
     if (!clientId) return res.status(400).json({ error: "No se pudo resolver el cliente" });
     await qRun(
       `INSERT INTO engagements (id,client_id,title,codename,type,methodology,mode,status,current_phase,start_date,end_date,rules_of_engagement,notes,created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [newEngId, clientId, `${src.title} (importado)`, src.codename||null, src.type||"web_app", src.methodology||"ptes", src.mode||"pentesting", "planned", src.current_phase||"planning", toMysqlDate(src.start_date), toMysqlDate(src.end_date), src.rules_of_engagement||null, src.notes||null, req.user.id]
+      [newEngId, clientId, src.title, src.codename||null, src.type||"web_app", src.methodology||"ptes", src.mode||"pentesting", "planned", src.current_phase||"planning", toMysqlDate(src.start_date), toMysqlDate(src.end_date), src.rules_of_engagement||null, src.notes||null, req.user.id]
     );
     const fileMap = {};
     for (const entry of zip.getEntries().filter(e => e.entryName.startsWith("files/") && !e.isDirectory)) {
