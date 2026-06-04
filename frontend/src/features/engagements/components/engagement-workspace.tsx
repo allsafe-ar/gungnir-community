@@ -3,8 +3,10 @@ import { useNavigate } from '@tanstack/react-router'
 import {
   CheckCircle2, Circle, Clock,
   ArrowLeft, Terminal, Upload, Crosshair,
-  ShieldAlert, Target, Settings, Pencil, Check, X, Download, Paperclip,
+  ShieldAlert, Target, Settings, Pencil, Check, X, Download, Paperclip, Map,
 } from 'lucide-react'
+import { AttackMap } from '@/features/attack-map/components/AttackMap'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -117,6 +119,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
   const [tecnicasOpen, setTecnicasOpen]   = useState(false)
 
   const [evidenceCounts, setEvidenceCounts] = useState<Record<string, number>>({})
+  const [attackMapOpen, setAttackMapOpen] = useState(false)
 
   // Inline title edit
   const [editingTitle, setEditingTitle] = useState(false)
@@ -333,6 +336,10 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
             {t('eng.techniques')}
           </Button>
           <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
+            onClick={() => setAttackMapOpen(true)}>
+            <Map className='mr-1.5 size-3' />Attack Map
+          </Button>
+          <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
             onClick={() => navigate({ to: '/engagements/$engagementId/editar', params: { engagementId } })}>
             <Settings className='mr-1.5 size-3' />
             {t('eng.edit_engagement')}
@@ -478,6 +485,21 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
         onOpenChange={setScopeOpen}
         engagementId={engagementId}
       />
+
+      {/* Attack Map sheet */}
+      <Sheet open={attackMapOpen} onOpenChange={setAttackMapOpen}>
+        <SheetContent side='right' className='w-full max-w-[calc(100vw-13rem)] sm:max-w-[calc(100vw-13rem)] p-0 overflow-y-auto'>
+          <SheetHeader className='px-6 pt-5 pb-3 border-b border-border'>
+            <SheetTitle className='flex items-center gap-2'>
+              <Map className='size-4 text-primary' />
+              Attack Map - {engagement.title}
+            </SheetTitle>
+          </SheetHeader>
+          <div className='p-6'>
+            <AttackMap engagementId={engagementId} />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Evidence sheet */}
       <EvidenceSheet

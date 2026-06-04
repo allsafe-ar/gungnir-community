@@ -539,6 +539,43 @@ async function initDB() {
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
+  // ── Attack Map — Targets ──────────────────────────────────────────────────
+  await qRun(`CREATE TABLE IF NOT EXISTS engagement_targets (
+    id              VARCHAR(36)   NOT NULL PRIMARY KEY,
+    engagement_id   VARCHAR(36)   NOT NULL,
+    ip_address      VARCHAR(45)   DEFAULT NULL,
+    fqdn            VARCHAR(255)  DEFAULT NULL,
+    url_address     VARCHAR(1024) DEFAULT NULL,
+    os_type         ENUM('windows','windowsserver','linux','ubuntu','debian','kali','parrot','arch','fedora','redhat','macos',
+                         'router','server','firewall','switch','printer','nas','iot','camera','android','ios','freebsd','other')
+                    NOT NULL DEFAULT 'other',
+    owned           TINYINT(1)    NOT NULL DEFAULT 0,
+    jumped_from_id  VARCHAR(36)   DEFAULT NULL,
+    notes           TEXT,
+    x_position      FLOAT         DEFAULT NULL,
+    y_position      FLOAT         DEFAULT NULL,
+    created_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (engagement_id)  REFERENCES engagements(id) ON DELETE CASCADE,
+    FOREIGN KEY (jumped_from_id) REFERENCES engagement_targets(id) ON DELETE SET NULL
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
+  await qRun(`CREATE TABLE IF NOT EXISTS target_ports (
+    id            VARCHAR(36)  NOT NULL PRIMARY KEY,
+    target_id     VARCHAR(36)  NOT NULL,
+    engagement_id VARCHAR(36)  NOT NULL,
+    port_number   INT          NOT NULL,
+    protocol      ENUM('tcp','udp','sctp') NOT NULL DEFAULT 'tcp',
+    state         VARCHAR(20)  NOT NULL DEFAULT 'open',
+    service_name  VARCHAR(100) DEFAULT NULL,
+    product       VARCHAR(255) DEFAULT NULL,
+    version       VARCHAR(255) DEFAULT NULL,
+    extra_info    TEXT         DEFAULT NULL,
+    created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_port (target_id, port_number, protocol),
+    FOREIGN KEY (target_id)     REFERENCES engagement_targets(id) ON DELETE CASCADE,
+    FOREIGN KEY (engagement_id) REFERENCES engagements(id)        ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
   // ── Overrides de built-ins ────────────────────────────────────────────────
   await qRun(`CREATE TABLE IF NOT EXISTS cmd_overrides (
     item_id VARCHAR(100) PRIMARY KEY,
@@ -678,6 +715,8 @@ async function initDB() {
   try { await qRun(`ALTER TABLE scope_items ADD COLUMN pwned TINYINT(1) NOT NULL DEFAULT 0`); } catch(_) {}
   try { await qRun(`ALTER TABLE scope_items ADD COLUMN ports JSON NULL DEFAULT NULL`); } catch(_) {}
   try { await qRun(`ALTER TABLE scope_items ADD COLUMN vuln_summary TEXT NULL DEFAULT NULL`); } catch(_) {}
+  // ── Migración: engagement_targets — agregar 'parrot' al ENUM os_type ─────
+  try { await qRun(`ALTER TABLE engagement_targets MODIFY os_type ENUM('windows','windowsserver','linux','ubuntu','debian','kali','parrot','arch','fedora','redhat','macos','router','server','firewall','switch','printer','nas','iot','camera','android','ios','freebsd','other') NOT NULL DEFAULT 'other'`); } catch(_) {}
 
   // ── Fases - notas y comandos por fase del engagement ─────────────────────
   await qRun(`CREATE TABLE IF NOT EXISTS engagement_phases (
@@ -1178,6 +1217,24 @@ function isValidScopeTarget(val) {
   return false;
 }
 
+// Parse structured scanning command: "Puerto: 80 | Servicio: Apache | Versión: 2.4.49"
+function parseScanCommand(cmd) {
+  if (!cmd) return null;
+  const result = {};
+  for (const part of cmd.split('|')) {
+    const ci = part.indexOf(':');
+    if (ci < 0) continue;
+    const key = part.slice(0, ci).trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const val = part.slice(ci + 1).trim();
+    if (key === 'puerto') result.port = parseInt(val) || null;
+    else if (key === 'servicio') result.service = val || null;
+    else if (key === 'version') result.version = val || null;
+    else if (key === 'cve') result.cve = val || null;
+  }
+  return Object.keys(result).length ? result : null;
+}
+
 function parseScopeItem(s) {
   if (!s) return s;
   return { ...s, ports: s.ports ? (typeof s.ports === 'string' ? JSON.parse(s.ports) : s.ports) : [] };
@@ -1311,6 +1368,412 @@ app.post("/api/engagements/:id/scope/sync-from-phases", auth(), async (req, res)
     console.error('scope/sync-from-phases error:', e);
     res.status(500).json({ error: 'Error al sincronizar scope desde fases' });
   }
+});
+
+// ── ATTACK MAP — TARGETS ──────────────────────────────────────────────────────
+app.get("/api/engagements/:id/targets", auth(), async (req, res) => {
+  res.json(await qRows("SELECT * FROM engagement_targets WHERE engagement_id=? ORDER BY created_at", [req.params.id]));
+});
+
+app.post("/api/engagements/:id/targets", auth(), async (req, res) => {
+  const { ip_address, fqdn, url_address, os_type, notes, owned, jumped_from_id } = req.body;
+  if (!ip_address && !fqdn && !url_address) return res.status(400).json({ error: "Se requiere ip_address, fqdn o url_address" });
+  const tid = uuidv4();
+  await qRun(
+    "INSERT INTO engagement_targets (id,engagement_id,ip_address,fqdn,url_address,os_type,notes,owned,jumped_from_id) VALUES (?,?,?,?,?,?,?,?,?)",
+    [tid, req.params.id, ip_address||null, fqdn||null, url_address||null, os_type||'other', notes||null, owned?1:0, jumped_from_id||null]
+  );
+  res.status(201).json(await qRow("SELECT * FROM engagement_targets WHERE id=?", [tid]));
+});
+
+app.put("/api/engagements/:id/targets/:tid", auth(), async (req, res) => {
+  const { ip_address, fqdn, url_address, os_type, owned, jumped_from_id, notes } = req.body;
+  await qRun(
+    `UPDATE engagement_targets SET
+      ip_address=COALESCE(?,ip_address), fqdn=COALESCE(?,fqdn), url_address=COALESCE(?,url_address),
+      os_type=COALESCE(?,os_type), owned=COALESCE(?,owned), jumped_from_id=?,notes=COALESCE(?,notes)
+     WHERE id=? AND engagement_id=?`,
+    [ip_address??null, fqdn??null, url_address??null, os_type??null,
+     owned!=null?owned:null, jumped_from_id??null, notes??null,
+     req.params.tid, req.params.id]
+  );
+  res.json(await qRow("SELECT * FROM engagement_targets WHERE id=?", [req.params.tid]));
+});
+
+app.patch("/api/engagements/:id/targets/:tid/owned", auth(), async (req, res) => {
+  const { owned } = req.body;
+  await qRun("UPDATE engagement_targets SET owned=? WHERE id=? AND engagement_id=?",
+    [owned?1:0, req.params.tid, req.params.id]);
+  res.json({ ok: true, owned: !!owned });
+});
+
+app.patch("/api/engagements/:id/targets/:tid/position", auth(), async (req, res) => {
+  const { x, y } = req.body;
+  await qRun("UPDATE engagement_targets SET x_position=?, y_position=? WHERE id=? AND engagement_id=?",
+    [x, y, req.params.tid, req.params.id]);
+  res.json({ ok: true });
+});
+
+app.patch("/api/engagements/:id/targets/:tid/pivot", auth(), async (req, res) => {
+  const { jumped_from_id } = req.body;
+  await qRun("UPDATE engagement_targets SET jumped_from_id=? WHERE id=? AND engagement_id=?",
+    [jumped_from_id || null, req.params.tid, req.params.id]);
+  res.json({ ok: true });
+});
+
+app.delete("/api/engagements/:id/targets/:tid", auth(), async (req, res) => {
+  await qRun("DELETE FROM engagement_targets WHERE id=? AND engagement_id=?", [req.params.tid, req.params.id]);
+  res.json({ ok: true });
+});
+
+// Importar scope items como targets del Attack Map
+app.post("/api/engagements/:id/targets/import-scope", auth(), async (req, res) => {
+  const eid = req.params.id;
+  const scopeItems = await qRows(
+    "SELECT * FROM scope_items WHERE engagement_id=? AND in_scope=1",
+    [eid]
+  );
+  if (!scopeItems.length) return res.json({ imported: 0, skipped: 0 });
+
+  function parseUrl(val) {
+    try {
+      const u = new URL(val);
+      return {
+        host: u.hostname,
+        port: u.port ? parseInt(u.port) : (u.protocol === 'https:' ? 443 : 80),
+        proto: 'tcp',
+      };
+    } catch(_) { return null; }
+  }
+
+  const existing = await qRows("SELECT id,ip_address,fqdn,url_address FROM engagement_targets WHERE engagement_id=?", [eid]);
+  const processedTargets = new Map();
+  for (const t of existing) {
+    if (t.ip_address)  processedTargets.set(t.ip_address,  { id: t.id });
+    if (t.fqdn)        processedTargets.set(t.fqdn,        { id: t.id });
+    if (t.url_address) processedTargets.set(t.url_address, { id: t.id });
+  }
+
+  const addPort = async (targetId, port, proto, service) => {
+    try {
+      await qRun(
+        "INSERT IGNORE INTO target_ports (id,target_id,engagement_id,port_number,protocol,service_name) VALUES (?,?,?,?,?,?)",
+        [uuidv4(), targetId, eid, port, proto || 'tcp', service || null]
+      );
+    } catch(_) {}
+  };
+
+  const TYPE_ORDER = { ip: 0, cidr: 1, domain: 2, url: 3, application: 4, other: 5 };
+  scopeItems.sort((a, b) => (TYPE_ORDER[a.type] ?? 5) - (TYPE_ORDER[b.type] ?? 5));
+
+  let imported = 0, skipped = 0;
+  for (const s of scopeItems) {
+    const val = s.value?.trim();
+    if (!val) { skipped++; continue; }
+
+    const isIp  = /^\d{1,3}(\.\d{1,3}){3}(\/\d+)?$/.test(val);
+    const isUrl = /^https?:\/\//.test(val);
+
+    let urlParsed = null;
+    if (isUrl) {
+      urlParsed = parseUrl(val);
+      if (urlParsed) {
+        const overlapping = processedTargets.get(urlParsed.host);
+        if (overlapping) {
+          await addPort(overlapping.id, urlParsed.port, urlParsed.proto, null);
+          skipped++;
+          continue;
+        }
+      }
+    }
+
+    if (processedTargets.has(val)) {
+      const existingId = processedTargets.get(val).id;
+      if (s.os_type && s.os_type !== 'other') {
+        await qRun(
+          "UPDATE engagement_targets SET os_type=? WHERE id=? AND (os_type IS NULL OR os_type='other')",
+          [s.os_type, existingId]
+        );
+      }
+      if (s.pwned) {
+        await qRun("UPDATE engagement_targets SET owned=1 WHERE id=?", [existingId]);
+      }
+      const scopePorts = s.ports ? (typeof s.ports === 'string' ? JSON.parse(s.ports) : s.ports) : [];
+      for (const p of scopePorts) {
+        if (!p.port) continue;
+        await addPort(existingId, p.port, p.proto || 'tcp', p.service || null);
+      }
+      skipped++;
+      continue;
+    }
+
+    const ip_address  = isIp  ? val : null;
+    const url_address = isUrl ? val : null;
+    const fqdn        = (!isIp && !isUrl) ? val : null;
+
+    let os_type = s.os_type || 'other';
+    if (!s.os_type) {
+      if (s.type === 'network') os_type = 'router';
+      else if (s.type === 'url' || isUrl) os_type = 'server';
+    }
+
+    const owned = s.pwned ? 1 : 0;
+    const tid   = uuidv4();
+    await qRun(
+      "INSERT INTO engagement_targets (id,engagement_id,ip_address,fqdn,url_address,os_type,owned,notes) VALUES (?,?,?,?,?,?,?,?)",
+      [tid, eid, ip_address, fqdn, url_address, os_type, owned, s.notes||null]
+    );
+
+    const ports = s.ports ? (typeof s.ports === 'string' ? JSON.parse(s.ports) : s.ports) : [];
+    for (const p of ports) {
+      if (!p.port) continue;
+      await addPort(tid, p.port, p.proto || 'tcp', p.service || null);
+    }
+
+    processedTargets.set(val, { id: tid });
+    if (ip_address)  processedTargets.set(ip_address,  { id: tid });
+    if (fqdn)        processedTargets.set(fqdn,         { id: tid });
+    if (url_address) processedTargets.set(url_address,  { id: tid });
+    if (urlParsed?.host) processedTargets.set(urlParsed.host, { id: tid });
+
+    imported++;
+  }
+  res.json({ imported, skipped });
+});
+
+// ── Sync Attack Map from engagement phase logs ────────────────────────────────
+app.post("/api/engagements/:id/attack-map/sync-from-phases", auth(), async (req, res) => {
+  const eid = req.params.id;
+  try {
+    const [scanLogs, exploitLogs, postExploitLogs, targets, scopeItems] = await Promise.all([
+      qRows("SELECT target, command, notes FROM operation_logs WHERE engagement_id=? AND phase_type IN ('scanning','recon')", [eid]),
+      qRows("SELECT target FROM operation_logs WHERE engagement_id=? AND phase_type='exploitation' AND (outcome='success' OR (outcome IS NULL AND target IS NOT NULL))", [eid]),
+      qRows("SELECT target FROM operation_logs WHERE engagement_id=? AND phase_type='post_exploitation'", [eid]),
+      qRows("SELECT id, ip_address, fqdn, url_address, owned, jumped_from_id, os_type, notes FROM engagement_targets WHERE engagement_id=?", [eid]),
+      qRows("SELECT id, value, ports, pwned, os_type, notes FROM scope_items WHERE engagement_id=?", [eid]),
+    ]);
+
+    const targetByValue = new Map();
+    for (const t of targets) {
+      if (t.ip_address)  targetByValue.set(t.ip_address,  t);
+      if (t.fqdn)        targetByValue.set(t.fqdn,        t);
+      if (t.url_address) targetByValue.set(t.url_address, t);
+    }
+    const scopeByValue = new Map();
+    for (const s of scopeItems) {
+      scopeByValue.set(s.value, s);
+      const norm = normalizeTarget(s.value);
+      if (norm && norm !== s.value) scopeByValue.set(norm, s);
+    }
+
+    const singleTarget = targets.length === 1 ? (targets[0].ip_address || targets[0].fqdn || targets[0].url_address) : null;
+    const portsByTarget = new Map();
+    for (const log of scanLogs) {
+      const t = normalizeTarget(log.target) || singleTarget;
+      if (!t) continue;
+      const parsed = parseScanCommand(log.command);
+      if (parsed?.port) {
+        if (!portsByTarget.has(t)) portsByTarget.set(t, []);
+        portsByTarget.get(t).push({
+          port:    parsed.port,
+          proto:   'tcp',
+          service: [parsed.service, parsed.version].filter(Boolean).join(' ') || null,
+        });
+      }
+      const notePorts = parsePortsFromNotes(log.notes);
+      for (const p of notePorts) {
+        if (!portsByTarget.has(t)) portsByTarget.set(t, []);
+        const existing = portsByTarget.get(t);
+        if (!existing.find(ep => ep.port === p.port)) existing.push(p);
+      }
+    }
+
+    let portsAdded = 0, ownedUpdated = 0;
+
+    for (const [targetVal, ports] of portsByTarget) {
+      const engTarget = targetByValue.get(targetVal);
+      if (engTarget) {
+        for (const p of ports) {
+          try {
+            const inserted = await qRun(
+              `INSERT IGNORE INTO target_ports
+               (id, target_id, engagement_id, port_number, protocol, service_name)
+               VALUES (?, ?, ?, ?, ?, ?)`,
+              [uuidv4(), engTarget.id, eid, p.port, p.proto, p.service]
+            );
+            if (inserted.affectedRows > 0) portsAdded++;
+            else if (p.service) {
+              await qRun(
+                `UPDATE target_ports SET service_name=? WHERE target_id=? AND port_number=? AND protocol=?`,
+                [p.service, engTarget.id, p.port, p.proto]
+              );
+            }
+          } catch(_) {}
+        }
+      }
+
+      const scopeItem = scopeByValue.get(targetVal);
+      if (scopeItem) {
+        const existing = scopeItem.ports
+          ? (typeof scopeItem.ports === 'string' ? JSON.parse(scopeItem.ports) : scopeItem.ports)
+          : [];
+        const merged = [...existing];
+        let changed = false;
+        for (const p of ports) {
+          if (!merged.find(ep => ep.port === p.port)) {
+            merged.push({ port: p.port, proto: p.proto, service: p.service });
+            changed = true;
+          }
+        }
+        if (changed) await qRun("UPDATE scope_items SET ports=? WHERE id=?", [JSON.stringify(merged), scopeItem.id]);
+      }
+    }
+
+    const ownedVals = new Set(exploitLogs.map(l => normalizeTarget(l.target)).filter(Boolean));
+    for (const targetVal of ownedVals) {
+      const engTarget = targetByValue.get(targetVal);
+      if (engTarget && !engTarget.owned) {
+        await qRun("UPDATE engagement_targets SET owned=1 WHERE id=?", [engTarget.id]);
+        engTarget.owned = 1;
+        ownedUpdated++;
+      }
+      const scopeItem = scopeByValue.get(targetVal);
+      if (scopeItem && !scopeItem.pwned) {
+        await qRun("UPDATE scope_items SET pwned=1 WHERE id=?", [scopeItem.id]);
+      }
+    }
+
+    let edgesAdded = 0;
+    for (const log of postExploitLogs) {
+      if (!log.target || !log.target.includes(' → ')) continue;
+      const parts    = log.target.split(' → ');
+      const fromVal  = normalizeTarget(parts[0].trim());
+      const toVal    = normalizeTarget(parts[parts.length - 1].trim());
+      const fromNode = targetByValue.get(fromVal);
+      const toNode   = targetByValue.get(toVal);
+      if (!fromNode || !toNode || fromNode.id === toNode.id) continue;
+      if (!toNode.jumped_from_id) {
+        await qRun("UPDATE engagement_targets SET jumped_from_id=? WHERE id=?", [fromNode.id, toNode.id]);
+        toNode.jumped_from_id = fromNode.id;
+        edgesAdded++;
+      }
+    }
+
+    let attackerNode = targets.find(t => t.os_type === 'kali')
+      || targets.find(t => t.os_type === 'parrot')
+      || targets.find(t => t.os_type === 'linux');
+
+    if (attackerNode) {
+      for (const log of exploitLogs) {
+        const targetVal = normalizeTarget(log.target);
+        if (!targetVal) continue;
+        const victim = targetByValue.get(targetVal);
+        if (!victim || victim.id === attackerNode.id) continue;
+        if (!victim.jumped_from_id) {
+          await qRun("UPDATE engagement_targets SET jumped_from_id=? WHERE id=?", [attackerNode.id, victim.id]);
+          victim.jumped_from_id = attackerNode.id;
+          edgesAdded++;
+        }
+      }
+    }
+
+    // Sync scope_items.ports → target_ports
+    for (const engTarget of targets) {
+      const val = engTarget.ip_address || engTarget.fqdn || engTarget.url_address;
+      if (!val) continue;
+      const scopeItem = scopeByValue.get(val);
+      if (!scopeItem?.ports) continue;
+      const scopePorts = typeof scopeItem.ports === 'string' ? JSON.parse(scopeItem.ports) : scopeItem.ports;
+      for (const p of scopePorts) {
+        if (!p.port) continue;
+        try {
+          const inserted = await qRun(
+            "INSERT IGNORE INTO target_ports (id,target_id,engagement_id,port_number,protocol,service_name) VALUES (?,?,?,?,?,?)",
+            [uuidv4(), engTarget.id, eid, p.port, p.proto || 'tcp', p.service || null]
+          );
+          if (inserted.affectedRows > 0) portsAdded++;
+        } catch(_) {}
+      }
+    }
+
+    // Sync os_type: scope_items → engagement_targets
+    const VALID_OS = new Set([
+      'windows','windowsserver','linux','ubuntu','debian','kali','parrot','arch',
+      'fedora','redhat','macos','router','server','firewall','switch',
+      'printer','nas','iot','camera','android','ios','freebsd','other',
+    ]);
+    const OS_FALLBACK = { opensuse: 'linux', mint: 'linux' };
+    let osUpdated = 0;
+    for (const engTarget of targets) {
+      if (engTarget.os_type && engTarget.os_type !== 'other') continue;
+      const val = engTarget.ip_address || engTarget.fqdn || engTarget.url_address;
+      const scopeItem = val ? scopeByValue.get(val) : null;
+      let candidate = scopeItem?.os_type || null;
+      if (!candidate || candidate === 'other') candidate = inferOsFromText(engTarget.notes);
+      if ((!candidate || candidate === 'other') && scopeItem?.notes) candidate = inferOsFromText(scopeItem.notes);
+      if (!candidate || candidate === 'other') continue;
+      const mappedOs = VALID_OS.has(candidate) ? candidate : (OS_FALLBACK[candidate] ?? 'other');
+      if (mappedOs === 'other') continue;
+      try {
+        await qRun("UPDATE engagement_targets SET os_type=? WHERE id=?", [mappedOs, engTarget.id]);
+        engTarget.os_type = mappedOs;
+        osUpdated++;
+      } catch(_) {}
+    }
+
+    res.json({ ok: true, portsAdded, ownedUpdated, edgesAdded, osUpdated });
+  } catch (e) {
+    console.error('sync-from-phases error:', e);
+    res.status(500).json({ error: 'Error al sincronizar desde fases' });
+  }
+});
+
+// Attack Map data — nodos y edges para vis-network
+app.get("/api/engagements/:id/attack-map", auth(), async (req, res) => {
+  const targets = await qRows("SELECT * FROM engagement_targets WHERE engagement_id=? ORDER BY created_at", [req.params.id]);
+  const tids = targets.map(t => t.id);
+  let portsByTarget = {};
+  if (tids.length) {
+    const placeholders = tids.map(() => '?').join(',');
+    const ports = await qRows(
+      `SELECT target_id, port_number, protocol, service_name, product, version
+       FROM target_ports WHERE target_id IN (${placeholders}) AND state='open' ORDER BY port_number`,
+      tids
+    );
+    ports.forEach(p => {
+      if (!portsByTarget[p.target_id]) portsByTarget[p.target_id] = [];
+      portsByTarget[p.target_id].push({
+        port: p.port_number, proto: p.protocol,
+        service: [p.service_name, p.product, p.version].filter(Boolean).join(' '),
+      });
+    });
+  }
+  const nodes = targets.map(t => ({
+    id:     t.id,
+    label:  t.ip_address || t.fqdn || t.url_address || 'host',
+    ip:     t.ip_address,
+    fqdn:   t.fqdn,
+    url:    t.url_address,
+    type:   t.os_type,
+    owned:  !!t.owned,
+    notes:  t.notes,
+    x:      t.x_position,
+    y:      t.y_position,
+    ports:  portsByTarget[t.id] || [],
+  }));
+  const edges = targets
+    .filter(t => t.jumped_from_id)
+    .map(t => ({ from: t.jumped_from_id, to: t.id }));
+  res.json({ nodes, edges });
+});
+
+// Puertos de un target específico
+app.get("/api/engagements/:id/targets/:tid/ports", auth(), async (req, res) => {
+  const ports = await qRows(
+    "SELECT * FROM target_ports WHERE target_id=? AND engagement_id=? ORDER BY port_number",
+    [req.params.tid, req.params.id]
+  );
+  res.json(ports);
 });
 
 // ── OPERATION LOGS ────────────────────────────────────────────────────────────
@@ -2182,7 +2645,7 @@ app.get("/api/engagements/:id/export", auth(), async (req, res) => {
     );
     if (!eng) return res.status(404).json({ error: "Engagement no encontrado" });
     const eid = eng.id;
-    const [scope, findings, logs, evidences, customPhases, phases, engPhases, techniques] = await Promise.all([
+    const [scope, findings, logs, evidences, customPhases, phases, engPhases, techniques, targets] = await Promise.all([
       qRows("SELECT * FROM scope_items WHERE engagement_id=?", [eid]),
       qRows("SELECT * FROM findings WHERE engagement_id=? ORDER BY created_at", [eid]),
       qRows("SELECT * FROM operation_logs WHERE engagement_id=? ORDER BY logged_at", [eid]),
@@ -2191,7 +2654,14 @@ app.get("/api/engagements/:id/export", auth(), async (req, res) => {
       qRows("SELECT * FROM phases WHERE engagement_id=?", [eid]),
       qRows("SELECT * FROM engagement_phases WHERE engagement_id=?", [eid]),
       qRows("SELECT * FROM engagement_techniques WHERE engagement_id=? ORDER BY added_at", [eid]),
+      qRows("SELECT * FROM engagement_targets WHERE engagement_id=? ORDER BY created_at", [eid]),
     ]);
+    // Puertos de cada target del Attack Map
+    const allTargetPorts = [];
+    for (const tgt of targets) {
+      const ports = await qRows("SELECT * FROM target_ports WHERE target_id=?", [tgt.id]);
+      allTargetPorts.push(...ports);
+    }
     const phaseDocs = [], updates = [], updateImgs = [];
     for (const ph of customPhases) {
       const docs = await qRows("SELECT * FROM custom_phase_docs WHERE phase_id=?", [ph.id]);
@@ -2215,6 +2685,8 @@ app.get("/api/engagements/:id/export", auth(), async (req, res) => {
       phases,
       engagement_phases: engPhases,
       techniques,
+      targets,
+      target_ports: allTargetPorts,
     };
     const zip = new AdmZip();
     zip.addFile("engagement.json", Buffer.from(JSON.stringify(manifest, null, 2), "utf8"));
@@ -2372,6 +2844,39 @@ app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.sing
         "INSERT INTO engagement_techniques (id,engagement_id,phase_type,mitre_id,name,tactic,tool,notes,added_by) VALUES (?,?,?,?,?,?,?,?,?)",
         [uuidv4(), newEngId, tech.phase_type||null, tech.mitre_id||null, tech.name||'',
          tech.tactic||null, tech.tool||null, tech.notes||null, req.user.id]
+      );
+    }
+    // ── Attack Map — targets ─────────────────────────────────────────────────
+    const targetIdMap = {};
+    for (const tgt of (manifest.targets || [])) {
+      const newTid = uuidv4();
+      targetIdMap[tgt.id] = newTid;
+      await qRun(
+        `INSERT INTO engagement_targets
+         (id,engagement_id,ip_address,fqdn,url_address,os_type,owned,notes,x_position,y_position)
+         VALUES (?,?,?,?,?,?,?,?,?,?)`,
+        [newTid, newEngId, tgt.ip_address || null, tgt.fqdn || null, tgt.url_address || null,
+         tgt.os_type || 'other', tgt.owned || 0, tgt.notes || null,
+         tgt.x_position || null, tgt.y_position || null]
+      );
+    }
+    for (const tgt of (manifest.targets || [])) {
+      if (tgt.jumped_from_id && targetIdMap[tgt.jumped_from_id] && targetIdMap[tgt.id]) {
+        await qRun(
+          "UPDATE engagement_targets SET jumped_from_id=? WHERE id=?",
+          [targetIdMap[tgt.jumped_from_id], targetIdMap[tgt.id]]
+        );
+      }
+    }
+    for (const p of (manifest.target_ports || [])) {
+      const newTid = targetIdMap[p.target_id];
+      if (!newTid) continue;
+      await qRun(
+        `INSERT IGNORE INTO target_ports
+         (id,target_id,engagement_id,port_number,protocol,state,service_name,product,version,extra_info)
+         VALUES (?,?,?,?,?,?,?,?,?,?)`,
+        [uuidv4(), newTid, newEngId, p.port_number, p.protocol || 'tcp', p.state || 'open',
+         p.service_name || null, p.product || null, p.version || null, p.extra_info || null]
       );
     }
     const imported = await qRow("SELECT e.*, c.name AS client_name FROM engagements e JOIN clients c ON c.id=e.client_id WHERE e.id=?", [newEngId]);

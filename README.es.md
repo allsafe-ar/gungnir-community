@@ -88,7 +88,7 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 | Roles: admin / auditor / pentester | ✅ | ✅ |
 | i18n: Español + Inglés | ✅ | ✅ |
 | Audit log | ✅ | ✅ |
-| Mapa de Ataque (canvas de topología de red interactivo) | ❌ | ✅ |
+| Mapa de Ataque (canvas de topología de red interactivo) | ✅ | ✅ |
 | Feed de scans Nessus en vivo | ❌ | ✅ |
 | Feed de tareas OpenVAS en vivo | ❌ | ✅ |
 | Sync CRM AllSafe | ❌ | ✅ |
