@@ -130,7 +130,25 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 
 | **Research Papers - Integración Exploit-DB** | **Research Papers - Editor estructurado** |
 |:---:|:---:|
-| <img src="screenshots/10-explot-db.png" alt="Integración Exploit-DB" width="440"/> | <img src="screenshots/11-papers.png" alt="Editor Research Papers" width="440"/> |
+| <img src="screenshots/10-explot-db.png" alt="Integración Exploit-DB" width="440"/> | <img src="screenshots/7-papers.png" alt="Editor Research Papers" width="440"/> |
+
+<br/>
+
+| **Biblioteca de Scripts** | **Mapa de Ataque** |
+|:---:|:---:|
+| <img src="screenshots/6-scripts.png" alt="Biblioteca de Scripts" width="440"/> | <img src="screenshots/11-attackmap.png" alt="Mapa de Ataque" width="440"/> |
+
+<br/>
+
+**Espacio de Trabajo del Engagement**
+<br/>
+<img src="screenshots/12-engagement.png" alt="Espacio de Trabajo del Engagement" width="900"/>
+
+<br/><br/>
+
+**Reporte PDF**
+<br/>
+<img src="screenshots/13-pdf.png" alt="Reporte PDF" width="900"/>
 
 </div>
 
