@@ -34,7 +34,12 @@ La comunidad comparte walkthroughs, writeups CTF y templates metodológicos en l
 
 | Archivo | Tipo | Descripción | Hallazgos | Autor |
 |---------|------|-------------|-----------|-------|
-| [RickdiculouslyEasy-CTF-Walkthrough.zip](community-engagements/RickdiculouslyEasy-CTF-Walkthrough.zip) | CTF · Pentesting | Walkthrough completo de la máquina [RickdiculouslyEasy](https://www.vulnhub.com/entry/rickdiculouslyeasy-1,207/) de VulnHub. 9 hallazgos, 22 entradas en el operation log. Fases PTES estándar. | 9 | Luke |
+| [Vulnhub_-_RickdiculouslyEasy_2026-06-04.zip](community-engagements/Vulnhub_-_RickdiculouslyEasy_2026-06-04.zip) | CTF · VulnHub | Walkthrough completo de [RickdiculouslyEasy](https://www.vulnhub.com/entry/rickdiculouslyeasy-1,207/). 9 hallazgos, 22 logs, 17 técnicas MITRE. | 9 | AllSafe |
+| [HTB_-_Blue_2026-06-04.zip](community-engagements/HTB_-_Blue_2026-06-04.zip) | CTF · HackTheBox | HTB Blue — EternalBlue (MS17-010) + shell SYSTEM + mimikatz. 3 hallazgos, 10 logs, 3 técnicas MITRE. Incluye PDF oficial como evidencia. | 3 | AllSafe |
+| [HTB_-_Bounty_2026-06-04.zip](community-engagements/HTB_-_Bounty_2026-06-04.zip) | CTF · HackTheBox | HTB Bounty — IIS upload bypass + XLST RCE + Juicy Potato. 3 hallazgos, 11 logs. | 3 | AllSafe |
+| [HTB_-_Optimum_2026-06-04.zip](community-engagements/HTB_-_Optimum_2026-06-04.zip) | CTF · HackTheBox | HTB Optimum — HFS Remote Code Execution + MS16-098 privesc local. 2 hallazgos, 20 logs. | 2 | AllSafe |
+| [HTB_-_Querier_2026-06-04.zip](community-engagements/HTB_-_Querier_2026-06-04.zip) | CTF · HackTheBox | HTB Querier — MSSQL creds en macro Excel + captura hash NTLM + GPP password. 3 hallazgos, 13 logs. | 3 | AllSafe |
+| [HTB_-_ScriptKiddie_2026-06-04.zip](community-engagements/HTB_-_ScriptKiddie_2026-06-04.zip) | CTF · HackTheBox | HTB ScriptKiddie — Metasploit APK template injection + sudo PWD privesc. 3 hallazgos, 8 logs. | 3 | AllSafe |
 
 **Cómo importar:** Engagements → **Importar** → seleccioná el `.zip`. Todo se recrea automáticamente con nuevos IDs.
 
@@ -51,8 +56,8 @@ La comunidad comparte walkthroughs, writeups CTF y templates metodológicos en l
 
 Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejecutar engagements profesionales:
 
-- **Ciclo de vida completo del engagement** - clientes, fases (Planificación → Reconocimiento → Escaneo → Explotación → Post-Explotación → Reporte), operation logs, gestión de scope, carga de evidencias, mapeo MITRE ATT&CK
-- **Exportar/Importar engagements (ZIP)** - exportá cualquier engagement como un ZIP portátil e importalo en cualquier instancia de Gungnir; incluye todo: hallazgos, fases, operation logs, scope y archivos de evidencia
+- **Ciclo de vida completo del engagement** - clientes, fases (Planificación → Reconocimiento → Escaneo → Explotación → Post-Explotación → Reporte), o **modo custom** con fases completamente personalizadas (nombre libre, plan de trabajo, carga de documentos y actualizaciones de progreso); operation logs, gestión de scope, carga de evidencias por fase (con badge de conteo), mapeo MITRE ATT&CK
+- **Exportar/Importar engagements (ZIP)** - exportá cualquier engagement como un ZIP portátil e importalo en cualquier instancia de Gungnir; incluye todo: hallazgos, fases, operation logs, scope, técnicas y archivos de evidencia
 - **Editor de hallazgos** con calculadora visual CVSS 3.1, clasificación CWE + OWASP y seguimiento de estado
 - **Auto-populate por CVE** - ingresá un CVE ID y Gungnir completa automáticamente el vector CVSS, score, descripción y CWE desde la API de NVD
 - **Reporte PDF de pentesting** - salida profesional con secciones ejecutiva y técnica
@@ -140,10 +145,10 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 
 ### Ciclo de vida del Engagement
 - **Gestión de clientes** - empresa, industria, contacto, historial de engagements
-- **Engagements** - ciclo de vida completo con fases estructuradas: Planificación → Reconocimiento → Escaneo → Explotación → Post-Explotación → Reporte
-- **Operation logs** - registro con timestamp de comandos/herramientas por fase, con objetivo, herramienta, comando, notas y resultado (exito/fallo); **Sync de scope** - importacion de todos los targets unicos desde los logs al scope con puertos y OS inferidos
+- **Engagements** - ciclo de vida completo con fases estructuradas: Planificación → Reconocimiento → Escaneo → Explotación → Post-Explotación → Reporte; o **modo custom** — creá engagements con fases completamente personalizadas (nombre libre, plan de trabajo, carga de documentos y actualizaciones de progreso)
+- **Operation logs** - registro con timestamp de comandos/herramientas por fase, con objetivo, herramienta, comando, notas y resultado (éxito/fallo); **Sync de scope** - importación de todos los targets únicos desde los logs al scope con puertos y OS inferidos
 - **Gestión de scope** - activos en/fuera de scope con tipo de OS, lista de puertos, flag pwned y resumen de vulnerabilidades
-- **Carga de evidencias** - adjuntos de archivos por engagement
+- **Carga de evidencias** - adjuntos de archivos **por fase** (un panel de evidencias por fase); el sidebar muestra el contador (`ev.`) y el botón se destaca con un badge cuando hay archivos adjuntos; incluidas en el ZIP de exportación/importación
 - **Mapeo MITRE ATT&CK** - técnicas vinculadas directamente al engagement
 - **i18n** - interfaz completa en español e inglés, switcheable por usuario
 

@@ -19,13 +19,14 @@ El sistema crea automaticamente el engagement con todos sus datos: hallazgos, fa
 
 ## Engagements disponibles
 
-| Archivo | Tipo | Descripcion | Findings | Scope | Autor |
-|---------|------|-------------|----------|-------|-------|
-| [Vulnhub_-_RickdiculouslyEasy_2026-06-04.zip](Vulnhub_-_RickdiculouslyEasy_2026-06-04.zip) | CTF - Pentesting externo | Walkthrough completo de RickdiculouslyEasy (VulnHub). 9 hallazgos, 17 tecnicas MITRE/PTES, 4 fases documentadas. | 9 | 1 host | AllSafe |
-| [HTB_-_Bounty_2026-06-04.zip](HTB_-_Bounty_2026-06-04.zip) | Web App - Pentesting | Hack The Box - Bounty. Upload bypass + IIS XLST + Juicy Potato. 3 hallazgos, scope detallado. | 3 | 5 items | AllSafe |
-| [HTB_-_Querier_2026-06-04.zip](HTB_-_Querier_2026-06-04.zip) | Red corporativa - Pentesting | Hack The Box - Querier. MSSQL creds en macro + hash capture + GPP password. 3 hallazgos, 4 fases. | 3 | 1 host | AllSafe |
-| [HTB_-_ScriptKiddie_2026-06-04.zip](HTB_-_ScriptKiddie_2026-06-04.zip) | Web App - Pentesting | Hack The Box - ScriptKiddie. Metasploit APK template injection + sudo privesc. 3 hallazgos, 4 fases. | 3 | 2 items | AllSafe |
-| [HTB_-_Optimum_2026-06-04.zip](HTB_-_Optimum_2026-06-04.zip) | Pentesting externo | Hack The Box - Optimum. HFS Remote Code Execution + MS16-098 privesc. 2 hallazgos. | 2 | 3 items | AllSafe |
+| Archivo | Tipo | Descripcion | Findings | Autor |
+|---------|------|-------------|----------|-------|
+| [Vulnhub_-_RickdiculouslyEasy_2026-06-04.zip](Vulnhub_-_RickdiculouslyEasy_2026-06-04.zip) | CTF · VulnHub | Walkthrough completo de RickdiculouslyEasy. 9 hallazgos, 22 logs, 17 tecnicas MITRE. | 9 | AllSafe |
+| [HTB_-_Blue_2026-06-04.zip](HTB_-_Blue_2026-06-04.zip) | CTF · HackTheBox | HTB Blue — EternalBlue (MS17-010) + shell SYSTEM + mimikatz. 3 hallazgos, 10 logs, 3 tecnicas MITRE. Incluye evidencia PDF oficial. | 3 | AllSafe |
+| [HTB_-_Bounty_2026-06-04.zip](HTB_-_Bounty_2026-06-04.zip) | CTF · HackTheBox | HTB Bounty — IIS upload bypass + XLST RCE + Juicy Potato. 3 hallazgos, 11 logs. | 3 | AllSafe |
+| [HTB_-_Optimum_2026-06-04.zip](HTB_-_Optimum_2026-06-04.zip) | CTF · HackTheBox | HTB Optimum — HFS Remote Code Execution + MS16-098 privesc. 2 hallazgos, 20 logs. | 2 | AllSafe |
+| [HTB_-_Querier_2026-06-04.zip](HTB_-_Querier_2026-06-04.zip) | CTF · HackTheBox | HTB Querier — MSSQL creds en macro Excel + captura hash NTLM + GPP password. 3 hallazgos, 13 logs. | 3 | AllSafe |
+| [HTB_-_ScriptKiddie_2026-06-04.zip](HTB_-_ScriptKiddie_2026-06-04.zip) | CTF · HackTheBox | HTB ScriptKiddie — Metasploit APK template injection + sudo PWD privesc. 3 hallazgos, 8 logs. | 3 | AllSafe |
 
 ---
 

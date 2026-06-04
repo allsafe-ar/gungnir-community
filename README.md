@@ -34,7 +34,12 @@ The community shares walkthroughs, CTF write-ups and methodology templates in th
 
 | File | Type | Description | Findings | Author |
 |------|------|-------------|----------|--------|
-| [RickdiculouslyEasy-CTF-Walkthrough.zip](community-engagements/RickdiculouslyEasy-CTF-Walkthrough.zip) | CTF · Pentesting | Complete walkthrough of VulnHub's [RickdiculouslyEasy](https://www.vulnhub.com/entry/rickdiculouslyeasy-1,207/) machine. 9 findings, 22 operation log entries. Standard PTES phases. | 9 | Luke |
+| [Vulnhub_-_RickdiculouslyEasy_2026-06-04.zip](community-engagements/Vulnhub_-_RickdiculouslyEasy_2026-06-04.zip) | CTF · VulnHub | Complete walkthrough of [RickdiculouslyEasy](https://www.vulnhub.com/entry/rickdiculouslyeasy-1,207/). 9 findings, 22 operation logs, 17 MITRE techniques. | 9 | AllSafe |
+| [HTB_-_Blue_2026-06-04.zip](community-engagements/HTB_-_Blue_2026-06-04.zip) | CTF · HackTheBox | HTB Blue — EternalBlue (MS17-010) + SYSTEM shell + mimikatz. 3 findings, 10 logs, 3 MITRE techniques. Official PDF writeup included as evidence. | 3 | AllSafe |
+| [HTB_-_Bounty_2026-06-04.zip](community-engagements/HTB_-_Bounty_2026-06-04.zip) | CTF · HackTheBox | HTB Bounty — IIS upload bypass + XLST RCE + Juicy Potato. 3 findings, 11 logs. | 3 | AllSafe |
+| [HTB_-_Optimum_2026-06-04.zip](community-engagements/HTB_-_Optimum_2026-06-04.zip) | CTF · HackTheBox | HTB Optimum — HFS Remote Code Execution + MS16-098 local privesc. 2 findings, 20 logs. | 2 | AllSafe |
+| [HTB_-_Querier_2026-06-04.zip](community-engagements/HTB_-_Querier_2026-06-04.zip) | CTF · HackTheBox | HTB Querier — MSSQL creds in Excel macro + NTLM hash capture + GPP password. 3 findings, 13 logs. | 3 | AllSafe |
+| [HTB_-_ScriptKiddie_2026-06-04.zip](community-engagements/HTB_-_ScriptKiddie_2026-06-04.zip) | CTF · HackTheBox | HTB ScriptKiddie — Metasploit APK template injection + sudo PWD privesc. 3 findings, 8 logs. | 3 | AllSafe |
 
 **How to import:** Engagements → **Import** → select the `.zip`. Everything is recreated automatically with new IDs.
 
@@ -51,8 +56,8 @@ The community shares walkthroughs, CTF write-ups and methodology templates in th
 
 Gungnir Community includes everything a pentest team needs to run professional engagements:
 
-- **Full engagement lifecycle** - clients, phases (Planning → Recon → Scanning → Exploitation → Post-Exploitation → Reporting), operation logs, scope management, evidence uploads, MITRE ATT&CK mapping
-- **Export/Import engagements (ZIP)** - full-fidelity export: findings (CVSS, MITRE, CWE, status), operation logs (timestamps preserved), scope with ports/OS/pwned, techniques, phase metadata; import on any instance with one click
+- **Full engagement lifecycle** - clients, phases (Planning → Recon → Scanning → Exploitation → Post-Exploitation → Reporting), or **custom mode** with fully custom phases (free-form name, work plan, document uploads and progress updates); operation logs, scope management, evidence uploads per phase (with count badge), MITRE ATT&CK mapping
+- **Export/Import engagements (ZIP)** - full-fidelity export: findings (CVSS, MITRE, CWE, status), operation logs (timestamps preserved), scope with ports/OS/pwned, techniques, phase metadata, evidence files; import on any instance with one click
 - **Finding editor** with CVSS 3.1 visual calculator, CWE + OWASP classification, and status tracking
 - **CVE auto-populate** - enter a CVE ID and Gungnir auto-fills CVSS vector, score, description and CWE from the NVD API
 - **PDF pentest report** - professional output with executive and technical sections
@@ -140,10 +145,10 @@ Gungnir Community includes everything a pentest team needs to run professional e
 
 ### Engagement Lifecycle
 - **Client management** - company, industry, contact, engagement history
-- **Engagements** - full lifecycle with structured phases: Planning → Recon → Scanning → Exploitation → Post-Exploitation → Reporting
+- **Engagements** - full lifecycle with structured phases: Planning → Recon → Scanning → Exploitation → Post-Exploitation → Reporting; or **custom mode** — create engagements with fully custom phases (free-form name, work plan, document uploads and progress updates)
 - **Operation logs** - timestamped command/tool logs per phase, with target, tool, command, notes and outcome; **Scope sync** - one-click import of all unique targets from logs into the scope sheet with inferred ports and OS
 - **Scope management** - in/out-of-scope assets with OS type, port list, pwned flag, and vulnerability summary
-- **Evidence uploads** - file attachments per engagement
+- **Evidence uploads** - file attachments **per phase** (one evidence panel per phase); sidebar shows evidence count (`ev.`) and the button highlights with a badge when files are attached; included in ZIP export/import
 - **MITRE ATT&CK mapping** - techniques linked directly to the engagement
 - **i18n** - full English/Spanish interface, switchable at runtime
 

@@ -2319,9 +2319,16 @@ app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.sing
          l.tool||null, l.command||null, l.target||null, l.notes||null, l.outcome||null, req.user.id]
       );
     }
-    for (const e of (manifest.evidences || [])) {
-      const newFn = fileMap[e.filename]; if (!newFn) continue;
-      await qRun("INSERT INTO evidences (id,engagement_id,finding_id,phase_type,filename,original_name,file_type,file_size,caption,uploaded_by) VALUES (?,?,?,?,?,?,?,?,?,?)", [uuidv4(), newEngId, findingIdMap[e.finding_id]||null, e.phase_type||null, newFn, e.original_name, e.file_type, e.file_size, e.caption||null, req.user.id]);
+    const evidenceImportStats = { total: (manifest.evidences || []).length, imported: 0, skipped: [] };
+    for (const ev of (manifest.evidences || [])) {
+      const newFn = fileMap[ev.filename];
+      if (!newFn) {
+        evidenceImportStats.skipped.push({ filename: ev.filename, reason: 'no_file_in_zip' });
+        console.warn(`[import] evidence skipped — filename "${ev.filename}" not found in fileMap. fileMap keys: ${Object.keys(fileMap).join(', ')}`);
+        continue;
+      }
+      await qRun("INSERT INTO evidences (id,engagement_id,finding_id,phase_type,filename,original_name,file_type,file_size,caption,uploaded_by) VALUES (?,?,?,?,?,?,?,?,?,?)", [uuidv4(), newEngId, findingIdMap[ev.finding_id]||null, ev.phase_type||null, newFn, ev.original_name, ev.file_type, ev.file_size, ev.caption||null, req.user.id]);
+      evidenceImportStats.imported++;
     }
     const phaseIdMap = {};
     for (const ph of (manifest.custom_phases || [])) {
@@ -2368,7 +2375,9 @@ app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.sing
       );
     }
     const imported = await qRow("SELECT e.*, c.name AS client_name FROM engagements e JOIN clients c ON c.id=e.client_id WHERE e.id=?", [newEngId]);
-    res.status(201).json({ ok: true, engagement: imported });
+    console.log(`[import] OK — eng ${newEngId} | fileMap keys: ${Object.keys(fileMap).length} | evidences: ${evidenceImportStats.imported}/${evidenceImportStats.total}`);
+    if (evidenceImportStats.skipped.length) console.warn('[import] evidences skipped:', JSON.stringify(evidenceImportStats.skipped));
+    res.status(201).json({ ok: true, engagement: imported, _import_stats: { evidences: evidenceImportStats, files_in_zip: Object.keys(fileMap).length } });
   } catch (e) { console.error("Import error:", e); res.status(500).json({ error: `Error al importar: ${e.message}` }); }
 });
 

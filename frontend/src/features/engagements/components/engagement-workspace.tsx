@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import {
   CheckCircle2, Circle, Clock,
   ArrowLeft, Terminal, Upload, Crosshair,
-  ShieldAlert, Target, Settings, Pencil, Check, X, Download,
+  ShieldAlert, Target, Settings, Pencil, Check, X, Download, Paperclip,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -116,6 +116,8 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
   // Técnicas sheet
   const [tecnicasOpen, setTecnicasOpen]   = useState(false)
 
+  const [evidenceCounts, setEvidenceCounts] = useState<Record<string, number>>({})
+
   // Inline title edit
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleInput, setTitleInput]     = useState('')
@@ -132,6 +134,19 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
       toast.success(t('eng.title_updated'))
     } catch { toast.error(t('eng.title_error')) }
   }
+
+  const loadEvidenceCounts = useCallback(() => {
+    apiFetch<Array<{ phase_type?: string }>>(`/engagements/${engagementId}/evidences`)
+      .then(items => {
+        const counts: Record<string, number> = {}
+        for (const item of (items ?? [])) {
+          const key = item.phase_type ?? '__none__'
+          counts[key] = (counts[key] ?? 0) + 1
+        }
+        setEvidenceCounts(counts)
+      })
+      .catch(() => {})
+  }, [engagementId])
 
   const load = () => {
     apiFetch(`/engagements/${engagementId}`)
@@ -153,7 +168,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
       .then((d: unknown) => setFindings(d as Finding[])).catch(() => setFindings([]))
   }
 
-  useEffect(() => { load() }, [engagementId])
+  useEffect(() => { load(); loadEvidenceCounts() }, [engagementId, loadEvidenceCounts])
   useEffect(() => { if (activePhase) loadPhaseData(activePhase) }, [activePhase])
 
   const saveLog = async () => {
@@ -284,10 +299,11 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
                   )}
                   <span className='text-xs font-medium'>{phaseLabel[phaseKey] ?? phaseKey}</span>
                 </div>
-                {phaseData && (phaseData.logs_count > 0 || phaseData.findings_count > 0) && (
+                {phaseData && (phaseData.logs_count > 0 || phaseData.findings_count > 0 || (evidenceCounts[phaseKey] ?? 0) > 0) && (
                   <div className='ml-5 mt-0.5 flex gap-2 text-[10px] text-muted-foreground'>
                     {phaseData.logs_count > 0 && <span>{phaseData.logs_count} log{phaseData.logs_count !== 1 ? 's' : ''}</span>}
                     {phaseData.findings_count > 0 && <span>{phaseData.findings_count} hall.</span>}
+                    {(evidenceCounts[phaseKey] ?? 0) > 0 && <span className='text-primary/70'>{evidenceCounts[phaseKey]} ev.</span>}
                   </div>
                 )}
               </button>
@@ -367,10 +383,15 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
                 <Button size='sm' onClick={saveLog} disabled={savingLog || (!logCommand && !logNotes)} className='text-xs h-7'>
                   {savingLog ? t('common.loading') : 'Guardar log'}
                 </Button>
-                <Button size='sm' variant='outline' className='text-xs h-7'
+                <Button size='sm' variant='outline' className={`text-xs h-7 relative ${(evidenceCounts[activePhase] ?? 0) > 0 ? 'text-primary border-primary/40' : ''}`}
                   onClick={() => setEvidenceOpen(true)}>
-                  <Upload className='mr-1.5 size-3' />
+                  <Paperclip className='mr-1.5 size-3' />
                   {t('eng.evidence')}
+                  {(evidenceCounts[activePhase] ?? 0) > 0 && (
+                    <span className='ml-1.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 leading-none'>
+                      {evidenceCounts[activePhase]}
+                    </span>
+                  )}
                 </Button>
               </div>
             </div>
@@ -461,7 +482,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
       {/* Evidence sheet */}
       <EvidenceSheet
         open={evidenceOpen}
-        onOpenChange={setEvidenceOpen}
+        onOpenChange={v => { setEvidenceOpen(v); if (!v) loadEvidenceCounts() }}
         engagementId={engagementId}
         currentPhase={activePhase}
       />
