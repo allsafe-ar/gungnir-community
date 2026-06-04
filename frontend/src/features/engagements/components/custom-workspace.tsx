@@ -867,7 +867,7 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
             const cfg = STATUS_CFG[phase.status]
             const isActive = selected?.id === phase.id
             return (
-              <div key={phase.id} className={cn('group rounded-md transition-colors', isActive ? 'bg-accent' : 'hover:bg-accent/50')}>
+              <div key={phase.id} className={cn('group relative rounded-md transition-colors', isActive ? 'bg-accent' : 'hover:bg-accent/50')}>
                 {editing === phase.id ? (
                   <div className='flex items-center gap-1 px-2 py-1.5'>
                     <input autoFocus value={editName} onChange={e => setEditName(e.target.value)}
@@ -877,28 +877,30 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
                     <button onClick={() => setEditing(null)} className='text-zinc-500 hover:text-zinc-300'><X className='h-3 w-3' /></button>
                   </div>
                 ) : (
-                  <button onClick={() => setSelected(phase)} className='w-full text-left px-2 py-2'>
-                    <div className='flex items-center gap-1.5'>
-                      <span className={cfg.color}>{cfg.icon}</span>
-                      <span className='text-xs text-zinc-300 flex-1 truncate'>{phase.name}</span>
-                      <div className='opacity-0 group-hover:opacity-100 flex items-center gap-0.5'>
-                        <button onClick={e => { e.stopPropagation(); setEditing(phase.id); setEditName(phase.name) }}
-                          className='rounded p-0.5 text-zinc-600 hover:text-zinc-300 transition'>
-                          <Pencil className='h-2.5 w-2.5' />
-                        </button>
-                        <button onClick={e => { e.stopPropagation(); deletePhase(phase) }}
-                          className='rounded p-0.5 text-zinc-700 hover:text-red-400 transition'>
-                          <Trash2 className='h-2.5 w-2.5' />
-                        </button>
+                  <>
+                    <button onClick={() => setSelected(phase)} className='w-full text-left px-2 py-2 pr-14'>
+                      <div className='flex items-center gap-1.5'>
+                        <span className={cfg.color}>{cfg.icon}</span>
+                        <span className='text-xs text-zinc-300 flex-1 truncate'>{phase.name}</span>
                       </div>
+                      {(phase.docs_count || phase.updates_count) ? (
+                        <div className='ml-5 mt-0.5 flex gap-2 text-[10px] text-zinc-700'>
+                          {phase.docs_count ? <span>{phase.docs_count} doc{phase.docs_count !== 1 ? 's' : ''}</span> : null}
+                          {phase.updates_count ? <span>{phase.updates_count} entrada{phase.updates_count !== 1 ? 's' : ''}</span> : null}
+                        </div>
+                      ) : null}
+                    </button>
+                    <div className='absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 flex items-center gap-0.5 z-10'>
+                      <button onClick={() => { setEditing(phase.id); setEditName(phase.name) }}
+                        className='rounded p-0.5 text-zinc-600 hover:text-zinc-300 transition'>
+                        <Pencil className='h-2.5 w-2.5' />
+                      </button>
+                      <button onClick={() => deletePhase(phase)}
+                        className='rounded p-0.5 text-zinc-700 hover:text-red-400 transition'>
+                        <Trash2 className='h-2.5 w-2.5' />
+                      </button>
                     </div>
-                    {(phase.docs_count || phase.updates_count) ? (
-                      <div className='ml-5 mt-0.5 flex gap-2 text-[10px] text-zinc-700'>
-                        {phase.docs_count ? <span>{phase.docs_count} doc{phase.docs_count !== 1 ? 's' : ''}</span> : null}
-                        {phase.updates_count ? <span>{phase.updates_count} entrada{phase.updates_count !== 1 ? 's' : ''}</span> : null}
-                      </div>
-                    ) : null}
-                  </button>
+                  </>
                 )}
               </div>
             )
