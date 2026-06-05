@@ -253,8 +253,8 @@ Probado en Ubuntu 22.04 / 24.04 y Debian 12. Instala Node.js, MySQL, nginx y PM2
 ```bash
 git clone https://github.com/allsafe-ar/gungnir-community.git
 cd gungnir-community
-cp backend/.env.example backend/.env
-# Editá backend/.env: configurá DB_PASSWORD y JWT_SECRET
+cp .env.example .env
+# Editá .env: definí DB_PASSWORD, DB_ROOT_PASSWORD y JWT_SECRET (openssl rand -hex 32)
 docker compose up -d
 ```
 

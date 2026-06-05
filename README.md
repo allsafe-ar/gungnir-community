@@ -89,12 +89,12 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | i18n: Spanish + English | ✅ | ✅ |
 | Audit log | ✅ | ✅ |
 | Attack Map (interactive network topology canvas) | ✅ | ✅ |
+| Research Papers (structured editor + Exploit-DB integration) | ✅ | ✅ |
 | Nessus live scan feed | ❌ | ✅ |
 | OpenVAS live task feed | ❌ | ✅ |
 | AllSafe CRM sync | ❌ | ✅ |
 | Operations dashboard (exec metrics, charts) | ❌ | ✅ |
 | Custom PDF branding + org logo | ❌ | ✅ |
-| Research Papers (structured editor + Exploit-DB integration) | ✅ | ✅ |
 
 > **Upgrade path**: Community and Pro share the same database schema. Upgrading is a file replacement - no migrations needed.
 
@@ -255,8 +255,8 @@ Tested on Ubuntu 22.04 / 24.04 and Debian 12. Installs Node.js, MySQL, nginx and
 ```bash
 git clone https://github.com/allsafe-ar/gungnir-community.git
 cd gungnir-community
-cp backend/.env.example backend/.env
-# Edit backend/.env: set DB_PASSWORD and JWT_SECRET
+cp .env.example .env
+# Edit .env: set DB_PASSWORD, DB_ROOT_PASSWORD and JWT_SECRET (openssl rand -hex 32)
 docker compose up -d
 ```
 
