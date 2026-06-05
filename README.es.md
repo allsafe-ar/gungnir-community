@@ -210,12 +210,19 @@ Importar hallazgos desde archivos de salida de scanners directamente en cualquie
 - **DNS** - resolución de registros A, MX, NS, TXT, CNAME
 
 ### Seguridad & Auth
-- **JWT** - expiración 12h, revocación por `token_version` al cambiar contraseña o deshabilitar usuario
-- **TOTP 2FA** - RFC 6238, setup via código QR, deshabilitable con confirmación
-- **Lockout de cuenta** - 5 intentos fallidos → bloqueo de 15 minutos, persistido en DB (sobrevive reinicios)
-- **Control de acceso por rol** - `admin` / `auditor` / `pentester` con guards de rutas granulares
-- **Audit log** - todas las acciones de creación/modificación/eliminación/importación registradas con usuario, IP y timestamp
-- **OWASP Top 10 2021** - completamente cumplido, 100% queries parametrizadas, sin vectores de inyección
+
+La seguridad es una característica de primer nivel — la misma base de hardening que la suite comercial de AllSafe:
+
+- **JWT** — expiración 12h con revocación por `token_version` al cambiar contraseña o deshabilitar usuario
+- **TOTP 2FA** — RFC 6238, setup via código QR, deshabilitable con confirmación
+- **Lockout de cuenta** — 5 intentos fallidos → bloqueo de 15 minutos, **persistido en la base de datos** (sobrevive reinicios)
+- **bcrypt** para el hashing de contraseñas (salt por usuario)
+- **Headers de seguridad** (Helmet) + **rate limiting HTTP** (300 req/15 min; endpoints de auth con límite aparte)
+- **Control de acceso por rol** — `admin` / `auditor` / `pentester` con guards de rutas granulares
+- **Audit log** — todas las acciones de creación/modificación/eliminación/importación registradas con usuario, IP y timestamp
+- **SQL 100% parametrizado** — sin queries armadas por concatenación, sin vectores de inyección (OWASP Top 10 2021)
+- **Arranque fail-fast** — el backend no inicia con un `JWT_SECRET` ausente o por defecto
+- **CORS** restringido al origen configurado (sin comodín)
 
 ---
 

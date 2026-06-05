@@ -210,12 +210,19 @@ Import findings from scanner output files directly into any engagement phase:
 - **DNS** - A, MX, NS, TXT, CNAME resolution
 
 ### Security & Auth
-- **JWT** - 12h expiry, `token_version` revocation on password change or user disable
-- **TOTP 2FA** - RFC 6238, setup via QR code, disable with confirmation
-- **Account lockout** - 5 failed attempts → 15-minute lockout, persisted in DB (survives restarts)
-- **Role-based access** - `admin` / `auditor` / `pentester` with fine-grained route guards
-- **Audit log** - all create/update/delete/import actions logged with user, IP, and timestamp
-- **OWASP Top 10 2021** - fully compliant, 100% parameterized queries, no injection vectors
+
+Security is a first-class feature here — the same hardening baseline as the commercial AllSafe suite:
+
+- **JWT** — 12h expiry with `token_version` revocation on password change or user disable
+- **TOTP 2FA** — RFC 6238, setup via QR code, disable with confirmation
+- **Account lockout** — 5 failed attempts → 15-minute lockout, **persisted in the database** (survives restarts)
+- **bcrypt** password hashing (per-user salt)
+- **Security headers** (Helmet) + **HTTP rate limiting** (300 req/15 min; auth endpoints throttled separately)
+- **Role-based access control** — `admin` / `auditor` / `pentester` with fine-grained route guards
+- **Audit log** — all create/update/delete/import actions logged with user, IP, and timestamp
+- **100% parameterized SQL** — no string-built queries, no injection vectors (OWASP Top 10 2021)
+- **Fail-fast startup** — the backend refuses to boot with a missing or default `JWT_SECRET`
+- **CORS** locked to the configured origin (no wildcard)
 
 ---
 
