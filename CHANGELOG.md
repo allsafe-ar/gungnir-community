@@ -3,6 +3,15 @@
 All notable changes to Gungnir Community are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/); versioning follows [SemVer](https://semver.org/).
 
+## [1.2.0] - 2026-08-26
+
+### Added
+- Product version visible in the app (sidebar footer + login).
+- CSV export of findings per engagement, with a button in the engagement workspace.
+- Per-user dark/light theme preference persisted in the database.
+- Markdown support in findings (description, steps, recommendation) with a per-field live preview.
+- New built-in finding templates: Active Directory, IoT and Mobile. Idempotent template seeding.
+
 ## [1.1.1] - 2026-06-05
 
 ### Security
