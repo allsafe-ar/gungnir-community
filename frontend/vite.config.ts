@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { createRequire } from 'module'
 import path from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -7,7 +8,10 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { playwright } from '@vitest/browser-playwright'
 
 // https://vite.dev/config/
+const pkg = createRequire(import.meta.url)('./package.json')
+
 export default defineConfig({
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [
     tanstackRouter({
       target: 'react',

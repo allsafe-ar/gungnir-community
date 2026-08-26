@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { LOGO_B64 } from '@/lib/logo'
 import { AuthLayout } from '../auth-layout'
 import { UserAuthForm } from './components/user-auth-form'
+import { APP_VERSION } from '@/lib/version'
 
 export function SignIn() {
   const { t } = useTranslation()
@@ -26,6 +27,9 @@ export function SignIn() {
         </Card>
         <p className='text-center text-xs text-muted-foreground'>
           AllSafe Security Solutions · {t('auth.footer')}
+        </p>
+        <p className='text-center text-xs text-muted-foreground/70'>
+          Gungnir Community v{APP_VERSION}
         </p>
       </div>
     </AuthLayout>
