@@ -13,7 +13,7 @@
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
   ![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat-square&logo=mysql&logoColor=white)
   ![License](https://img.shields.io/badge/License-AGPL--3.0-blue?style=flat-square)
-  ![Version](https://img.shields.io/badge/Version-Community-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/Version-1.2.0-blue?style=flat-square)
 
   [![Website](https://img.shields.io/badge/Website-allsafe.com.ar%2Fen%2Fgungnir--community-ff3131?style=for-the-badge&labelColor=1e324d)](https://allsafe.com.ar/en/gungnir-community/)
 </div>
@@ -51,19 +51,21 @@ Gungnir Community includes everything a pentest team needs to run professional e
 
 - **Full engagement lifecycle** - clients, phases (Planning → Recon → Scanning → Exploitation → Post-Exploitation → Reporting), or **custom mode** with fully custom phases (free-form name, work plan, document uploads and progress updates); operation logs, scope management, evidence uploads per phase (with count badge), MITRE ATT&CK mapping
 - **Export/Import engagements (ZIP)** - full-fidelity export: findings (CVSS, MITRE, CWE, status), operation logs (timestamps preserved), scope with ports/OS/pwned, techniques, phase metadata, evidence files; import on any instance with one click
-- **Finding editor** with CVSS 3.1 visual calculator, CWE + OWASP classification, and status tracking
+- **Finding editor** with CVSS 3.1 visual calculator, CWE + OWASP classification, status tracking, and **Markdown** in description / steps / recommendation (with live preview)
+- **CSV export of findings** per engagement (Excel-friendly), alongside the ZIP export
 - **CVE auto-populate** - enter a CVE ID and Gungnir auto-fills CVSS vector, score, description and CWE from the NVD API
 - **PDF pentest report** - professional output with executive and technical sections
 - **XML import** - import findings from Nessus (.nessus), Burp Suite (.xml), OpenVAS (.xml) and Nmap (-oX .xml) directly into any engagement phase
 - **Command arsenal** - 2,300+ searchable pentest commands (Recon, Web, Network, Active Directory, Post-Exploitation, Evasion and more) - including OWASP ZAP, tshark, searchsploit, smbmap, wes-ng, Windows SysNative techniques and more
-- **Finding templates** - 15 built-in templates (SQLi, XSS, CSRF, SSRF, XXE, RCE, path traversal, default credentials, open redirect, etc.) + custom library
+- **Finding templates** - 22 built-in templates including web (SQLi, XSS, CSRF, SSRF, XXE, RCE, path traversal, etc.), **Active Directory** (Kerberoasting, AS-REP Roasting, LLMNR/NBT-NS poisoning), **IoT** (default credentials, unencrypted firmware) and **Mobile** (insecure data storage, missing certificate pinning) + custom library
+- **Per-user dark/light theme** persisted in the database (follows you across devices), and the product version visible in the app
 - **OSINT / Recon** - Shodan, VirusTotal, Censys, crt.sh, RDAP, DNS using your own API keys (no vendor lock-in)
 - **Notes** - personal markdown notes with tag system, pin support and note sharing between users
 - **Research Papers** - structured vulnerability research editor (Black Hat / academic / technical templates) with direct Exploit-DB integration - search, preview and save papers to your local library
 - **Auth** - JWT (12h), TOTP 2FA (RFC 6238), account lockout, role-based access
 - **Internationalization** - Spanish (default) and English, switchable per user
 
-> Looking for **live Nessus/OpenVAS scanner feeds**, **AllSafe CRM sync**, or the **executive Operations dashboard**? Those features are available in [Gungnir Pro](https://www.allsafe.com.ar).
+> Looking for **Team Engagements** (multi-user collaboration per engagement with restricted-by-default visibility, phase assignment, activity feed and **real-time presence/sync over WebSocket**), **live Nessus/OpenVAS scanner feeds**, **AllSafe CRM sync**, the **executive Operations dashboard**, or **saved & shareable writeups**? Those features are available in [Gungnir Pro](https://www.allsafe.com.ar).
 
 ---
 
@@ -80,8 +82,11 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | PDF pentest report | ✅ | ✅ |
 | XML import (Nessus, Burp, OpenVAS, Nmap) | ✅ | ✅ |
 | Command arsenal (2,300+ commands, incl. OWASP ZAP) | ✅ | ✅ |
-| Finding templates (15 built-in + custom) | ✅ | ✅ |
+| Finding templates (22 built-in incl. AD / IoT / Mobile + custom) | ✅ | ✅ |
 | Notes with sharing | ✅ | ✅ |
+| CSV export of findings | ✅ | ✅ |
+| Markdown in findings (description / steps / recommendation) | ✅ | ✅ |
+| Per-user dark/light theme (persisted) | ✅ | ✅ |
 | OSINT / Recon (Shodan, VirusTotal, Censys, crt.sh, DNS) | ✅ | ✅ |
 | CVE auto-populate (NVD) | ✅ | ✅ |
 | TOTP 2FA + account lockout | ✅ | ✅ |
@@ -90,6 +95,10 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | Audit log | ✅ | ✅ |
 | Attack Map (interactive network topology canvas) | ✅ | ✅ |
 | Research Papers (structured editor + Exploit-DB integration) | ✅ | ✅ |
+| **Team Engagements** — membership per engagement + restricted-by-default visibility | ❌ | ✅ |
+| **Team Engagements** — phase assignment + per-engagement activity feed | ❌ | ✅ |
+| **Real-time collaboration** — live presence + auto-sync (WebSocket) | ❌ | ✅ |
+| Saved & shareable **writeups** (Community writeups are a local generator) | ❌ | ✅ |
 | Nessus live scan feed | ❌ | ✅ |
 | OpenVAS live task feed | ❌ | ✅ |
 | AllSafe CRM sync | ❌ | ✅ |

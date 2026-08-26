@@ -13,7 +13,7 @@
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
   ![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat-square&logo=mysql&logoColor=white)
   ![License](https://img.shields.io/badge/License-AGPL--3.0-blue?style=flat-square)
-  ![Version](https://img.shields.io/badge/Version-Community-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/Version-1.2.0-blue?style=flat-square)
 
   [![Sitio web](https://img.shields.io/badge/Sitio_web-allsafe.com.ar%2Fgungnir--community-ff3131?style=for-the-badge&labelColor=1e324d)](https://allsafe.com.ar/gungnir-community/)
 </div>
@@ -51,19 +51,21 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 
 - **Ciclo de vida completo del engagement** - clientes, fases (Planificación → Reconocimiento → Escaneo → Explotación → Post-Explotación → Reporte), o **modo custom** con fases completamente personalizadas (nombre libre, plan de trabajo, carga de documentos y actualizaciones de progreso); operation logs, gestión de scope, carga de evidencias por fase (con badge de conteo), mapeo MITRE ATT&CK
 - **Exportar/Importar engagements (ZIP)** - exportá cualquier engagement como un ZIP portátil e importalo en cualquier instancia de Gungnir; incluye todo: hallazgos, fases, operation logs, scope, técnicas y archivos de evidencia
-- **Editor de hallazgos** con calculadora visual CVSS 3.1, clasificación CWE + OWASP y seguimiento de estado
+- **Editor de hallazgos** con calculadora visual CVSS 3.1, clasificación CWE + OWASP, seguimiento de estado y **Markdown** en descripción / pasos / recomendación (con vista previa)
+- **Export CSV de hallazgos** por engagement (compatible con Excel), además del export ZIP
 - **Auto-populate por CVE** - ingresá un CVE ID y Gungnir completa automáticamente el vector CVSS, score, descripción y CWE desde la API de NVD
 - **Reporte PDF de pentesting** - salida profesional con secciones ejecutiva y técnica
 - **Importación XML** - importar hallazgos desde Nessus (.nessus), Burp Suite (.xml), OpenVAS (.xml) y Nmap (-oX .xml) directamente en cualquier fase del engagement
 - **Arsenal de comandos** - 2.300+ comandos de pentesting buscables (Recon, Web, Network, Active Directory, Post-Explotación, Evasión y más) - incluye OWASP ZAP, tshark, searchsploit, smbmap, wes-ng, técnicas SysNative Windows y más
-- **Templates de hallazgos** - 15 templates preconfigurados (SQLi, XSS, CSRF, SSRF, XXE, RCE, path traversal, credenciales por defecto, open redirect, etc.) + biblioteca personalizada
+- **Templates de hallazgos** - 22 templates preconfigurados: web (SQLi, XSS, CSRF, SSRF, XXE, RCE, path traversal, etc.), **Active Directory** (Kerberoasting, AS-REP Roasting, envenenamiento LLMNR/NBT-NS), **IoT** (credenciales por defecto, firmware sin cifrar) y **Mobile** (almacenamiento inseguro, falta de certificate pinning) + biblioteca personalizada
+- **Tema dark/light por usuario** persistido en la base de datos (te sigue entre dispositivos), y la versión del producto visible en la app
 - **OSINT / Recon** - Shodan, VirusTotal, Censys, crt.sh, RDAP, DNS usando tus propias API keys (sin vendor lock-in)
 - **Notas** - notas personales en markdown con sistema de tags, pin y compartir entre usuarios
 - **Research Papers** - editor estructurado de investigación de vulnerabilidades (templates Black Hat / académico / técnico) con integración directa a Exploit-DB - buscá, previsualizá y guardá papers en tu biblioteca local
 - **Auth** - JWT (12h), TOTP 2FA (RFC 6238), lockout de cuenta, control de acceso por rol
 - **Internacionalización** - Español (por defecto) e Inglés, configurable por usuario
 
-> ¿Buscás **feeds de scanners Nessus/OpenVAS en vivo**, **sincronización con CRM AllSafe** o el **dashboard de Operaciones ejecutivo**? Esas funcionalidades están disponibles en [Gungnir Pro](https://www.allsafe.com.ar).
+> ¿Buscás **Team Engagements** (colaboración multiusuario por engagement con visibilidad restringida por default, asignación de fases, feed de actividad y **presencia/sync en tiempo real por WebSocket**), **feeds de scanners Nessus/OpenVAS en vivo**, **sincronización con CRM AllSafe**, el **dashboard de Operaciones ejecutivo** o **writeups guardados y compartibles**? Esas funcionalidades están disponibles en [Gungnir Pro](https://www.allsafe.com.ar).
 
 ---
 
@@ -82,6 +84,9 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 | Arsenal de comandos (2.300+ comandos, incl. OWASP ZAP) | ✅ | ✅ |
 | Templates de hallazgos (15 built-in + personalizados) | ✅ | ✅ |
 | Notas con compartir | ✅ | ✅ |
+| Export CSV de hallazgos | ✅ | ✅ |
+| Markdown en hallazgos (descripción / pasos / recomendación) | ✅ | ✅ |
+| Tema dark/light por usuario (persistido) | ✅ | ✅ |
 | OSINT / Recon (Shodan, VirusTotal, Censys, crt.sh, DNS) | ✅ | ✅ |
 | Auto-populate por CVE (NVD) | ✅ | ✅ |
 | TOTP 2FA + lockout de cuenta | ✅ | ✅ |
@@ -89,6 +94,10 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 | i18n: Español + Inglés | ✅ | ✅ |
 | Audit log | ✅ | ✅ |
 | Mapa de Ataque (canvas de topología de red interactivo) | ✅ | ✅ |
+| **Team Engagements** — membresía por engagement + visibilidad restringida por default | ❌ | ✅ |
+| **Team Engagements** — asignación de fases + feed de actividad por engagement | ❌ | ✅ |
+| **Colaboración en tiempo real** — presencia en vivo + auto-sync (WebSocket) | ❌ | ✅ |
+| **Writeups** guardados y compartibles (en Community son un generador local) | ❌ | ✅ |
 | Feed de scans Nessus en vivo | ❌ | ✅ |
 | Feed de tareas OpenVAS en vivo | ❌ | ✅ |
 | Sync CRM AllSafe | ❌ | ✅ |
