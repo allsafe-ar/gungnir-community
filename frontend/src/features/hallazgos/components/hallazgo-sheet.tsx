@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Markdown } from '@/components/markdown'
 import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
@@ -76,6 +77,33 @@ function empty(defaultPhase = 'scanning'): HallazgoData {
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
+// Campo con soporte markdown y vista previa. Lo que se ve acá es lo que renderiza el reporte.
+function MdField({ label, value, onChange, rows = 4, placeholder }: {
+  label: React.ReactNode
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+  rows?: number
+  placeholder?: string
+}) {
+  const [preview, setPreview] = useState(false)
+  return (
+    <div className='space-y-1.5'>
+      <div className='flex items-center justify-between'>
+        <Label>{label}</Label>
+        <button type='button' onClick={() => setPreview(p => !p)}
+          className='text-[11px] text-muted-foreground hover:text-foreground'>
+          {preview ? 'Editar' : 'Vista previa (Markdown)'}
+        </button>
+      </div>
+      {preview
+        ? <div className='min-h-[5rem] rounded-md border bg-muted/30 px-3 py-2'>
+            {value.trim() ? <Markdown>{value}</Markdown> : <span className='text-xs text-muted-foreground'>Nada para previsualizar.</span>}
+          </div>
+        : <Textarea value={value} onChange={onChange} rows={rows} placeholder={placeholder} />}
+    </div>
+  )
+}
+
 export function HallazgoSheet({
   open, onOpenChange, engagementId, defaultPhase, hallazgoId, onSaved,
 }: HallazgoSheetProps) {
@@ -445,17 +473,11 @@ export function HallazgoSheet({
                   placeholder='192.168.1.10, https://app.ejemplo.com/login, etc.' />
               </div>
 
-              <div className='space-y-1.5'>
-                <Label>{t('finding.label_description')}</Label>
-                <Textarea value={form.description} onChange={set('description')} rows={4}
-                  placeholder='Descripción técnica detallada de la vulnerabilidad...' />
-              </div>
+              <MdField label={t('finding.label_description')} value={form.description} onChange={set('description')} rows={4}
+                placeholder='Descripción técnica detallada de la vulnerabilidad... (soporta Markdown)' />
 
-              <div className='space-y-1.5'>
-                <Label>{t('finding.label_steps')}</Label>
-                <Textarea value={form.steps_to_reproduce} onChange={set('steps_to_reproduce')} rows={4}
-                  placeholder={'1. Enviar petición POST a /api/login\n2. Modificar el parámetro username con: \' OR 1=1--\n3. Observar respuesta 200 con acceso concedido'} />
-              </div>
+              <MdField label={t('finding.label_steps')} value={form.steps_to_reproduce} onChange={set('steps_to_reproduce')} rows={4}
+                placeholder={'1. Enviar petición POST a /api/login\n2. Modificar el parámetro username con: \' OR 1=1--\n3. Observar respuesta 200 con acceso concedido'} />
 
               <div className='space-y-1.5'>
                 <Label>
@@ -580,11 +602,8 @@ export function HallazgoSheet({
           {/* ── Tab: Remediación ────────────────────────────── */}
           {activeTab === 'remediacion' && (
             <div className='space-y-4'>
-              <div className='space-y-1.5'>
-                <Label>{t('finding.label_recommendation')}</Label>
-                <Textarea value={form.recommendation} onChange={set('recommendation')} rows={6}
-                  placeholder={'• Implementar prepared statements / ORM en todas las consultas\n• Validar y sanitizar inputs del lado del servidor\n• Aplicar principio de menor privilegio en cuentas de BD'} />
-              </div>
+              <MdField label={t('finding.label_recommendation')} value={form.recommendation} onChange={set('recommendation')} rows={6}
+                placeholder={'• Implementar prepared statements / ORM en todas las consultas\n• Validar y sanitizar inputs del lado del servidor\n• Aplicar principio de menor privilegio en cuentas de BD'} />
             </div>
           )}
         </div>

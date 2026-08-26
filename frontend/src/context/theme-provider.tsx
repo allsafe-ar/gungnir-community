@@ -75,9 +75,35 @@ export function ThemeProvider({
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [theme, resolvedTheme])
 
+  const persistTheme = (tval: Theme) => {
+    const token = localStorage.getItem('gungnir_token')
+    if (!token) return
+    fetch('/api/auth/theme', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ theme: tval }),
+    }).catch(() => {})
+  }
+
+  useEffect(() => {
+    const token = localStorage.getItem('gungnir_token')
+    if (!token) return
+    fetch('/api/auth/theme', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => (r.ok ? r.json() : null))
+      .then((d: { theme?: Theme } | null) => {
+        if (d?.theme && ['dark', 'light', 'system'].includes(d.theme)) {
+          setCookie(storageKey, d.theme, THEME_COOKIE_MAX_AGE)
+          _setTheme(d.theme)
+        }
+      })
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const setTheme = (theme: Theme) => {
     setCookie(storageKey, theme, THEME_COOKIE_MAX_AGE)
     _setTheme(theme)
+    persistTheme(theme)
   }
 
   const resetTheme = () => {

@@ -220,6 +220,28 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
       .catch(() => toast.error(t('eng.export_error')))
   }
 
+  const handleExportCsv = () => {
+    const token = localStorage.getItem('gungnir_token')
+    fetch(`/api/engagements/${engagementId}/findings.csv`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(r => {
+        if (!r.ok) return Promise.reject()
+        const cd = r.headers.get('Content-Disposition')
+        const match = cd?.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/)
+        const filename = match ? match[1].replace(/['"]/g, '') : `engagement-${engagementId}_hallazgos.csv`
+        return r.blob().then(blob => ({ blob, filename }))
+      })
+      .then(({ blob, filename }) => {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url; a.download = filename
+        document.body.appendChild(a); a.click()
+        document.body.removeChild(a); URL.revokeObjectURL(url)
+      })
+      .catch(() => toast.error(t('eng.export_error')))
+  }
+
   if (loading) {
     return (
       <div className='flex h-64 items-center justify-center'>
@@ -347,6 +369,10 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
           <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
             onClick={handleExport}>
             <Download className='mr-1.5 size-3' />{t('eng.export_zip')}
+          </Button>
+          <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
+            onClick={handleExportCsv}>
+            <Download className='mr-1.5 size-3' />{t('eng.export_csv')}
           </Button>
         </div>
       </div>

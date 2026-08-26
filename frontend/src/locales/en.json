@@ -402,7 +402,8 @@
     "status_reporting": "Reporting",
     "status_qa": "QA",
     "status_delivered": "Delivered",
-    "status_archived": "Archived"
+    "status_archived": "Archived",
+    "export_csv": "Export findings (CSV)"
   },
   "engs": {
     "title": "Engagements",

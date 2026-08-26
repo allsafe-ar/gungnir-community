@@ -232,6 +232,7 @@ async function initDB() {
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
   // Migración: columnas para integración CRM
+  try { await qRun("ALTER TABLE users ADD COLUMN theme VARCHAR(10) NOT NULL DEFAULT 'system'"); } catch(_) {}
   try { await qRun("ALTER TABLE clients ADD COLUMN crm_id VARCHAR(36) NULL"); } catch(_) {}
   try { await qRun("ALTER TABLE clients ADD COLUMN crm_synced_at DATETIME NULL"); } catch(_) {}
 
@@ -731,7 +732,9 @@ async function initDB() {
 
   // ── Seed finding templates built-in ──────────────────────────────────────
   const tplCount = await qRow("SELECT COUNT(*) AS c FROM finding_templates WHERE is_builtin=1");
-  if (!tplCount || tplCount.c == 0) {
+  {
+    // Siembra idempotente: inserta los templates builtin que falten (por título).
+    // Así una DB nueva los recibe todos, y una existente recibe los nuevos sin duplicar.
     const tpls = [
       { title:"SQL Injection", category:"Injection", severity:"critical", cwe_id:"CWE-89", cwe_name:"Improper Neutralization of Special Elements used in an SQL Command", owasp:"A03:2021 – Injection", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", score:9.8,
         desc:"La aplicación construye consultas SQL concatenando directamente datos controlados por el usuario sin sanitización ni parametrización. Esto permite a un atacante modificar la lógica de la consulta para extraer datos arbitrarios, eludir autenticación o ejecutar operaciones destructivas en la base de datos.",
@@ -793,15 +796,48 @@ async function initDB() {
         desc:"La aplicación deserializa datos controlados por el usuario sin validación, permitiendo a un atacante modificar el estado del objeto deserializado o ejecutar código arbitrario (RCE) mediante gadget chains de la librería de clases del runtime.",
         steps:"1. Identificar datos serializados: cookies Base64 que comienzan con 'rO0AB' (Java), 'a:' (PHP), '\\x80\\x04' (Python pickle).\n2. Modificar el objeto serializado para cambiar campos como isAdmin, userId.\n3. Usar ysoserial (Java) para generar gadget chains de RCE.\n4. Explotar mediante pickle.loads() en Python con payload de ejecución de comandos.",
         rec:"Nunca deserializar datos controlados por el usuario. Usar formatos de datos simples (JSON, XML con schema) en vez de serialización nativa. Si se requiere serialización, firmar criptográficamente los datos antes de deserializar. Implementar ObjectInputStream personalizado que solo acepte clases en allowlist (Java). Ejecutar en sandbox con mínimos privilegios."},
+      // ── Templates community adicionales: Active Directory, IoT, Mobile ──
+      { title:"Kerberoasting", category:"Active Directory", severity:"high", cwe_id:"CWE-522", cwe_name:"Insufficiently Protected Credentials", owasp:"MITRE ATT&CK T1558.003", cvss:"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N", score:6.5,
+        desc:"Cuentas de servicio con SPN registrado permiten a cualquier usuario del dominio solicitar un ticket de servicio (TGS) cifrado con el hash de la contraseña de la cuenta. Ese ticket se puede crackear offline, y como las cuentas de servicio suelen tener contraseñas débiles y privilegios altos, deriva en compromiso del dominio.",
+        steps:"1. Con cualquier cuenta de dominio, enumerar SPNs: GetUserSPNs.py o Rubeus.exe kerberoast.\n2. Solicitar los TGS de las cuentas con SPN.\n3. Crackear los tickets offline con hashcat (modo 13100).\n4. Reutilizar las credenciales para moverse lateralmente o escalar.",
+        rec:"Usar cuentas de servicio gestionadas (gMSA) con contraseñas aleatorias de 120+ caracteres rotadas automáticamente. Contraseñas largas y aleatorias en las cuentas de servicio restantes. Forzar AES en vez de RC4. Monitorear solicitudes masivas de TGS (evento 4769). Aplicar mínimo privilegio."},
+      { title:"AS-REP Roasting", category:"Active Directory", severity:"high", cwe_id:"CWE-522", cwe_name:"Insufficiently Protected Credentials", owasp:"MITRE ATT&CK T1558.004", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N", score:7.5,
+        desc:"Cuentas con la opción 'no requerir preautenticación Kerberos' (DONT_REQ_PREAUTH) permiten a un atacante no autenticado solicitar un AS-REP cifrado con el hash de la contraseña del usuario, crackeable offline.",
+        steps:"1. Enumerar cuentas sin preautenticación: GetNPUsers.py o Rubeus.exe asreproast.\n2. Obtener los hashes AS-REP.\n3. Crackear offline con hashcat (modo 18200).\n4. Usar las credenciales para acceso inicial al dominio.",
+        rec:"Deshabilitar 'no requerir preautenticación' en todas las cuentas (revisar userAccountControl). Aplicar contraseñas robustas. Auditar periódicamente cuentas con DONT_REQ_PREAUTH. Monitorear eventos 4768 con cifrado RC4."},
+      { title:"Envenenamiento LLMNR/NBT-NS", category:"Active Directory", severity:"high", cwe_id:"CWE-300", cwe_name:"Channel Accessible by Non-Endpoint", owasp:"MITRE ATT&CK T1557.001", cvss:"CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N", score:8.1,
+        desc:"Cuando la resolución DNS falla, Windows recurre a LLMNR y NBT-NS, protocolos de broadcast sin autenticación. Un atacante en el segmento de red puede responder esas consultas y capturar hashes NetNTLMv2, o relayarlos a otros hosts para ejecución remota.",
+        steps:"1. En la red interna, ejecutar Responder para envenenar LLMNR/NBT-NS y capturar hashes.\n2. Crackear los NetNTLMv2 con hashcat (modo 5600), o\n3. Relayar con ntlmrelayx.py a hosts sin firma SMB para obtener sesión.\n4. Ejecutar comandos o volcar SAM en el host objetivo.",
+        rec:"Deshabilitar LLMNR (GPO) y NBT-NS en todas las interfaces. Habilitar firma SMB obligatoria. Segmentar la red y restringir broadcast. Implementar detección de Responder."},
+      { title:"Credenciales por defecto en dispositivo IoT", category:"IoT", severity:"critical", cwe_id:"CWE-1392", cwe_name:"Use of Default Credentials", owasp:"OWASP IoT I1: Weak, Guessable, or Hardcoded Passwords", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", score:9.8,
+        desc:"El dispositivo IoT expone interfaces de administración (web, Telnet, SSH) con credenciales por defecto de fábrica documentadas públicamente, permitiendo el control total del dispositivo por cualquier atacante con acceso de red.",
+        steps:"1. Identificar el dispositivo y modelo (banner, Shodan, fingerprinting).\n2. Buscar credenciales por defecto del fabricante (admin/admin, root/root, listas públicas).\n3. Acceder al panel web / Telnet / SSH con esas credenciales.\n4. Verificar control del dispositivo (config, firmware, red).",
+        rec:"Forzar cambio de contraseña en el primer arranque. Eliminar credenciales de fábrica hardcodeadas. Deshabilitar servicios de administración innecesarios (Telnet). Aislar los dispositivos IoT en una VLAN separada. Proceso de hardening y actualización de firmware."},
+      { title:"Firmware sin cifrar / extracción por hardware", category:"IoT", severity:"high", cwe_id:"CWE-1191", cwe_name:"On-Chip Debug and Test Interface With Improper Access Control", owasp:"OWASP IoT I9: Insecure Default Settings", cvss:"CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N", score:6.8,
+        desc:"El dispositivo permite extraer el firmware mediante interfaces de depuración (UART/JTAG) o dumpeo de la flash, y el firmware no está cifrado. Esto expone secretos hardcodeados (claves, credenciales, certificados) y la lógica de la aplicación.",
+        steps:"1. Abrir el dispositivo e identificar puertos UART/JTAG o el chip de flash.\n2. Volcar el firmware (lectura de flash SPI o consola UART).\n3. Extraer el sistema de archivos con binwalk.\n4. Buscar secretos: claves, certificados, credenciales, endpoints hardcodeados.",
+        rec:"Cifrar el firmware y habilitar secure boot con verificación de firma. Deshabilitar o proteger las interfaces de depuración (fusibles JTAG/UART) en producción. No almacenar secretos en el firmware; usar un secure element/TPM. Cifrar los datos sensibles en reposo."},
+      { title:"Almacenamiento inseguro de datos (Mobile)", category:"Mobile", severity:"high", cwe_id:"CWE-312", cwe_name:"Cleartext Storage of Sensitive Information", owasp:"OWASP Mobile M9: Insecure Data Storage", cvss:"CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N", score:6.8,
+        desc:"La aplicación móvil almacena datos sensibles (tokens de sesión, credenciales, PII) en texto plano en el dispositivo (SharedPreferences, SQLite, archivos, logs). Un atacante con acceso físico o con un dispositivo rooteado/con jailbreak puede leerlos.",
+        steps:"1. Instalar la app en un dispositivo/emulador rooteado o con jailbreak.\n2. Usar la app e inspeccionar el almacenamiento: /data/data/<paquete>/ (Android), sandbox de la app (iOS).\n3. Revisar SharedPreferences, bases SQLite, cachés y logs.\n4. Confirmar tokens/credenciales en texto plano.",
+        rec:"No almacenar secretos en el dispositivo salvo que sea imprescindible. Usar el Keystore de Android / Keychain de iOS. Cifrar las bases locales (SQLCipher). No escribir datos sensibles en logs. allowBackup=false / exclusión de iCloud."},
+      { title:"Falta de Certificate Pinning (Mobile)", category:"Mobile", severity:"medium", cwe_id:"CWE-295", cwe_name:"Improper Certificate Validation", owasp:"OWASP Mobile M5: Insecure Communication", cvss:"CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N", score:6.8,
+        desc:"La aplicación móvil no fija (pinning) el certificado o la clave pública del servidor, por lo que confía en cualquier CA del almacén del sistema. Un atacante que instale una CA en el dispositivo puede interceptar y modificar el tráfico TLS.",
+        steps:"1. Instalar una CA propia en el dispositivo y configurar un proxy (Burp/mitmproxy).\n2. Interceptar el tráfico de la app: si se ve en claro, no hay pinning.\n3. Probar bypass de detección de proxy si existe.\n4. Modificar respuestas para demostrar el impacto.",
+        rec:"Implementar certificate/public-key pinning contra el certificado del backend (Network Security Config en Android, ATS + pinning en iOS). Rotar los pines con backup. Validar la cadena y el hostname. Detectar entornos comprometidos (root/jailbreak) para datos críticos."},
     ];
+    let sembrados = 0;
     for(const t of tpls) {
+      const existe = await qRow("SELECT id FROM finding_templates WHERE title=? AND is_builtin=1", [t.title]);
+      if (existe) continue;
       await qRun(
         `INSERT INTO finding_templates (id,title,category,severity,description,steps_to_reproduce,recommendation,cwe_id,cwe_name,owasp_category,cvss_vector_31,cvss_score_31,is_builtin)
          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,1)`,
         [uuidv4(), t.title, t.category, t.severity, t.desc, t.steps, t.rec, t.cwe_id, t.cwe_name, t.owasp, t.cvss, t.score]
       );
+      sembrados++;
     }
-    console.log("[GUNGNIR] Finding templates sembrados.");
+    if (sembrados) console.log(`[GUNGNIR] Finding templates sembrados: ${sembrados}.`);
   }
 
   // Seed settings por defecto
@@ -902,8 +938,21 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 app.get("/api/auth/me", auth(), async (req, res) => {
-  const user = await qRow("SELECT id,username,email,full_name,role,totp_enabled,last_login FROM users WHERE id=?", [req.user.id]);
+  const user = await qRow("SELECT id,username,email,full_name,role,totp_enabled,last_login,theme FROM users WHERE id=?", [req.user.id]);
   res.json(user);
+});
+
+// Preferencia de tema del usuario (dark/light/system), persistida en la DB.
+app.get("/api/auth/theme", auth(), async (req, res) => {
+  const row = await qRow("SELECT theme FROM users WHERE id=?", [req.user.id]);
+  res.json({ theme: row?.theme || "system" });
+});
+
+app.put("/api/auth/theme", auth(), async (req, res) => {
+  const theme = String(req.body?.theme || "").toLowerCase();
+  if (!["dark", "light", "system"].includes(theme)) return res.status(400).json({ error: "Tema inválido" });
+  await qRun("UPDATE users SET theme=? WHERE id=?", [theme, req.user.id]);
+  res.json({ ok: true, theme });
 });
 
 app.post("/api/auth/change-password", auth(), async (req, res) => {
@@ -2705,6 +2754,46 @@ app.get("/api/engagements/:id/export", auth(), async (req, res) => {
     res.set({ "Content-Type": "application/zip", "Content-Disposition": `attachment; filename="${zipName}"`, "Content-Length": zipBuffer.length });
     res.send(zipBuffer);
   } catch (e) { console.error("Export error:", e); res.status(500).json({ error: "Error al generar el export" }); }
+});
+
+// EXPORT CSV — los hallazgos del engagement en una planilla.
+function csvEscape(v) {
+  if (v === null || v === undefined) return "";
+  const s = String(v);
+  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+app.get("/api/engagements/:id/findings.csv", auth(), async (req, res) => {
+  try {
+    const eng = await qRow("SELECT title FROM engagements WHERE id=?", [req.params.id]);
+    if (!eng) return res.status(404).json({ error: "Engagement no encontrado" });
+    const rows = await qRows(
+      `SELECT title, severity, cvss_score_31, cvss_vector_31, affected_asset, status,
+              cwe_id, cwe_name, owasp_category, mitre_technique_id, mitre_technique_name,
+              business_risk, exploitability, description, recommendation, created_at
+       FROM findings WHERE engagement_id=?
+       ORDER BY FIELD(severity,'critical','high','medium','low','info'), cvss_score_31 DESC`,
+      [req.params.id]
+    );
+    const cols = [
+      ["title","Título"],["severity","Severidad"],["cvss_score_31","CVSS 3.1"],["cvss_vector_31","Vector CVSS"],
+      ["affected_asset","Activo afectado"],["status","Estado"],["cwe_id","CWE"],["cwe_name","CWE nombre"],
+      ["owasp_category","OWASP"],["mitre_technique_id","MITRE ID"],["mitre_technique_name","MITRE técnica"],
+      ["business_risk","Riesgo de negocio"],["exploitability","Explotabilidad"],
+      ["description","Descripción"],["recommendation","Recomendación"],["created_at","Creado"],
+    ];
+    const header = cols.map(c => csvEscape(c[1])).join(",");
+    const lineas = rows.map(r => cols.map(c => csvEscape(r[c[0]])).join(","));
+    const csv = "\uFEFF" + [header, ...lineas].join("\r\n") + "\r\n";
+    const safe = String(eng.title || "engagement").replace(/[^\w.-]/g, "_").slice(0, 60);
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${safe}_hallazgos.csv"`);
+    auditLog(req.user.id, req.user.username, "export_csv", "engagements", req.params.id, `Export CSV de hallazgos (${rows.length})`, req.ip);
+    res.send(csv);
+  } catch (e) {
+    console.error("[CSV]", e.message);
+    res.status(500).json({ error: "Error al generar el CSV" });
+  }
 });
 
 // Helper: convierte cualquier valor de fecha a formato MySQL DATETIME (YYYY-MM-DD HH:MM:SS)
