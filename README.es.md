@@ -65,7 +65,7 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 - **Auth** - JWT (12h), TOTP 2FA (RFC 6238), lockout de cuenta, control de acceso por rol
 - **Internacionalización** - Español (por defecto) e Inglés, configurable por usuario
 
-> ¿Buscás **Team Engagements** (colaboración multiusuario por engagement con visibilidad restringida por default, asignación de fases, feed de actividad y **presencia/sync en tiempo real por WebSocket**), **feeds de scanners Nessus/OpenVAS en vivo**, **sincronización con CRM AllSafe**, el **dashboard de Operaciones ejecutivo** o **writeups guardados y compartibles**? Esas funcionalidades están disponibles en [Gungnir Pro](https://www.allsafe.com.ar).
+> ¿Buscás **Team Engagements** (colaboración multiusuario por engagement con visibilidad restringida por default, asignación de fases, feed de actividad y **presencia/sync en tiempo real por WebSocket**), **feeds de scanners Nessus/OpenVAS en vivo**, **sincronización con CRM AllSafe**, el **dashboard de Operaciones ejecutivo**, **writeups guardados y compartibles** o el **hosting SaaS multi-tenant con licenciamiento por cliente**? Esas funcionalidades están disponibles en [Gungnir Pro](https://www.allsafe.com.ar).
 
 ---
 
@@ -103,9 +103,11 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 | Sync CRM AllSafe | ❌ | ✅ |
 | Dashboard de Operaciones (métricas ejecutivas, gráficos) | ❌ | ✅ |
 | Branding PDF personalizado + logo de organización | ❌ | ✅ |
+| **Multi-tenant / SaaS** (instancias aisladas por cliente, drill-down del staff) | ❌ | ✅ |
+| **Licencias** (serial, plan, tope de usuarios, vencimiento, solo-lectura al vencer) | ❌ | ✅ |
 | Research Papers (editor estructurado + integración Exploit-DB) | ✅ | ✅ |
 
-> **Upgrade path**: Community y Pro comparten el mismo esquema de base de datos. Actualizar es un reemplazo de archivos - sin migraciones necesarias.
+> **Ruta de actualización (Community → Pro)**: el esquema de Pro es un **superconjunto** del de Community, así que tus datos migran sin perder nada. Si te self-hosteás Pro, las migraciones de esquema (aditivas) corren solas al primer arranque. Si pasás al SaaS alojado de AllSafe, se importan tus datos y se asignan a tu organización (tenant). En cualquier caso conservás todo.
 
 ---
 

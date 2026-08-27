@@ -65,7 +65,7 @@ Gungnir Community includes everything a pentest team needs to run professional e
 - **Auth** - JWT (12h), TOTP 2FA (RFC 6238), account lockout, role-based access
 - **Internationalization** - Spanish (default) and English, switchable per user
 
-> Looking for **Team Engagements** (multi-user collaboration per engagement with restricted-by-default visibility, phase assignment, activity feed and **real-time presence/sync over WebSocket**), **live Nessus/OpenVAS scanner feeds**, **AllSafe CRM sync**, the **executive Operations dashboard**, or **saved & shareable writeups**? Those features are available in [Gungnir Pro](https://www.allsafe.com.ar).
+> Looking for **Team Engagements** (multi-user collaboration per engagement with restricted-by-default visibility, phase assignment, activity feed and **real-time presence/sync over WebSocket**), **live Nessus/OpenVAS scanner feeds**, **AllSafe CRM sync**, the **executive Operations dashboard**, **saved & shareable writeups**, or **multi-tenant SaaS hosting with per-client licensing**? Those features are available in [Gungnir Pro](https://www.allsafe.com.ar).
 
 ---
 
@@ -104,8 +104,10 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | AllSafe CRM sync | ❌ | ✅ |
 | Operations dashboard (exec metrics, charts) | ❌ | ✅ |
 | Custom PDF branding + org logo | ❌ | ✅ |
+| **Multi-tenant / SaaS hosting** (isolated per-client instances, staff drill-down) | ❌ | ✅ |
+| **Licensing** (serial, plan, user limit, expiry, read-only on expiry) | ❌ | ✅ |
 
-> **Upgrade path**: Community and Pro share the same database schema. Upgrading is a file replacement - no migrations needed.
+> **Upgrade path**: Pro's database schema is a **superset** of Community's, so your data ports over cleanly. Self-hosting Pro applies additive schema migrations automatically on first start. Moving to AllSafe's hosted SaaS imports your data and assigns it to your organization (tenant). Either way you keep all your data.
 
 ---
 
