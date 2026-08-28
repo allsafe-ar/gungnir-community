@@ -28,20 +28,20 @@ Gungnir Community es una plataforma de gestión de pentesting libre y open sourc
 
 ## 🤝 Engagements de la Comunidad
 
-Gungnir tiene un intercambio de engagements integrado: **exportá cualquier engagement como ZIP e importalo en cualquier instancia con un solo clic** — hallazgos, fases, operation logs, scope y archivos de evidencia incluidos.
+Gungnir tiene un intercambio de engagements integrado: **exportá cualquier engagement como ZIP e importalo en cualquier instancia con un solo clic** - hallazgos, fases, operation logs, scope y archivos de evidencia incluidos.
 
 La comunidad comparte walkthroughs, writeups CTF y templates metodológicos en la carpeta [`community-engagements/`](community-engagements/) de este repositorio. Descargá uno, importalo, y tenés un engagement completamente documentado listo para explorar.
 
-El listado completo está en [`community-engagements/`](community-engagements/) — walkthroughs CTF (HTB, VulnHub), escenarios de entrenamiento y templates metodológicos, con nuevas contribuciones de la comunidad.
+El listado completo está en [`community-engagements/`](community-engagements/) - walkthroughs CTF (HTB, VulnHub), escenarios de entrenamiento y templates metodológicos, con nuevas contribuciones de la comunidad.
 
 **Cómo importar:** Engagements → **Importar** → seleccioná el `.zip`. Todo se recrea automáticamente con nuevos IDs.
 
 **Cómo compartir el tuyo:**
 1. Abrí cualquier engagement → **Exportar ZIP** en el sidebar
-2. Revisá el ZIP — sin credenciales reales, datos del cliente ni IPs de producción
+2. Revisá el ZIP - sin credenciales reales, datos del cliente ni IPs de producción
 3. Abrí un Pull Request agregando tu `.zip` a `community-engagements/` con una descripción breve
 
-> ⚠️ Siempre inspeccioná los ZIPs de terceros antes de importarlos. El `engagement.json` es texto plano — podés abrirlo en cualquier editor.
+> ⚠️ Siempre inspeccioná los ZIPs de terceros antes de importarlos. El `engagement.json` es texto plano - podés abrirlo en cualquier editor.
 
 ---
 
@@ -94,9 +94,9 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 | i18n: Español + Inglés | ✅ | ✅ |
 | Audit log | ✅ | ✅ |
 | Mapa de Ataque (canvas de topología de red interactivo) | ✅ | ✅ |
-| **Team Engagements** — membresía por engagement + visibilidad restringida por default | ❌ | ✅ |
-| **Team Engagements** — asignación de fases + feed de actividad por engagement | ❌ | ✅ |
-| **Colaboración en tiempo real** — presencia en vivo + auto-sync (WebSocket) | ❌ | ✅ |
+| **Team Engagements** - membresía por engagement + visibilidad restringida por default | ❌ | ✅ |
+| **Team Engagements** - asignación de fases + feed de actividad por engagement | ❌ | ✅ |
+| **Colaboración en tiempo real** - presencia en vivo + auto-sync (WebSocket) | ❌ | ✅ |
 | **Writeups** guardados y compartibles (en Community son un generador local) | ❌ | ✅ |
 | Feed de scans Nessus en vivo | ❌ | ✅ |
 | Feed de tareas OpenVAS en vivo | ❌ | ✅ |
@@ -169,7 +169,7 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 
 ### Ciclo de vida del Engagement
 - **Gestión de clientes** - empresa, industria, contacto, historial de engagements
-- **Engagements** - ciclo de vida completo con fases estructuradas: Planificación → Reconocimiento → Escaneo → Explotación → Post-Explotación → Reporte; o **modo custom** — creá engagements con fases completamente personalizadas (nombre libre, plan de trabajo, carga de documentos y actualizaciones de progreso)
+- **Engagements** - ciclo de vida completo con fases estructuradas: Planificación → Reconocimiento → Escaneo → Explotación → Post-Explotación → Reporte; o **modo custom** - creá engagements con fases completamente personalizadas (nombre libre, plan de trabajo, carga de documentos y actualizaciones de progreso)
 - **Operation logs** - registro con timestamp de comandos/herramientas por fase, con objetivo, herramienta, comando, notas y resultado (éxito/fallo); **Sync de scope** - importación de todos los targets únicos desde los logs al scope con puertos y OS inferidos
 - **Gestión de scope** - activos en/fuera de scope con tipo de OS, lista de puertos, flag pwned y resumen de vulnerabilidades
 - **Carga de evidencias** - adjuntos de archivos **por fase** (un panel de evidencias por fase); el sidebar muestra el contador (`ev.`) y el botón se destaca con un badge cuando hay archivos adjuntos; incluidas en el ZIP de exportación/importación
@@ -207,7 +207,7 @@ Importar hallazgos desde archivos de salida de scanners directamente en cualquie
 
 | Scanner | Formato | Mapeo de severidad |
 |---------|---------|-------------------|
-| Nessus | `.nessus` (XML) | Plugin severity 0–4 → info/low/medium/high/critical |
+| Nessus | `.nessus` (XML) | Plugin severity 0-4 → info/low/medium/high/critical |
 | Burp Suite | `.xml` | String de severidad → mapeado |
 | OpenVAS | `.xml` | Score base CVSS → bucket de severidad |
 | Nmap | `-oX .xml` | Heurística por puerto → info por defecto |
@@ -222,17 +222,17 @@ Importar hallazgos desde archivos de salida de scanners directamente en cualquie
 
 ### Seguridad & Auth
 
-La seguridad es una característica de primer nivel — la misma base de hardening que la suite comercial de AllSafe:
+La seguridad es una característica de primer nivel - la misma base de hardening que la suite comercial de AllSafe:
 
-- **JWT** — expiración 12h con revocación por `token_version` al cambiar contraseña o deshabilitar usuario
-- **TOTP 2FA** — RFC 6238, setup via código QR, deshabilitable con confirmación
-- **Lockout de cuenta** — 5 intentos fallidos → bloqueo de 15 minutos, **persistido en la base de datos** (sobrevive reinicios)
+- **JWT** - expiración 12h con revocación por `token_version` al cambiar contraseña o deshabilitar usuario
+- **TOTP 2FA** - RFC 6238, setup via código QR, deshabilitable con confirmación
+- **Lockout de cuenta** - 5 intentos fallidos → bloqueo de 15 minutos, **persistido en la base de datos** (sobrevive reinicios)
 - **bcrypt** para el hashing de contraseñas (salt por usuario)
 - **Headers de seguridad** (Helmet) + **rate limiting HTTP** (300 req/15 min; endpoints de auth con límite aparte)
-- **Control de acceso por rol** — `admin` / `auditor` / `pentester` con guards de rutas granulares
-- **Audit log** — todas las acciones de creación/modificación/eliminación/importación registradas con usuario, IP y timestamp
-- **SQL 100% parametrizado** — sin queries armadas por concatenación, sin vectores de inyección (OWASP Top 10 2021)
-- **Arranque fail-fast** — el backend no inicia con un `JWT_SECRET` ausente o por defecto
+- **Control de acceso por rol** - `admin` / `auditor` / `pentester` con guards de rutas granulares
+- **Audit log** - todas las acciones de creación/modificación/eliminación/importación registradas con usuario, IP y timestamp
+- **SQL 100% parametrizado** - sin queries armadas por concatenación, sin vectores de inyección (OWASP Top 10 2021)
+- **Arranque fail-fast** - el backend no inicia con un `JWT_SECRET` ausente o por defecto
 - **CORS** restringido al origen configurado (sin comodín)
 
 ---
@@ -336,10 +336,10 @@ gungnir-community/
 
 ### v1.1 (actual)
 - [x] Arsenal ampliado a 2.300+ comandos (tshark, searchsploit, smbmap, wes-ng, PS SysNative, OWASP ZAP y más)
-- [x] **Exportar/Importar engagements (ZIP)** — intercambio portable entre instancias
-- [x] **Repositorio de engagements community** — compartí y descargá templates vía `community-engagements/`
+- [x] **Exportar/Importar engagements (ZIP)** - intercambio portable entre instancias
+- [x] **Repositorio de engagements community** - compartí y descargá templates vía `community-engagements/`
 - [x] Edición inline del título del engagement
-- [x] Auto-estado de engagement — cuando todas las fases se completan, el estado se actualiza automáticamente
+- [x] Auto-estado de engagement - cuando todas las fases se completan, el estado se actualiza automáticamente
 
 ### v1.2 (próxima)
 - [ ] Soporte markdown en campos de descripción de hallazgos
@@ -348,9 +348,9 @@ gungnir-community/
 
 ### v2.0
 - [ ] Colaboración en tiempo real (WebSockets)
-- [ ] Portal de cliente — los clientes ven el estado del engagement y descargan reportes
+- [ ] Portal de cliente - los clientes ven el estado del engagement y descargan reportes
 - [ ] Mapa visual MITRE ATT&CK Navigator con heatmap
-- [ ] Seguimiento de remediación — ciclo de vida de hallazgos post-entrega
+- [ ] Seguimiento de remediación - ciclo de vida de hallazgos post-entrega
 - [ ] Templates de reportes Word/Docx
 
 ---

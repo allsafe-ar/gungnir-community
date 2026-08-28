@@ -28,20 +28,20 @@ Gungnir Community is a free, open-source pentest management platform that covers
 
 ## 🤝 Community Engagements
 
-Gungnir has a built-in engagement exchange: **export any engagement as a ZIP and import it on any instance in one click** — findings, phases, operation logs, scope and evidence files included.
+Gungnir has a built-in engagement exchange: **export any engagement as a ZIP and import it on any instance in one click** - findings, phases, operation logs, scope and evidence files included.
 
 The community shares walkthroughs, CTF write-ups and methodology templates in the [`community-engagements/`](community-engagements/) folder of this repository. Download one, import it, and you have a fully-documented engagement ready to explore.
 
-Browse the full list in [`community-engagements/`](community-engagements/) — CTF walkthroughs (HTB, VulnHub), training scenarios and methodology templates, growing with each community contribution.
+Browse the full list in [`community-engagements/`](community-engagements/) - CTF walkthroughs (HTB, VulnHub), training scenarios and methodology templates, growing with each community contribution.
 
 **How to import:** Engagements → **Import** → select the `.zip`. Everything is recreated automatically with new IDs.
 
 **How to share yours:**
 1. Open any engagement → **Export ZIP** in the sidebar
-2. Review the ZIP — no real credentials, client PII, or production IPs
+2. Review the ZIP - no real credentials, client PII, or production IPs
 3. Open a Pull Request adding your `.zip` to `community-engagements/` with a short description
 
-> ⚠️ Always inspect third-party ZIPs before importing. The `engagement.json` inside is plain text — open it in any editor.
+> ⚠️ Always inspect third-party ZIPs before importing. The `engagement.json` inside is plain text - open it in any editor.
 
 ---
 
@@ -95,9 +95,9 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | Audit log | ✅ | ✅ |
 | Attack Map (interactive network topology canvas) | ✅ | ✅ |
 | Research Papers (structured editor + Exploit-DB integration) | ✅ | ✅ |
-| **Team Engagements** — membership per engagement + restricted-by-default visibility | ❌ | ✅ |
-| **Team Engagements** — phase assignment + per-engagement activity feed | ❌ | ✅ |
-| **Real-time collaboration** — live presence + auto-sync (WebSocket) | ❌ | ✅ |
+| **Team Engagements** - membership per engagement + restricted-by-default visibility | ❌ | ✅ |
+| **Team Engagements** - phase assignment + per-engagement activity feed | ❌ | ✅ |
+| **Real-time collaboration** - live presence + auto-sync (WebSocket) | ❌ | ✅ |
 | Saved & shareable **writeups** (Community writeups are a local generator) | ❌ | ✅ |
 | Nessus live scan feed | ❌ | ✅ |
 | OpenVAS live task feed | ❌ | ✅ |
@@ -169,7 +169,7 @@ Gungnir Community includes everything a pentest team needs to run professional e
 
 ### Engagement Lifecycle
 - **Client management** - company, industry, contact, engagement history
-- **Engagements** - full lifecycle with structured phases: Planning → Recon → Scanning → Exploitation → Post-Exploitation → Reporting; or **custom mode** — create engagements with fully custom phases (free-form name, work plan, document uploads and progress updates)
+- **Engagements** - full lifecycle with structured phases: Planning → Recon → Scanning → Exploitation → Post-Exploitation → Reporting; or **custom mode** - create engagements with fully custom phases (free-form name, work plan, document uploads and progress updates)
 - **Operation logs** - timestamped command/tool logs per phase, with target, tool, command, notes and outcome; **Scope sync** - one-click import of all unique targets from logs into the scope sheet with inferred ports and OS
 - **Scope management** - in/out-of-scope assets with OS type, port list, pwned flag, and vulnerability summary
 - **Evidence uploads** - file attachments **per phase** (one evidence panel per phase); sidebar shows evidence count (`ev.`) and the button highlights with a badge when files are attached; included in ZIP export/import
@@ -207,7 +207,7 @@ Import findings from scanner output files directly into any engagement phase:
 
 | Scanner | Format | Severity mapping |
 |---------|--------|-----------------|
-| Nessus | `.nessus` (XML) | Plugin severity 0–4 → info/low/medium/high/critical |
+| Nessus | `.nessus` (XML) | Plugin severity 0-4 → info/low/medium/high/critical |
 | Burp Suite | `.xml` | Issue severity string → mapped |
 | OpenVAS | `.xml` | CVSS base score → severity bucket |
 | Nmap | `-oX .xml` | Per-port heuristic → info default |
@@ -222,17 +222,17 @@ Import findings from scanner output files directly into any engagement phase:
 
 ### Security & Auth
 
-Security is a first-class feature here — the same hardening baseline as the commercial AllSafe suite:
+Security is a first-class feature here - the same hardening baseline as the commercial AllSafe suite:
 
-- **JWT** — 12h expiry with `token_version` revocation on password change or user disable
-- **TOTP 2FA** — RFC 6238, setup via QR code, disable with confirmation
-- **Account lockout** — 5 failed attempts → 15-minute lockout, **persisted in the database** (survives restarts)
+- **JWT** - 12h expiry with `token_version` revocation on password change or user disable
+- **TOTP 2FA** - RFC 6238, setup via QR code, disable with confirmation
+- **Account lockout** - 5 failed attempts → 15-minute lockout, **persisted in the database** (survives restarts)
 - **bcrypt** password hashing (per-user salt)
 - **Security headers** (Helmet) + **HTTP rate limiting** (300 req/15 min; auth endpoints throttled separately)
-- **Role-based access control** — `admin` / `auditor` / `pentester` with fine-grained route guards
-- **Audit log** — all create/update/delete/import actions logged with user, IP, and timestamp
-- **100% parameterized SQL** — no string-built queries, no injection vectors (OWASP Top 10 2021)
-- **Fail-fast startup** — the backend refuses to boot with a missing or default `JWT_SECRET`
+- **Role-based access control** - `admin` / `auditor` / `pentester` with fine-grained route guards
+- **Audit log** - all create/update/delete/import actions logged with user, IP, and timestamp
+- **100% parameterized SQL** - no string-built queries, no injection vectors (OWASP Top 10 2021)
+- **Fail-fast startup** - the backend refuses to boot with a missing or default `JWT_SECRET`
 - **CORS** locked to the configured origin (no wildcard)
 
 ---
@@ -336,10 +336,10 @@ gungnir-community/
 
 ### v1.1 (current)
 - [x] Arsenal expanded to 2,300+ commands (tshark, searchsploit, smbmap, wes-ng, SysNative PS, OWASP ZAP and more)
-- [x] **Export/Import engagements (ZIP)** — portable engagement exchange across instances
-- [x] **Community Engagements repository** — share and download real engagement templates via `community-engagements/`
+- [x] **Export/Import engagements (ZIP)** - portable engagement exchange across instances
+- [x] **Community Engagements repository** - share and download real engagement templates via `community-engagements/`
 - [x] Inline engagement title editing
-- [x] Engagement auto-status — when all phases complete, status updates automatically
+- [x] Engagement auto-status - when all phases complete, status updates automatically
 
 ### v1.2 (next)
 - [ ] Markdown support in finding description fields
@@ -348,9 +348,9 @@ gungnir-community/
 
 ### v2.0
 - [ ] Real-time collaboration (WebSockets)
-- [ ] Client portal — clients view engagement status and download reports
+- [ ] Client portal - clients view engagement status and download reports
 - [ ] MITRE ATT&CK Navigator visual heatmap
-- [ ] Remediation tracking — post-delivery finding lifecycle
+- [ ] Remediation tracking - post-delivery finding lifecycle
 - [ ] Word/Docx report templates
 
 ---
