@@ -222,7 +222,7 @@ export function ScannerImportDialog({ open, onOpenChange, engagementId, onImport
           /* Resultado */
           <div className='py-4 space-y-4'>
             <div className='flex items-center gap-3'>
-              <CheckCircle2 className='size-8 text-green-400 shrink-0' />
+              <CheckCircle2 className='size-8 text-green-700 dark:text-green-400 shrink-0' />
               <div>
                 <p className='font-semibold'>Import completado</p>
                 <p className='text-sm text-muted-foreground'>

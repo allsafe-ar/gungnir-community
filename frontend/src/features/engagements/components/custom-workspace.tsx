@@ -77,8 +77,8 @@ function parseContent(raw: string): Block[] {
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const STATUS_CFG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   not_started: { label: 'Pendiente',  color: 'text-muted-foreground',  icon: <Circle className='h-3.5 w-3.5' /> },
-  in_progress: { label: 'En curso',   color: 'text-blue-400',  icon: <Clock className='h-3.5 w-3.5' /> },
-  completed:   { label: 'Completada', color: 'text-green-400', icon: <CheckCircle2 className='h-3.5 w-3.5' /> },
+  in_progress: { label: 'En curso',   color: 'text-blue-700 dark:text-blue-400',  icon: <Clock className='h-3.5 w-3.5' /> },
+  completed:   { label: 'Completada', color: 'text-green-700 dark:text-green-400', icon: <CheckCircle2 className='h-3.5 w-3.5' /> },
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -97,8 +97,8 @@ const LANG_LABEL: Record<BlockLang, string> = {
 }
 
 const LANG_COLOR: Record<BlockLang, string> = {
-  bash: 'text-green-400', python: 'text-yellow-400', sql: 'text-blue-400',
-  javascript: 'text-orange-400', output: 'text-muted-foreground', other: 'text-violet-400',
+  bash: 'text-green-700 dark:text-green-400', python: 'text-yellow-700 dark:text-yellow-400', sql: 'text-blue-700 dark:text-blue-400',
+  javascript: 'text-orange-700 dark:text-orange-400', output: 'text-muted-foreground', other: 'text-violet-700 dark:text-violet-400',
 }
 
 function fmtSize(bytes: number) {
@@ -119,7 +119,7 @@ function DropZone({ onFile }: { onFile: (f: File) => void }) {
       onDrop={e => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; if (f) onFile(f) }}
       className={cn(
         'flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 cursor-pointer transition-colors',
-        drag ? 'border-blue-500/60 bg-blue-950/20' : 'border-border hover:border-input'
+        drag ? 'border-blue-500/60 bg-blue-500/10' : 'border-border hover:border-input'
       )}
     >
       <Upload className='h-6 w-6 text-muted-foreground' />
@@ -191,7 +191,7 @@ function BlockEditor({
                 </button>
               )}
               <button onClick={() => remove(block.id)}
-                className='rounded p-1 text-muted-foreground hover:text-red-400 hover:bg-red-950/30 transition'>
+                className='rounded p-1 text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition'>
                 <X className='h-3 w-3' />
               </button>
             </div>
@@ -212,7 +212,7 @@ function BlockEditor({
               onChange={e => update(block.id, { content: e.target.value })}
               placeholder={block.language === 'output' ? 'Pegá la salida del comando...' : '# Escribí el comando o código...'}
               rows={4}
-              className='border-0 rounded-none bg-black/60 text-green-300 text-xs resize-y font-mono focus-visible:ring-0'
+              className='border-0 rounded-none bg-black/60 text-green-700 dark:text-green-300 text-xs resize-y font-mono focus-visible:ring-0'
             />
           )}
         </div>
@@ -255,7 +255,7 @@ function BlockViewer({ blocks }: { blocks: Block[] }) {
                   <Copy className='h-2.5 w-2.5' /> copiar
                 </button>
               </div>
-              <pre className='bg-black/60 text-green-300 text-xs font-mono px-4 py-3 overflow-x-auto whitespace-pre-wrap break-words'>
+              <pre className='bg-black/60 text-green-700 dark:text-green-300 text-xs font-mono px-4 py-3 overflow-x-auto whitespace-pre-wrap break-words'>
                 {block.content}
               </pre>
             </div>
@@ -594,7 +594,7 @@ function PhaseDetail({
                         <Download className='h-3.5 w-3.5' />
                       </button>
                       <button onClick={() => deleteDoc(doc.id)}
-                        className='rounded p-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-950/30 transition' title='Eliminar'>
+                        className='rounded p-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition' title='Eliminar'>
                         <Trash2 className='h-3.5 w-3.5' />
                       </button>
                     </div>
@@ -840,7 +840,7 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
                 onKeyDown={e => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') setEditingTitle(false) }}
                 className='flex-1 min-w-0 bg-muted rounded px-1.5 py-0.5 text-xs text-foreground border border-input outline-none'
               />
-              <button onClick={saveTitle} className='text-green-400 hover:text-green-300 shrink-0'><Check className='h-3 w-3' /></button>
+              <button onClick={saveTitle} className='text-green-700 dark:text-green-400 hover:text-green-300 shrink-0'><Check className='h-3 w-3' /></button>
               <button onClick={() => setEditingTitle(false)} className='text-muted-foreground hover:text-foreground shrink-0'><X className='h-3 w-3' /></button>
             </div>
           ) : (
@@ -855,7 +855,7 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
           )}
           <p className='text-[10px] text-muted-foreground mt-0.5 truncate'>{engagement.client_name}</p>
           <div className='mt-2'>
-            <span className='rounded bg-blue-950/60 border border-blue-900/40 px-1.5 py-0.5 text-[10px] text-blue-300'>
+            <span className='rounded bg-blue-500/10 border border-blue-500/40 px-1.5 py-0.5 text-[10px] text-blue-700 dark:text-blue-300'>
               {TYPE_LABELS[engagement.type] ?? engagement.type}
             </span>
           </div>
@@ -873,7 +873,7 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
                     <input autoFocus value={editName} onChange={e => setEditName(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') saveEditName(phase); if (e.key === 'Escape') setEditing(null) }}
                       className='flex-1 min-w-0 bg-muted rounded px-1.5 py-0.5 text-xs text-foreground border border-input outline-none' />
-                    <button onClick={() => saveEditName(phase)} className='text-green-400 hover:text-green-300'><Check className='h-3 w-3' /></button>
+                    <button onClick={() => saveEditName(phase)} className='text-green-700 dark:text-green-400 hover:text-green-300'><Check className='h-3 w-3' /></button>
                     <button onClick={() => setEditing(null)} className='text-muted-foreground hover:text-foreground'><X className='h-3 w-3' /></button>
                   </div>
                 ) : (

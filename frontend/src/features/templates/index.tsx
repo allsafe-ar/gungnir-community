@@ -46,10 +46,10 @@ interface FindingTemplate {
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const SEV_CONFIG: Record<string, { label: string; cls: string; dot: string }> = {
-  critical: { label: 'Crítico', cls: 'border-red-500/30 bg-red-500/5 text-red-400',    dot: 'bg-red-500' },
-  high:     { label: 'Alto',    cls: 'border-orange-500/30 bg-orange-500/5 text-orange-400', dot: 'bg-orange-500' },
-  medium:   { label: 'Medio',   cls: 'border-yellow-500/30 bg-yellow-500/5 text-yellow-400', dot: 'bg-yellow-500' },
-  low:      { label: 'Bajo',    cls: 'border-blue-500/30 bg-blue-500/5 text-blue-400',  dot: 'bg-blue-500' },
+  critical: { label: 'Crítico', cls: 'border-red-500/30 bg-red-500/5 text-red-700 dark:text-red-400',    dot: 'bg-red-500' },
+  high:     { label: 'Alto',    cls: 'border-orange-500/30 bg-orange-500/5 text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
+  medium:   { label: 'Medio',   cls: 'border-yellow-500/30 bg-yellow-500/5 text-yellow-700 dark:text-yellow-400', dot: 'bg-yellow-500' },
+  low:      { label: 'Bajo',    cls: 'border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-400',  dot: 'bg-blue-500' },
   info:     { label: 'Info',    cls: 'border-border bg-muted/30 text-muted-foreground', dot: 'bg-muted-foreground' },
 }
 
@@ -332,7 +332,7 @@ export function Templates() {
                 <span>{selected.cwe_name}</span>
               )}
               {selected.owasp_category && (
-                <span className='text-orange-400/80'>{selected.owasp_category}</span>
+                <span className='text-orange-700/80 dark:text-orange-400/80'>{selected.owasp_category}</span>
               )}
               {selected.cvss_score_31 != null && (
                 <span className='font-bold text-foreground'>CVSS {Number(selected.cvss_score_31).toFixed(1)}</span>

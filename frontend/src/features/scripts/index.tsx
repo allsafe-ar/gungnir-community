@@ -50,10 +50,10 @@ const LANG_EXT: Record<Lang, string>            = { bash: '.sh', powershell: '.p
 
 const SEVERITY_META: Record<Severity, { label: string; cls: string }> = {
   info:     { label: 'Info',     cls: 'text-muted-foreground  bg-muted/80  border-border'  },
-  low:      { label: 'Bajo',     cls: 'text-blue-400  bg-blue-900/30  border-blue-700'  },
-  medium:   { label: 'Medio',    cls: 'text-yellow-400 bg-yellow-900/30 border-yellow-700' },
-  high:     { label: 'Alto',     cls: 'text-orange-400 bg-orange-900/30 border-orange-700' },
-  critical: { label: 'Crítico',  cls: 'text-red-400   bg-red-900/30   border-red-700'   },
+  low:      { label: 'Bajo',     cls: 'text-blue-700 dark:text-blue-400  bg-blue-500/15  border-blue-700'  },
+  medium:   { label: 'Medio',    cls: 'text-yellow-700 dark:text-yellow-400 bg-yellow-500/15 border-yellow-700' },
+  high:     { label: 'Alto',     cls: 'text-orange-700 dark:text-orange-400 bg-orange-500/15 border-orange-700' },
+  critical: { label: 'Crítico',  cls: 'text-red-700 dark:text-red-400   bg-red-500/15   border-red-700'   },
 }
 
 const TYPE_LABEL: Record<ScriptType, string> = {
@@ -1285,7 +1285,7 @@ function CopyBtn({ text }: { text: string }) {
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500) }}
       className='p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition' title='Copiar'>
-      {copied ? <Check className='h-3.5 w-3.5 text-green-400' /> : <Copy className='h-3.5 w-3.5' />}
+      {copied ? <Check className='h-3.5 w-3.5 text-green-700 dark:text-green-400' /> : <Copy className='h-3.5 w-3.5' />}
     </button>
   )
 }
@@ -1322,7 +1322,7 @@ function ScriptCard({ script, onEdit, onDelete }: ScriptCardProps) {
   const sev = SEVERITY_META[script.severity]
 
   return (
-    <div className={cn('rounded-lg border bg-card/60', script.isCustom ? 'border-red-900/40' : 'border-border')}>
+    <div className={cn('rounded-lg border bg-card/60', script.isCustom ? 'border-red-500/40' : 'border-border')}>
       {/* Header */}
       <div className='flex items-start gap-3 p-4'>
         <FileCode2 className='h-4 w-4 text-muted-foreground mt-0.5 shrink-0' />
@@ -1377,7 +1377,7 @@ function ScriptCard({ script, onEdit, onDelete }: ScriptCardProps) {
             </button>
           )}
           {onDelete && (
-            <button onClick={onDelete} className='p-1.5 rounded text-muted-foreground hover:text-red-400 hover:bg-red-900/20 transition' title='Eliminar'>
+            <button onClick={onDelete} className='p-1.5 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/15 transition' title='Eliminar'>
               <Trash2 className='h-3.5 w-3.5' />
             </button>
           )}
@@ -1437,7 +1437,7 @@ function ScriptForm({ initial, onSave, onCancel, saving }: ScriptFormProps) {
   })
 
   return (
-    <div className='space-y-3 rounded-lg border border-red-900/40 bg-card/80 p-4'>
+    <div className='space-y-3 rounded-lg border border-red-500/40 bg-card/80 p-4'>
       <div className='flex items-center justify-between'>
         <span className='text-xs font-semibold text-foreground'>{initial ? 'Editar script' : 'Nuevo script'}</span>
         <button onClick={onCancel}><X className='h-4 w-4 text-muted-foreground hover:text-foreground' /></button>
@@ -1658,7 +1658,7 @@ export function Scripts() {
             <button onClick={() => setFPlatform('')} className={cn('rounded px-2 py-0.5 text-[10px] transition', filterPlatform === '' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground')}>Todas</button>
             {(['linux', 'windows', 'cross'] as Platform[]).map(p => (
               <button key={p} onClick={() => setFPlatform(p === filterPlatform ? '' : p)}
-                className={cn('rounded border px-2 py-0.5 text-[10px] transition', filterPlatform === p ? 'border-red-800 text-red-400 bg-red-900/20' : 'border-transparent text-muted-foreground hover:text-foreground')}>
+                className={cn('rounded border px-2 py-0.5 text-[10px] transition', filterPlatform === p ? 'border-red-800 text-red-700 dark:text-red-400 bg-red-500/15' : 'border-transparent text-muted-foreground hover:text-foreground')}>
                 {p === 'linux' ? '🐧' : p === 'windows' ? '🪟' : '🔄'} {p}
               </button>
             ))}
@@ -1666,7 +1666,7 @@ export function Scripts() {
           <div className='flex flex-wrap gap-1'>
             {(['bash', 'powershell', 'python'] as Lang[]).map(l => (
               <button key={l} onClick={() => setFLang(l === filterLang ? '' : l)}
-                className={cn('rounded px-1.5 py-0.5 text-[10px] font-mono transition', filterLang === l ? 'bg-red-900/30 text-red-400' : 'text-muted-foreground hover:text-foreground')}>
+                className={cn('rounded px-1.5 py-0.5 text-[10px] font-mono transition', filterLang === l ? 'bg-red-500/15 text-red-700 dark:text-red-400' : 'text-muted-foreground hover:text-foreground')}>
                 {l}
               </button>
             ))}
@@ -1688,7 +1688,7 @@ export function Scripts() {
               <div key={cat}>
                 <button onClick={() => { setFCat(cat === filterCat ? '' : cat); toggleCat(cat) }}
                   className={cn('flex w-full items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide transition',
-                    filterCat === cat ? 'text-red-400' : 'text-muted-foreground hover:text-foreground')}>
+                    filterCat === cat ? 'text-red-700 dark:text-red-400' : 'text-muted-foreground hover:text-foreground')}>
                   {expandedCats.has(cat) ? <ChevronDown className='h-3 w-3 shrink-0' /> : <ChevronRight className='h-3 w-3 shrink-0' />}
                   <span className='flex-1 text-left truncate'>{cat}</span>
                   <span className='text-muted-foreground'>{count}</span>

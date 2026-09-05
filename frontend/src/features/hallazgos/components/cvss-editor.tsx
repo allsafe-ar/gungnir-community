@@ -52,10 +52,10 @@ export function calcCvss31(v: CvssVector): number {
 
 function scoreToSeverity(score: number): { label: string; color: string; bg: string } {
   if (score === 0)          return { label: 'None',     color: 'text-muted-foreground', bg: 'bg-muted' }
-  if (score < 4)            return { label: 'Low',      color: 'text-blue-400',         bg: 'bg-blue-500/10' }
-  if (score < 7)            return { label: 'Medium',   color: 'text-yellow-400',       bg: 'bg-yellow-500/10' }
-  if (score < 9)            return { label: 'High',     color: 'text-orange-400',       bg: 'bg-orange-500/10' }
-  return                           { label: 'Critical', color: 'text-red-400',          bg: 'bg-red-500/10' }
+  if (score < 4)            return { label: 'Low',      color: 'text-blue-700 dark:text-blue-400',         bg: 'bg-blue-500/10' }
+  if (score < 7)            return { label: 'Medium',   color: 'text-yellow-700 dark:text-yellow-400',       bg: 'bg-yellow-500/10' }
+  if (score < 9)            return { label: 'High',     color: 'text-orange-700 dark:text-orange-400',       bg: 'bg-orange-500/10' }
+  return                           { label: 'Critical', color: 'text-red-700 dark:text-red-400',          bg: 'bg-red-500/10' }
 }
 
 export function vectorToString(v: CvssVector): string {

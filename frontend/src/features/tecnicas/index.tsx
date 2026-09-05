@@ -262,10 +262,10 @@ const PHASE_LABEL: Record<string, string> = {
 }
 
 const PHASE_COLOR: Record<string, string> = {
-  recon:             'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  scanning:          'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  exploitation:      'bg-red-500/10 text-red-400 border-red-500/20',
-  post_exploitation: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  recon:             'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
+  scanning:          'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20',
+  exploitation:      'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20',
+  post_exploitation: 'bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20',
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────

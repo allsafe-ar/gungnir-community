@@ -31,21 +31,21 @@ interface AuditResponse {
 // ─── Color por tipo de acción (estándar AllSafe) ──────────────────────────────
 const ACTION_DISPLAY: Record<string, { label: string; color: string }> = {
   // Auth
-  login:            { label: 'Inicio de sesión',              color: 'text-green-400' },
-  login_2fa:        { label: 'login_2fa',                     color: 'text-cyan-400' },
+  login:            { label: 'Inicio de sesión',              color: 'text-green-700 dark:text-green-400' },
+  login_2fa:        { label: 'login_2fa',                     color: 'text-cyan-700 dark:text-cyan-400' },
   // Usuarios
-  create_user:      { label: 'Usuario creado',                color: 'text-blue-400' },
-  update_user:      { label: 'Usuario actualizado',           color: 'text-blue-400' },
-  delete_user:      { label: 'Usuario eliminado',             color: 'text-red-400' },
-  toggle_user:      { label: 'Usuario habilitado/bloqueado',  color: 'text-amber-400' },
+  create_user:      { label: 'Usuario creado',                color: 'text-blue-700 dark:text-blue-400' },
+  update_user:      { label: 'Usuario actualizado',           color: 'text-blue-700 dark:text-blue-400' },
+  delete_user:      { label: 'Usuario eliminado',             color: 'text-red-700 dark:text-red-400' },
+  toggle_user:      { label: 'Usuario habilitado/bloqueado',  color: 'text-amber-700 dark:text-amber-400' },
   // Contraseña
-  change_password:  { label: 'Cambio de contraseña',         color: 'text-orange-400' },
+  change_password:  { label: 'Cambio de contraseña',         color: 'text-orange-700 dark:text-orange-400' },
   // TOTP
-  totp_enabled:     { label: 'totp_enabled',                  color: 'text-cyan-400' },
-  totp_disabled:    { label: '2FA desactivado',               color: 'text-cyan-400' },
-  reset_totp:       { label: '2FA reseteado',                 color: 'text-amber-400' },
+  totp_enabled:     { label: 'totp_enabled',                  color: 'text-cyan-700 dark:text-cyan-400' },
+  totp_disabled:    { label: '2FA desactivado',               color: 'text-cyan-700 dark:text-cyan-400' },
+  reset_totp:       { label: '2FA reseteado',                 color: 'text-amber-700 dark:text-amber-400' },
   // Configuración
-  update_settings:  { label: 'Configuración actualizada',    color: 'text-yellow-400' },
+  update_settings:  { label: 'Configuración actualizada',    color: 'text-yellow-700 dark:text-yellow-400' },
 }
 
 function actionDisplay(action: string) {

@@ -47,10 +47,10 @@ function formatBytes(bytes: number): string {
 
 function fileIcon(type?: string) {
   if (!type) return <File className='h-4 w-4 text-muted-foreground' />
-  if (type.startsWith('image/')) return <Image className='h-4 w-4 text-blue-400' />
-  if (type.includes('pdf')) return <FileText className='h-4 w-4 text-red-400' />
+  if (type.startsWith('image/')) return <Image className='h-4 w-4 text-blue-700 dark:text-blue-400' />
+  if (type.includes('pdf')) return <FileText className='h-4 w-4 text-red-700 dark:text-red-400' />
   if (type.includes('text') || type.includes('json') || type.includes('xml'))
-    return <FileText className='h-4 w-4 text-green-400' />
+    return <FileText className='h-4 w-4 text-green-700 dark:text-green-400' />
   return <File className='h-4 w-4 text-muted-foreground' />
 }
 
@@ -76,7 +76,7 @@ function DropZone({ onFile }: { onFile: (f: File) => void }) {
       className={cn(
         'flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 text-center cursor-pointer transition-colors',
         over
-          ? 'border-red-700 bg-red-950/20'
+          ? 'border-red-700 bg-red-500/10'
           : 'border-border hover:border-input hover:bg-card/50'
       )}
     >

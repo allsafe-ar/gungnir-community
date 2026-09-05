@@ -206,7 +206,7 @@ export function Usuarios() {
                     {/* 2FA — ícono */}
                     <TableCell>
                       {user.totp_enabled ? (
-                        <ShieldCheck className='h-4 w-4 text-green-400' />
+                        <ShieldCheck className='h-4 w-4 text-green-700 dark:text-green-400' />
                       ) : (
                         <div className='flex items-center gap-1'>
                           <ShieldOff className='h-4 w-4 text-muted-foreground/40' />
@@ -218,7 +218,7 @@ export function Usuarios() {
                     {/* Estado — verde / gris */}
                     <TableCell>
                       {user.is_active ? (
-                        <span className='inline-flex items-center rounded-full bg-green-500/20 px-2 py-0.5 text-[11px] font-semibold text-green-400 ring-1 ring-green-500/30'>
+                        <span className='inline-flex items-center rounded-full bg-green-500/20 px-2 py-0.5 text-[11px] font-semibold text-green-700 dark:text-green-400 ring-1 ring-green-500/30'>
                           {t('users.status_active')}
                         </span>
                       ) : (

@@ -282,7 +282,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
                 onKeyDown={e => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') setEditingTitle(false) }}
                 className='flex-1 min-w-0 rounded bg-muted px-1.5 py-0.5 text-xs text-foreground border border-input outline-none'
               />
-              <button onClick={saveTitle} className='text-green-400 hover:text-green-300 shrink-0'><Check className='size-3' /></button>
+              <button onClick={saveTitle} className='text-green-700 dark:text-green-400 hover:text-green-300 shrink-0'><Check className='size-3' /></button>
               <button onClick={() => setEditingTitle(false)} className='text-muted-foreground hover:text-foreground shrink-0'><X className='size-3' /></button>
             </div>
           ) : (

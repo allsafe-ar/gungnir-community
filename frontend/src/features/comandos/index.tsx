@@ -45,10 +45,10 @@ export const PHASE_LABELS: Record<Phase, string> = {
 }
 
 const PHASE_COLORS: Record<Phase, string> = {
-  recon:            'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  scanning:         'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
-  exploitation:     'bg-red-500/15 text-red-400 border-red-500/30',
-  post_exploitation:'bg-orange-500/15 text-orange-400 border-orange-500/30',
+  recon:            'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30',
+  scanning:         'bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border-cyan-500/30',
+  exploitation:     'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30',
+  post_exploitation:'bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30',
   general:          'bg-zinc-500/15 text-muted-foreground border-input/30',
 }
 
@@ -2181,7 +2181,7 @@ function CopyButton({ text }: { text: string }) {
       className='absolute right-2 top-2 rounded p-1 text-muted-foreground opacity-0 transition hover:text-foreground group-hover:opacity-100'
       title='Copiar'
     >
-      {copied ? <Check className='h-3.5 w-3.5 text-green-400' /> : <Copy className='h-3.5 w-3.5' />}
+      {copied ? <Check className='h-3.5 w-3.5 text-green-700 dark:text-green-400' /> : <Copy className='h-3.5 w-3.5' />}
     </button>
   )
 }
@@ -2197,7 +2197,7 @@ interface ComandoCardProps {
 }
 function ComandoCard({ cmd, isCustom, isModified, onEdit, onDelete, onSend }: ComandoCardProps) {
   return (
-    <div className={cn('rounded-lg border bg-card/50 p-4', isCustom ? 'border-red-900/40' : 'border-border')}>
+    <div className={cn('rounded-lg border bg-card/50 p-4', isCustom ? 'border-red-500/40' : 'border-border')}>
       <div className='mb-2 flex items-start justify-between gap-2'>
         <div className='flex items-center gap-1.5 min-w-0'>
           {isCustom && (
@@ -2211,7 +2211,7 @@ function ComandoCard({ cmd, isCustom, isModified, onEdit, onDelete, onSend }: Co
         <div className='flex items-center gap-1 shrink-0'>
           {onSend && (
             <button onClick={onSend} title='Agregar al engagement'
-              className='p-1 rounded text-muted-foreground hover:text-red-400 hover:bg-red-900/20 transition'>
+              className='p-1 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/15 transition'>
               <Send className='h-3 w-3' />
             </button>
           )}
@@ -2221,7 +2221,7 @@ function ComandoCard({ cmd, isCustom, isModified, onEdit, onDelete, onSend }: Co
             </button>
           )}
           {onDelete && (
-            <button onClick={onDelete} className='p-1 rounded text-muted-foreground hover:text-red-400 hover:bg-red-900/20 transition'>
+            <button onClick={onDelete} className='p-1 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/15 transition'>
               <Trash2 className='h-3 w-3' />
             </button>
           )}
@@ -2401,7 +2401,7 @@ function ToolForm({ defaultCat, onSave, onCancel, saving }: ToolFormProps) {
   const handleLabel = (v: string) => { setLabel(v); setKeyName(autoKey(v)) }
 
   return (
-    <div className='space-y-3 p-4 rounded-lg border border-red-900/40 bg-card/80'>
+    <div className='space-y-3 p-4 rounded-lg border border-red-500/40 bg-card/80'>
       <div className='flex items-center justify-between'>
         <span className='text-xs font-semibold text-foreground'>Nueva herramienta</span>
         <button onClick={onCancel} className='text-muted-foreground hover:text-foreground'><X className='h-4 w-4' /></button>
@@ -2765,18 +2765,18 @@ export function Comandos({ initialTool }: ComandosProps) {
                           <button onClick={() => setSelectedTool(active ? '' : toolKey)}
                             className={cn(
                               'flex flex-1 items-center gap-2 rounded-md pl-7 pr-2 py-1.5 text-xs transition min-w-0',
-                              active ? 'bg-red-950/50 border border-red-900/50 text-red-300' : 'text-muted-foreground hover:bg-card hover:text-foreground'
+                              active ? 'bg-red-500/10 border border-red-500/40 text-red-700 dark:text-red-300' : 'text-muted-foreground hover:bg-card hover:text-foreground'
                             )}>
                             <span className='flex-1 text-left truncate'>{meta.label}</span>
                             {isCustomTool && <span className='text-[8px] text-red-500/70 shrink-0'>✦</span>}
                             <span className={cn('text-[9px] font-mono shrink-0', kb.cls)}>{kb.label}</span>
                             <span className={cn('rounded px-1 py-0.5 text-[10px] shrink-0',
-                              active ? 'bg-red-900/50 text-red-400' : 'bg-muted text-muted-foreground')}>{count}</span>
+                              active ? 'bg-red-500/15 text-red-700 dark:text-red-400' : 'bg-muted text-muted-foreground')}>{count}</span>
                           </button>
                           {isAdmin && isCustomTool && (
                             <button
                               onClick={() => deleteTool(customTools.find(t => t.key_name === toolKey)!)}
-                              className='shrink-0 opacity-0 group-hover/tool:opacity-100 mr-2 p-1 rounded text-muted-foreground hover:text-red-400 hover:bg-red-900/20 transition'
+                              className='shrink-0 opacity-0 group-hover/tool:opacity-100 mr-2 p-1 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/15 transition'
                               title='Eliminar herramienta'>
                               <Trash2 className='h-3 w-3' />
                             </button>

@@ -271,10 +271,10 @@ function DomainResultView({ result }: { result: DomainQueryResult }) {
               <div className='flex items-baseline gap-2'>
                 <span className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0'>Antigüedad</span>
                 <span className='text-sm'>
-                  <span className={cn('font-semibold', result.rdap.age_days < 30 ? 'text-red-400' : result.rdap.age_days < 180 ? 'text-amber-400' : 'text-green-400')}>
+                  <span className={cn('font-semibold', result.rdap.age_days < 30 ? 'text-red-700 dark:text-red-400' : result.rdap.age_days < 180 ? 'text-amber-700 dark:text-amber-400' : 'text-green-700 dark:text-green-400')}>
                     {result.rdap.age_days} días
                   </span>
-                  {result.rdap.age_days < 30 && <span className='ml-2 text-[10px] text-red-400'>⚠ Dominio reciente</span>}
+                  {result.rdap.age_days < 30 && <span className='ml-2 text-[10px] text-red-700 dark:text-red-400'>⚠ Dominio reciente</span>}
                 </span>
               </div>
             )}

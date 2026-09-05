@@ -87,8 +87,8 @@ const CATEGORY_OPTIONS = [
 
 const STATUS_OPTIONS = [
   { id: 'draft',     label: 'Borrador',    cls: 'bg-accent/60 text-foreground'    },
-  { id: 'review',    label: 'En revisión', cls: 'bg-blue-900/40 text-blue-300'    },
-  { id: 'published', label: 'Publicado',   cls: 'bg-green-900/40 text-green-300'  },
+  { id: 'review',    label: 'En revisión', cls: 'bg-blue-500/15 text-blue-700 dark:text-blue-300'    },
+  { id: 'published', label: 'Publicado',   cls: 'bg-green-500/15 text-green-700 dark:text-green-300'  },
   { id: 'archived',  label: 'Archivado',   cls: 'bg-muted text-muted-foreground'       },
 ]
 const STATUS_CLS   = Object.fromEntries(STATUS_OPTIONS.map(s => [s.id, s.cls]))
@@ -900,7 +900,7 @@ export function Papers() {
         {/* Bottom actions */}
         <div className='border-t border-border p-3 space-y-2'>
           {currentId && (
-            <div className='flex items-center gap-1.5 text-[10px] text-amber-400/80 bg-amber-500/10 rounded px-2 py-1 border border-amber-500/20'>
+            <div className='flex items-center gap-1.5 text-[10px] text-amber-700/80 dark:text-amber-400/80 bg-amber-500/10 rounded px-2 py-1 border border-amber-500/20'>
               <FolderOpen className='h-3 w-3 shrink-0' />
               <span className='truncate'>Editando: {papers.find(p => p.id === currentId)?.title || 'Paper guardado'}</span>
             </div>
@@ -959,7 +959,7 @@ export function Papers() {
             className={cn(
               'flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors -mb-px',
               activeTab === 'exploitdb'
-                ? 'border-green-500 text-green-400'
+                ? 'border-green-500 text-green-700 dark:text-green-400'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
             )}
           >

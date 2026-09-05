@@ -64,13 +64,13 @@ function ModeSelector({ value, onChange }: { value: string; onChange: (v: string
         className={cn(
           'text-left rounded-lg border p-4 transition-all',
           value === 'pentesting'
-            ? 'border-red-700/60 bg-red-950/30'
+            ? 'border-red-500/50 bg-red-500/10'
             : 'border-border hover:border-border'
         )}
       >
         <div className='flex items-center gap-2 mb-1'>
-          <Crosshair className={cn('h-4 w-4', value === 'pentesting' ? 'text-red-400' : 'text-muted-foreground')} />
-          <p className={cn('text-sm font-semibold', value === 'pentesting' ? 'text-red-300' : 'text-foreground')}>
+          <Crosshair className={cn('h-4 w-4', value === 'pentesting' ? 'text-red-700 dark:text-red-400' : 'text-muted-foreground')} />
+          <p className={cn('text-sm font-semibold', value === 'pentesting' ? 'text-red-700 dark:text-red-300' : 'text-foreground')}>
             {t('engform.mode_pentesting_label')}
           </p>
         </div>
@@ -85,13 +85,13 @@ function ModeSelector({ value, onChange }: { value: string; onChange: (v: string
         className={cn(
           'text-left rounded-lg border p-4 transition-all',
           value === 'custom'
-            ? 'border-blue-700/60 bg-blue-950/30'
+            ? 'border-blue-500/50 bg-blue-500/10'
             : 'border-border hover:border-border'
         )}
       >
         <div className='flex items-center gap-2 mb-1'>
-          <Settings2 className={cn('h-4 w-4', value === 'custom' ? 'text-blue-400' : 'text-muted-foreground')} />
-          <p className={cn('text-sm font-semibold', value === 'custom' ? 'text-blue-300' : 'text-foreground')}>
+          <Settings2 className={cn('h-4 w-4', value === 'custom' ? 'text-blue-700 dark:text-blue-400' : 'text-muted-foreground')} />
+          <p className={cn('text-sm font-semibold', value === 'custom' ? 'text-blue-700 dark:text-blue-300' : 'text-foreground')}>
             {t('engform.mode_custom_label')}
           </p>
         </div>
@@ -316,9 +316,9 @@ export function EngagementForm({ initial, engagementId }: EngagementFormProps) {
           <CardContent className='space-y-3'>
             <ModeSelector value={form.mode} onChange={setVal('mode')} />
             {form.mode === 'custom' && (
-              <div className='flex items-start gap-2 rounded-lg bg-blue-950/20 border border-blue-900/30 p-3'>
-                <Info className='h-3.5 w-3.5 text-blue-400 mt-0.5 shrink-0' />
-                <p className='text-xs text-blue-300/70'>
+              <div className='flex items-start gap-2 rounded-lg bg-blue-500/10 border border-blue-500/40 p-3'>
+                <Info className='h-3.5 w-3.5 text-blue-700 dark:text-blue-400 mt-0.5 shrink-0' />
+                <p className='text-xs text-blue-700/70 dark:text-blue-300/70'>
                   {t('engform.mode_custom_info')}
                 </p>
               </div>

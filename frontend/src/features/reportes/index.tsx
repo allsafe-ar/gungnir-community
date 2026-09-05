@@ -47,10 +47,10 @@ const STATUS_LABEL: Record<string, string> = {
 }
 const STATUS_COLOR: Record<string, string> = {
   planned: 'bg-accent text-foreground',
-  in_progress: 'bg-blue-900/50 text-blue-300',
-  reporting: 'bg-yellow-900/50 text-yellow-300',
-  qa: 'bg-purple-900/50 text-purple-300',
-  delivered: 'bg-green-900/50 text-green-300',
+  in_progress: 'bg-blue-500/15 text-blue-700 dark:text-blue-300',
+  reporting: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-300',
+  qa: 'bg-purple-500/15 text-purple-700 dark:text-purple-300',
+  delivered: 'bg-green-500/15 text-green-700 dark:text-green-300',
   archived: 'bg-muted text-muted-foreground',
 }
 const TYPE_LABEL: Record<string, string> = {
@@ -59,10 +59,10 @@ const TYPE_LABEL: Record<string, string> = {
   red_team: 'Red Team', social_eng: 'Social Eng', physical: 'Físico',
 }
 const SEV_COLOR: Record<string, string> = {
-  critical: 'text-red-400',
-  high:     'text-orange-400',
-  medium:   'text-yellow-400',
-  low:      'text-blue-400',
+  critical: 'text-red-700 dark:text-red-400',
+  high:     'text-orange-700 dark:text-orange-400',
+  medium:   'text-yellow-700 dark:text-yellow-400',
+  low:      'text-blue-700 dark:text-blue-400',
   info:     'text-muted-foreground',
 }
 const SEV_BG: Record<string, string> = {
@@ -249,13 +249,13 @@ export function Reportes() {
                   className={cn(
                     'w-full text-left rounded-md px-3 py-2.5 transition border',
                     active
-                      ? 'bg-red-950/40 border-red-900/50'
+                      ? 'bg-red-500/10 border-red-500/40'
                       : 'border-transparent hover:bg-card hover:border-border'
                   )}
                 >
                   <div className='flex items-start justify-between gap-2'>
                     <div className='flex-1 min-w-0'>
-                      <p className={cn('text-xs font-medium truncate', active ? 'text-red-300' : 'text-foreground')}>
+                      <p className={cn('text-xs font-medium truncate', active ? 'text-red-700 dark:text-red-300' : 'text-foreground')}>
                         {eng.title}
                       </p>
                       <p className='text-[10px] text-muted-foreground mt-0.5 truncate'>{eng.client_name}</p>
@@ -342,8 +342,8 @@ export function Reportes() {
                       className={cn(
                         'rounded px-2 py-0.5 text-[10px] font-mono',
                         s.in_scope
-                          ? 'bg-green-950/50 text-green-400 border border-green-900/50'
-                          : 'bg-red-950/30 text-red-500/70 border border-red-900/30 line-through'
+                          ? 'bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/40'
+                          : 'bg-red-500/10 text-red-500/70 border border-red-500/40 line-through'
                       )}
                     >
                       {s.value}
@@ -369,13 +369,13 @@ export function Reportes() {
                     className={cn(
                       'text-left rounded-lg border p-3 transition-all',
                       reportTemplate === t.id
-                        ? 'border-red-700/60 bg-red-950/30'
+                        ? 'border-red-500/50 bg-red-500/10'
                         : 'border-border hover:border-border'
                     )}
                   >
                     <div className='flex items-center gap-2 mb-0.5'>
                       <div className='h-2.5 w-2.5 rounded-full shrink-0' style={{ background: t.dot }} />
-                      <p className={cn('text-xs font-semibold', reportTemplate === t.id ? 'text-red-300' : 'text-foreground')}>
+                      <p className={cn('text-xs font-semibold', reportTemplate === t.id ? 'text-red-700 dark:text-red-300' : 'text-foreground')}>
                         {t.label}
                       </p>
                     </div>
@@ -411,7 +411,7 @@ export function Reportes() {
                 <div className='flex items-center justify-between'>
                   <div>
                     <Label className='text-sm text-foreground flex items-center gap-1.5'>
-                      {onlyOpen ? <Eye className='h-3.5 w-3.5 text-orange-400' /> : <EyeOff className='h-3.5 w-3.5' />}
+                      {onlyOpen ? <Eye className='h-3.5 w-3.5 text-orange-700 dark:text-orange-400' /> : <EyeOff className='h-3.5 w-3.5' />}
                       Solo hallazgos abiertos
                     </Label>
                     <p className='text-xs text-muted-foreground mt-0.5'>

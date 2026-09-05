@@ -233,17 +233,21 @@ export function Writeups() {
             <button
               key={pl.id}
               onClick={() => setPlatform(pl.id)}
-              className={cn(
-                'text-left rounded-lg border p-3 transition-all',
-                platform === pl.id
-                  ? `${pl.bg} ${pl.border}`
-                  : 'border-border hover:border-border bg-card/30'
-              )}
-            >
-              <div className={cn('mb-1', platform === pl.id ? pl.textColor : 'text-muted-foreground')}>
-                {pl.icon}
-              </div>
-              <p className={cn('text-xs font-semibold leading-tight', platform === pl.id ? pl.textColor : 'text-muted-foreground')}>
+                className={cn(
+                  'text-left rounded-lg border p-3 transition-all',
+                  platform === pl.id
+                    ? 'bg-accent/50'
+                    : 'border-border hover:border-border bg-card/30'
+                )}
+                style={platform === pl.id
+                  ? { borderColor: `${pl.color}66`, background: `${pl.color}14` }
+                  : undefined}
+              >
+                <div className={cn('mb-1', platform !== pl.id && 'text-muted-foreground')}
+                  style={platform === pl.id ? { color: pl.color } : undefined}>
+                  {pl.icon}
+                </div>
+                <p className={cn('text-xs font-semibold leading-tight', platform === pl.id ? 'text-foreground' : 'text-muted-foreground')}>
                 {pl.label}
               </p>
               <p className='text-[10px] text-muted-foreground mt-0.5'>{pl.sub}</p>
@@ -421,14 +425,15 @@ export function Writeups() {
         <div className='p-6 max-w-2xl mx-auto space-y-6'>
 
           {/* Platform banner */}
-          <div className={cn('rounded-xl border p-4', P.bg, P.border)}>
+          <div className='rounded-xl border p-4'
+            style={{ borderColor: `${P.color}55`, background: `${P.color}12` }}>
             <div className='flex items-center gap-3'>
-              <div className={cn('rounded-lg p-2', P.textColor)}
-                style={{ background: P.color + '20' }}>
+                <div className='rounded-lg p-2'
+                  style={{ background: P.color + '20', color: P.color }}>
                 {P.icon}
               </div>
               <div>
-                <p className={cn('font-bold text-sm', P.textColor)}>{P.label}</p>
+                  <p className='font-bold text-sm text-foreground'>{P.label}</p>
                 <p className='text-xs text-muted-foreground'>
                   {platform === 'htb' && 'Resumen · Enumeración · Foothold · Escalada · Flags'}
                   {platform === 'thm' && 'Resumen · Enumeración · Foothold · Escalada · Flags'}
@@ -436,7 +441,7 @@ export function Writeups() {
                   {platform === 'bugbounty' && 'Descripción · Steps to reproduce · Impacto · Remediación'}
                 </p>
               </div>
-              <ChevronRight className={cn('ml-auto h-4 w-4', P.textColor)} />
+              <ChevronRight className='ml-auto h-4 w-4 text-muted-foreground' />
             </div>
           </div>
 

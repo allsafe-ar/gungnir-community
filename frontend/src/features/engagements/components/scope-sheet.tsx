@@ -42,11 +42,11 @@ function getTypes(t: (k: string) => string) {
 }
 
 const TYPE_BADGE: Record<string, string> = {
-  ip:          'font-mono text-[10px] bg-blue-500/10 text-blue-400 border-blue-500/20',
-  cidr:        'font-mono text-[10px] bg-purple-500/10 text-purple-400 border-purple-500/20',
-  domain:      'font-mono text-[10px] bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-  url:         'font-mono text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  application: 'text-[10px] bg-orange-500/10 text-orange-400 border-orange-500/20',
+  ip:          'font-mono text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
+  cidr:        'font-mono text-[10px] bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20',
+  domain:      'font-mono text-[10px] bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border-cyan-500/20',
+  url:         'font-mono text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20',
+  application: 'text-[10px] bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20',
   other:       'text-[10px] bg-muted text-muted-foreground border-border',
 }
 
