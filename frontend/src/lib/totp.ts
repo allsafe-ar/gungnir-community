@@ -92,7 +92,20 @@ export function verifyTOTP(secret: string, token: string): boolean {
   return false
 }
 
-export function totpQRUrl(secret: string, username: string): string {
-  const uri = `otpauth://totp/AllSafe%20ARP:${encodeURIComponent(username)}?secret=${secret}&issuer=AllSafe%20ARP&algorithm=SHA1&digits=6&period=30`
-  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(uri)}`
+/** La URI que entiende cualquier aplicación autenticadora. */
+export function totpUri(secret: string, username: string): string {
+  return `otpauth://totp/AllSafe%20ARP:${encodeURIComponent(username)}?secret=${secret}&issuer=AllSafe%20ARP&algorithm=SHA1&digits=6&period=30`
+}
+
+/**
+ * Genera el QR en el navegador y devuelve un data URI.
+ *
+ * ⚠️ Antes esto armaba una URL a `api.qrserver.com` con el secreto TOTP adentro,
+ * o sea que **el segundo factor de cada usuario viajaba a un servicio de terceros**
+ * en cada alta, y quedaba en sus logs. Ahora el QR se dibuja localmente y el
+ * secreto no sale del navegador. (2026-09-05)
+ */
+export async function totpQRUrl(secret: string, username: string): Promise<string> {
+  const QR = (await import('qrcode')).default
+  return QR.toDataURL(totpUri(secret, username), { width: 200, margin: 1 })
 }

@@ -136,9 +136,18 @@ export function MiCuenta() {
     onError: (e: Error) => toast.error(e.message),
   })
 
-  const qrUrl = totpData
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(totpData.uri)}`
-    : null
+  // El QR se dibuja en el navegador, así que el secreto TOTP no sale de acá.
+  // ⚠️ Antes se le pedía a api.qrserver.com con el secreto dentro de la URL, o sea
+  // que el segundo factor de cada usuario viajaba a un tercero. (2026-09-05)
+  const [qrUrl, setQrUrl] = useState<string | null>(null)
+  useEffect(() => {
+    if (!totpData) { setQrUrl(null); return }
+    let vivo = true
+    import('qrcode')
+      .then((m) => m.default.toDataURL(totpData.uri, { width: 200, margin: 1 }))
+      .then((u) => { if (vivo) setQrUrl(u) })
+    return () => { vivo = false }
+  }, [totpData])
 
   const logoSrc = customLogo || allsafeLogo
 
