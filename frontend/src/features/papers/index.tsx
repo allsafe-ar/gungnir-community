@@ -86,10 +86,10 @@ const CATEGORY_OPTIONS = [
 ]
 
 const STATUS_OPTIONS = [
-  { id: 'draft',     label: 'Borrador',    cls: 'bg-zinc-700/60 text-zinc-300'    },
+  { id: 'draft',     label: 'Borrador',    cls: 'bg-accent/60 text-foreground'    },
   { id: 'review',    label: 'En revisión', cls: 'bg-blue-900/40 text-blue-300'    },
   { id: 'published', label: 'Publicado',   cls: 'bg-green-900/40 text-green-300'  },
-  { id: 'archived',  label: 'Archivado',   cls: 'bg-zinc-800 text-zinc-500'       },
+  { id: 'archived',  label: 'Archivado',   cls: 'bg-muted text-muted-foreground'       },
 ]
 const STATUS_CLS   = Object.fromEntries(STATUS_OPTIONS.map(s => [s.id, s.cls]))
 const STATUS_LABEL = Object.fromEntries(STATUS_OPTIONS.map(s => [s.id, s.label]))
@@ -142,20 +142,20 @@ function SectionCard({
   return (
     <div className={cn(
       'rounded-xl border overflow-hidden transition-colors',
-      hasContent ? 'border-zinc-700' : 'border-zinc-800/60',
-      open && 'border-zinc-600'
+      hasContent ? 'border-border' : 'border-border/60',
+      open && 'border-input'
     )}>
       <button
         type='button'
         onClick={() => setOpen(v => !v)}
-        className='w-full flex items-center gap-2.5 px-4 py-2.5 bg-zinc-900/50 hover:bg-zinc-900/80 transition text-left'
+        className='w-full flex items-center gap-2.5 px-4 py-2.5 bg-card/50 hover:bg-card/80 transition text-left'
       >
         <span className='font-mono text-[9px] font-bold min-w-[18px]' style={{ color: accent }}>{num}</span>
         <div className='h-3 w-0.5 rounded-full shrink-0' style={{ background: accent + '80' }} />
-        <span className={cn('text-xs font-semibold flex-1', hasContent ? 'text-zinc-200' : 'text-zinc-500')}>
+        <span className={cn('text-xs font-semibold flex-1', hasContent ? 'text-foreground' : 'text-muted-foreground')}>
           {title}
         </span>
-        {hint && !open && <span className='text-[9px] text-zinc-700 hidden lg:block truncate max-w-[200px]'>- {hint}</span>}
+        {hint && !open && <span className='text-[9px] text-muted-foreground hidden lg:block truncate max-w-[200px]'>- {hint}</span>}
         {hasContent && !open && (
           <span className='text-[9px] rounded px-1.5 py-0.5 shrink-0'
             style={{ background: accent + '18', color: accent, border: `0.3px solid ${accent}40` }}>
@@ -163,19 +163,19 @@ function SectionCard({
           </span>
         )}
         {open
-          ? <ChevronDown className='h-3 w-3 text-zinc-500 shrink-0' />
-          : <ChevronRight className='h-3 w-3 text-zinc-600 shrink-0' />}
+          ? <ChevronDown className='h-3 w-3 text-muted-foreground shrink-0' />
+          : <ChevronRight className='h-3 w-3 text-muted-foreground shrink-0' />}
       </button>
       {open && (
-        <div className='p-3 bg-zinc-950/50'>
-          {hint && <p className='text-[10px] text-zinc-600 mb-2'>- {hint}</p>}
+        <div className='p-3 bg-background/50'>
+          {hint && <p className='text-[10px] text-muted-foreground mb-2'>- {hint}</p>}
           <Textarea
             rows={rows}
             value={value}
             onChange={e => onChange(e.target.value)}
             placeholder={placeholder}
             className={cn(
-              'bg-zinc-950 border-zinc-800 text-zinc-200 placeholder:text-zinc-700 text-xs focus:border-zinc-600 resize-y',
+              'bg-background border-border text-foreground placeholder:text-muted-foreground text-xs focus:border-input resize-y',
               mono && 'font-mono text-[11px]'
             )}
             style={{ borderColor: open ? accent + '40' : undefined }}
@@ -192,7 +192,7 @@ function SavedList({ papers, onLoad, onDelete, currentId }: {
   onDelete: (id: string) => void; currentId: string | null
 }) {
   if (!papers.length)
-    return <p className='text-[11px] text-zinc-600 text-center py-4'>No hay papers guardados</p>
+    return <p className='text-[11px] text-muted-foreground text-center py-4'>No hay papers guardados</p>
   return (
     <div className='space-y-0.5'>
       {papers.map(p => {
@@ -200,14 +200,14 @@ function SavedList({ papers, onLoad, onDelete, currentId }: {
         return (
           <div key={p.id} className={cn(
             'flex items-center gap-2 rounded px-2 py-1.5 group cursor-pointer transition',
-            currentId === p.id ? 'bg-zinc-700/50' : 'hover:bg-zinc-800/50'
+            currentId === p.id ? 'bg-accent/50' : 'hover:bg-muted/50'
           )}>
             <div className='h-1.5 w-1.5 rounded-full shrink-0' style={{ background: tmpl?.accent ?? '#94a3b8' }} />
             <button onClick={() => onLoad(p.id)} className='flex-1 min-w-0 text-left'>
-              <p className={cn('text-[11px] truncate', currentId === p.id ? 'text-zinc-100' : 'text-zinc-300')}>
+              <p className={cn('text-[11px] truncate', currentId === p.id ? 'text-foreground' : 'text-foreground')}>
                 {p.title || '(sin título)'}
               </p>
-              <p className='text-[9px] text-zinc-600 truncate mt-0.5'>
+              <p className='text-[9px] text-muted-foreground truncate mt-0.5'>
                 {tmpl?.label ?? p.template}
                 {p.cve_id ? ` · ${p.cve_id}` : ''}
                 {p.cvss_score != null ? ` · CVSS ${Number(p.cvss_score).toFixed(1)}` : ''}
@@ -217,7 +217,7 @@ function SavedList({ papers, onLoad, onDelete, currentId }: {
               {STATUS_LABEL[p.status] ?? p.status}
             </span>
             <button onClick={() => onDelete(p.id)}
-              className='opacity-0 group-hover:opacity-100 p-0.5 text-zinc-600 hover:text-red-400 transition shrink-0'>
+              className='opacity-0 group-hover:opacity-100 p-0.5 text-muted-foreground hover:text-red-400 transition shrink-0'>
               <Trash2 className='h-3 w-3' />
             </button>
           </div>
@@ -370,7 +370,7 @@ function ExploitDBPanel() {
         </div>
         <div className='flex-1 min-w-0'>
           <p className='font-bold text-sm' style={{ color: EDB_GREEN }}>Exploit-DB Papers</p>
-          <p className='text-xs text-zinc-500 mt-0.5'>
+          <p className='text-xs text-muted-foreground mt-0.5'>
             Buscá papers publicados en exploit-db.com - descargalos o guardalos en tu biblioteca
           </p>
         </div>
@@ -387,14 +387,14 @@ function ExploitDBPanel() {
       </div>
 
       {/* Tabs */}
-      <div className='flex gap-1 bg-zinc-900/50 rounded-lg p-1 border border-zinc-800'>
+      <div className='flex gap-1 bg-card/50 rounded-lg p-1 border border-border'>
         <button
           onClick={() => setTab('search')}
           className={cn(
             'flex-1 flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition',
             tab === 'search'
-              ? 'bg-zinc-800 text-zinc-100'
-              : 'text-zinc-500 hover:text-zinc-300'
+              ? 'bg-muted text-foreground'
+              : 'text-muted-foreground hover:text-foreground'
           )}
         >
           <Search className='h-3 w-3' />
@@ -405,14 +405,14 @@ function ExploitDBPanel() {
           className={cn(
             'flex-1 flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium transition',
             tab === 'saved'
-              ? 'bg-zinc-800 text-zinc-100'
-              : 'text-zinc-500 hover:text-zinc-300'
+              ? 'bg-muted text-foreground'
+              : 'text-muted-foreground hover:text-foreground'
           )}
         >
           <Star className='h-3 w-3' />
           Guardados
           {savedList.length > 0 && (
-            <span className='ml-1 bg-zinc-700 text-zinc-300 rounded px-1.5 text-[9px]'>{savedList.length}</span>
+            <span className='ml-1 bg-accent text-foreground rounded px-1.5 text-[9px]'>{savedList.length}</span>
           )}
         </button>
       </div>
@@ -427,7 +427,7 @@ function ExploitDBPanel() {
               placeholder='ej: EternalBlue, heartbleed, ms17-010...'
               value={query}
               onChange={e => setQuery(e.target.value)}
-              className='flex-1 bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder:text-zinc-700 text-xs h-9 focus:border-zinc-600'
+              className='flex-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-9 focus:border-input'
             />
             <Button
               type='submit'
@@ -443,21 +443,21 @@ function ExploitDBPanel() {
 
           {/* Results */}
           {searched && !searching && results.length === 0 && (
-            <div className='rounded-lg border border-zinc-800 bg-zinc-900/30 p-6 text-center'>
-              <FileText className='h-6 w-6 text-zinc-700 mx-auto mb-2' />
-              <p className='text-sm text-zinc-500'>No se encontraron papers para "{query}"</p>
-              <p className='text-xs text-zinc-700 mt-1'>Probá con un término diferente</p>
+            <div className='rounded-lg border border-border bg-card/30 p-6 text-center'>
+              <FileText className='h-6 w-6 text-muted-foreground mx-auto mb-2' />
+              <p className='text-sm text-muted-foreground'>No se encontraron papers para "{query}"</p>
+              <p className='text-xs text-muted-foreground mt-1'>Probá con un término diferente</p>
             </div>
           )}
 
           {results.length > 0 && (
             <div className='space-y-2'>
               <div className='flex items-center justify-between'>
-                <p className='text-[10px] text-zinc-600 uppercase tracking-widest font-bold'>
+                <p className='text-[10px] text-muted-foreground uppercase tracking-widest font-bold'>
                   Resultados
                 </p>
                 {total != null && (
-                  <span className='text-[10px] text-zinc-600'>
+                  <span className='text-[10px] text-muted-foreground'>
                     {results.length} de {total} papers
                   </span>
                 )}
@@ -469,7 +469,7 @@ function ExploitDBPanel() {
                 const isSaving   = saving === r.edb_id
                 return (
                   <div key={r.edb_id}
-                    className='rounded-xl border border-zinc-800 bg-zinc-900/30 p-3.5 flex gap-3 hover:border-zinc-700 transition'>
+                    className='rounded-xl border border-border bg-card/30 p-3.5 flex gap-3 hover:border-border transition'>
                     {/* EDB ID badge */}
                     <div className='shrink-0 flex flex-col items-center'>
                       <span className='font-mono text-[9px] font-bold rounded px-1.5 py-0.5'
@@ -479,8 +479,8 @@ function ExploitDBPanel() {
                     </div>
                     {/* Info */}
                     <div className='flex-1 min-w-0'>
-                      <p className='text-xs font-semibold text-zinc-200 leading-snug'>{r.title || '(sin título)'}</p>
-                      <p className='text-[10px] text-zinc-600 mt-0.5'>
+                      <p className='text-xs font-semibold text-foreground leading-snug'>{r.title || '(sin título)'}</p>
+                      <p className='text-[10px] text-muted-foreground mt-0.5'>
                         {r.author && <span>{r.author}</span>}
                         {r.author && r.date && <span className='mx-1'>·</span>}
                         {r.date && <span>{r.date}</span>}
@@ -493,7 +493,7 @@ function ExploitDBPanel() {
                         variant='outline'
                         onClick={() => handleDownload(r)}
                         disabled={isDownloading}
-                        className='h-7 px-2 text-[10px] border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:border-zinc-500 gap-1'
+                        className='h-7 px-2 text-[10px] border-border text-muted-foreground hover:text-foreground hover:border-input gap-1'
                       >
                         {isDownloading
                           ? <Loader2 className='h-3 w-3 animate-spin' />
@@ -504,7 +504,7 @@ function ExploitDBPanel() {
                         href={`https://www.exploit-db.com/papers/${r.edb_id}`}
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='inline-flex items-center gap-1 h-7 px-2 text-[10px] rounded-md border border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:border-zinc-500 transition-colors font-medium'
+                        className='inline-flex items-center gap-1 h-7 px-2 text-[10px] rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-input transition-colors font-medium'
                         title='Ver en Exploit-DB'
                       >
                         <ExternalLink className='h-3 w-3' />
@@ -517,7 +517,7 @@ function ExploitDBPanel() {
                         className={cn(
                           'h-7 px-2 text-[10px] gap-1 font-medium',
                           isSaved
-                            ? 'bg-zinc-800 text-zinc-500 cursor-default'
+                            ? 'bg-muted text-muted-foreground cursor-default'
                             : 'text-white'
                         )}
                         style={!isSaved ? { background: EDB_GREEN } : {}}
@@ -535,10 +535,10 @@ function ExploitDBPanel() {
           )}
 
           {!searched && (
-            <div className='rounded-lg border border-dashed border-zinc-800 p-8 text-center'>
-              <Search className='h-6 w-6 text-zinc-700 mx-auto mb-3' />
-              <p className='text-sm text-zinc-500'>Buscá un paper en Exploit-DB</p>
-              <p className='text-xs text-zinc-700 mt-1'>Ingresá un término arriba y presioná Buscar</p>
+            <div className='rounded-lg border border-dashed border-border p-8 text-center'>
+              <Search className='h-6 w-6 text-muted-foreground mx-auto mb-3' />
+              <p className='text-sm text-muted-foreground'>Buscá un paper en Exploit-DB</p>
+              <p className='text-xs text-muted-foreground mt-1'>Ingresá un término arriba y presioná Buscar</p>
             </div>
           )}
         </div>
@@ -548,10 +548,10 @@ function ExploitDBPanel() {
       {tab === 'saved' && (
         <div className='space-y-2'>
           {savedList.length === 0 && (
-            <div className='rounded-lg border border-dashed border-zinc-800 p-8 text-center'>
-              <Star className='h-6 w-6 text-zinc-700 mx-auto mb-3' />
-              <p className='text-sm text-zinc-500'>No hay papers guardados</p>
-              <p className='text-xs text-zinc-700 mt-1'>
+            <div className='rounded-lg border border-dashed border-border p-8 text-center'>
+              <Star className='h-6 w-6 text-muted-foreground mx-auto mb-3' />
+              <p className='text-sm text-muted-foreground'>No hay papers guardados</p>
+              <p className='text-xs text-muted-foreground mt-1'>
                 Buscá papers en la pestaña "Buscar" y guárdalos para tenerlos a mano
               </p>
               <button
@@ -565,7 +565,7 @@ function ExploitDBPanel() {
 
           {savedList.length > 0 && (
             <>
-              <p className='text-[10px] text-zinc-600 uppercase tracking-widest font-bold'>
+              <p className='text-[10px] text-muted-foreground uppercase tracking-widest font-bold'>
                 Biblioteca - {savedList.length} paper{savedList.length !== 1 ? 's' : ''}
               </p>
               {savedList.map(item => {
@@ -573,7 +573,7 @@ function ExploitDBPanel() {
                 const isDeleting    = deleting === item.id
                 return (
                   <div key={item.id}
-                    className='rounded-xl border border-zinc-800 bg-zinc-900/30 p-3.5 flex gap-3 hover:border-zinc-700 transition group'>
+                    className='rounded-xl border border-border bg-card/30 p-3.5 flex gap-3 hover:border-border transition group'>
                     {/* EDB ID */}
                     <div className='shrink-0'>
                       <span className='font-mono text-[9px] font-bold rounded px-1.5 py-0.5'
@@ -583,8 +583,8 @@ function ExploitDBPanel() {
                     </div>
                     {/* Info */}
                     <div className='flex-1 min-w-0'>
-                      <p className='text-xs font-semibold text-zinc-200 leading-snug'>{item.title || '(sin título)'}</p>
-                      <p className='text-[10px] text-zinc-600 mt-0.5'>
+                      <p className='text-xs font-semibold text-foreground leading-snug'>{item.title || '(sin título)'}</p>
+                      <p className='text-[10px] text-muted-foreground mt-0.5'>
                         {item.author && <span>{item.author}</span>}
                         {item.author && item.edb_date && <span className='mx-1'>·</span>}
                         {item.edb_date && <span>{item.edb_date}</span>}
@@ -599,7 +599,7 @@ function ExploitDBPanel() {
                         variant='outline'
                         onClick={() => handleDownloadSaved(item)}
                         disabled={isDownloading}
-                        className='h-7 px-2 text-[10px] border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:border-zinc-500 gap-1'
+                        className='h-7 px-2 text-[10px] border-border text-muted-foreground hover:text-foreground hover:border-input gap-1'
                       >
                         {isDownloading
                           ? <Loader2 className='h-3 w-3 animate-spin' />
@@ -610,7 +610,7 @@ function ExploitDBPanel() {
                         href={`https://www.exploit-db.com/papers/${item.edb_id}`}
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='flex items-center gap-1 h-7 px-2 rounded border border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:border-zinc-500 text-[10px] transition'
+                        className='flex items-center gap-1 h-7 px-2 rounded border border-border text-muted-foreground hover:text-foreground hover:border-input text-[10px] transition'
                       >
                         <ExternalLink className='h-3 w-3' />
                         EDB
@@ -618,7 +618,7 @@ function ExploitDBPanel() {
                       <button
                         onClick={() => handleDeleteSaved(item.id)}
                         disabled={isDeleting}
-                        className='opacity-0 group-hover:opacity-100 p-1 text-zinc-600 hover:text-red-400 transition'
+                        className='opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-red-400 transition'
                         title='Eliminar de la biblioteca'
                       >
                         {isDeleting
@@ -635,9 +635,9 @@ function ExploitDBPanel() {
       )}
 
       {/* Footer note */}
-      <div className='flex items-start gap-2 rounded-lg bg-zinc-900/30 border border-zinc-800/50 p-3'>
-        <Shield className='h-3.5 w-3.5 text-zinc-600 mt-0.5 shrink-0' />
-        <p className='text-[11px] text-zinc-600 leading-relaxed'>
+      <div className='flex items-start gap-2 rounded-lg bg-card/30 border border-border/50 p-3'>
+        <Shield className='h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0' />
+        <p className='text-[11px] text-muted-foreground leading-relaxed'>
           Exploit-DB es un repositorio público de seguridad mantenido por Offensive Security.
           Los papers guardados se almacenan localmente en Gungnir para referencia rápida.
           Respetá los términos de uso y la autoría de los papers que descargues.
@@ -733,24 +733,24 @@ export function Papers() {
     <div className='flex h-[calc(100vh-4rem)] -m-6 overflow-hidden'>
 
       {/* ── Left panel ─────────────────────────────────────────────────────── */}
-      <div className='w-80 shrink-0 flex flex-col border-r border-zinc-800 overflow-hidden bg-zinc-950/30'>
+      <div className='w-80 shrink-0 flex flex-col border-r border-border overflow-hidden bg-background/30'>
 
         {/* Header */}
-        <div className='border-b border-zinc-800 p-4'>
+        <div className='border-b border-border p-4'>
           <div className='flex items-center gap-2 mb-1'>
             <GraduationCap className='h-4 w-4' style={{ color: accent }} />
-            <h1 className='font-semibold text-sm text-zinc-200'>Research Papers</h1>
+            <h1 className='font-semibold text-sm text-foreground'>Research Papers</h1>
           </div>
-          <p className='text-[11px] text-zinc-500'>
+          <p className='text-[11px] text-muted-foreground'>
             Documenta investigación de seguridad para conferencias y publicación
           </p>
         </div>
 
         {/* Template selector - grouped */}
-        <div className='p-3 border-b border-zinc-800 space-y-3 overflow-y-auto max-h-72'>
+        <div className='p-3 border-b border-border space-y-3 overflow-y-auto max-h-72'>
           {TEMPLATE_GROUPS.map(g => (
             <div key={g.group}>
-              <p className='text-[9px] font-bold uppercase tracking-widest text-zinc-600 mb-1.5'>{g.group}</p>
+              <p className='text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5'>{g.group}</p>
               <div className='grid grid-cols-2 gap-1.5'>
                 {g.items.map(t => {
                   const active = data.template === t.id
@@ -760,17 +760,17 @@ export function Papers() {
                       onClick={() => { setVal('template', t.id); setActiveTab('editor') }}
                       className={cn(
                         'text-left rounded-lg border p-2 transition-all',
-                        active ? 'border-zinc-600' : 'border-zinc-800 hover:border-zinc-700 bg-zinc-900/20'
+                        active ? 'border-input' : 'border-border hover:border-border bg-card/20'
                       )}
                       style={active ? { borderColor: t.accent + '60', background: t.accent + '0d' } : {}}
                     >
                       <div className='flex items-center gap-1.5 mb-0.5'>
                         <div className='h-2 w-2 rounded-full shrink-0' style={{ background: active ? t.accent : '#3f3f46' }} />
-                        <p className={cn('text-[10px] font-semibold leading-tight truncate', active ? 'text-zinc-100' : 'text-zinc-400')}>
+                        <p className={cn('text-[10px] font-semibold leading-tight truncate', active ? 'text-foreground' : 'text-muted-foreground')}>
                           {t.label}
                         </p>
                       </div>
-                      <p className='text-[8px] text-zinc-600 truncate pl-3.5'>{t.sub}</p>
+                      <p className='text-[8px] text-muted-foreground truncate pl-3.5'>{t.sub}</p>
                     </button>
                   )
                 })}
@@ -790,18 +790,18 @@ export function Papers() {
           </button>
           <button
             onClick={() => setShowSaved(v => !v)}
-            className='w-full flex items-center gap-2 rounded-lg border border-dashed border-zinc-700/60 px-3 py-2 text-xs text-zinc-500 hover:text-zinc-300 hover:border-zinc-600 transition'
+            className='w-full flex items-center gap-2 rounded-lg border border-dashed border-border/60 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:border-input transition'
           >
             <FolderOpen className='h-3.5 w-3.5 text-amber-500/70 shrink-0' />
             Papers guardados
             {papers.length > 0 && (
-              <span className='ml-auto text-[10px] bg-zinc-700 text-zinc-300 rounded px-1.5 py-0.5'>{papers.length}</span>
+              <span className='ml-auto text-[10px] bg-accent text-foreground rounded px-1.5 py-0.5'>{papers.length}</span>
             )}
           </button>
         </div>
 
         {showSaved && (
-          <div className='mx-3 mt-2 rounded-lg border border-zinc-700/60 bg-zinc-900/80 p-2 max-h-52 overflow-y-auto'>
+          <div className='mx-3 mt-2 rounded-lg border border-border/60 bg-card/80 p-2 max-h-52 overflow-y-auto'>
             <SavedList papers={papers} currentId={currentId} onLoad={handleLoad} onDelete={handleDelete} />
           </div>
         )}
@@ -810,10 +810,10 @@ export function Papers() {
         <div className='flex-1 overflow-y-auto p-3 space-y-2.5'>
 
           <div>
-            <Label className='text-[9px] text-zinc-500 uppercase tracking-widest'>Título *</Label>
+            <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Título *</Label>
             <Input
               ref={titleRef}
-              className='mt-1 bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder:text-zinc-700 text-xs h-8 focus:border-zinc-600'
+              className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8 focus:border-input'
               placeholder='Título del paper...'
               value={data.title}
               onChange={setField('title')}
@@ -821,14 +821,14 @@ export function Papers() {
           </div>
 
           <div>
-            <Label className='text-[9px] text-zinc-500 uppercase tracking-widest'>Categoría</Label>
+            <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Categoría</Label>
             <div className='mt-1 flex flex-wrap gap-1'>
               {CATEGORY_OPTIONS.map(c => (
                 <button key={c.id} onClick={() => setVal('category', c.id)}
                   className={cn('rounded px-2 py-0.5 text-[9px] font-medium border transition-all',
                     data.category === c.id
-                      ? 'border-zinc-500 bg-zinc-700 text-zinc-100'
-                      : 'border-zinc-800 text-zinc-600 hover:border-zinc-700 hover:text-zinc-400'
+                      ? 'border-input bg-accent text-foreground'
+                      : 'border-border text-muted-foreground hover:border-border hover:text-muted-foreground'
                   )}>
                   {c.label}
                 </button>
@@ -837,68 +837,68 @@ export function Papers() {
           </div>
 
           <div>
-            <Label className='text-[9px] text-zinc-500 uppercase tracking-widest'>Autor(es)</Label>
-            <Input className='mt-1 bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder:text-zinc-700 text-xs h-8'
+            <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Autor(es)</Label>
+            <Input className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8'
               placeholder='Nombre / @handle / afiliación'
               value={data.authors ?? ''} onChange={setField('authors')} />
           </div>
 
           <div className='grid grid-cols-2 gap-2'>
             <div>
-              <Label className='text-[9px] text-zinc-500 uppercase tracking-widest'>Fecha</Label>
-              <Input className='mt-1 bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder:text-zinc-700 text-xs h-8'
+              <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Fecha</Label>
+              <Input className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8'
                 value={data.date ?? ''} onChange={setField('date')} />
             </div>
             <div>
-              <Label className='text-[9px] text-zinc-500 uppercase tracking-widest'>CVE / ID</Label>
-              <Input className='mt-1 bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder:text-zinc-700 text-xs h-8 font-mono'
+              <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>CVE / ID</Label>
+              <Input className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8 font-mono'
                 placeholder='CVE-2024-...' value={data.cve_id ?? ''} onChange={setField('cve_id')} />
             </div>
           </div>
 
           <div className='grid grid-cols-2 gap-2'>
             <div>
-              <Label className='text-[9px] text-zinc-500 uppercase tracking-widest'>CVSS Score</Label>
+              <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>CVSS Score</Label>
               <Input type='number' step='0.1' min='0' max='10'
-                className='mt-1 bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder:text-zinc-700 text-xs h-8 font-mono'
+                className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8 font-mono'
                 placeholder='9.8'
                 value={data.cvss_score != null ? String(data.cvss_score) : ''}
                 onChange={e => setVal('cvss_score', e.target.value ? parseFloat(e.target.value) : undefined)} />
             </div>
             <div>
-              <Label className='text-[9px] text-zinc-500 uppercase tracking-widest'>Estado</Label>
+              <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Estado</Label>
               <select
                 value={data.status ?? 'draft'}
                 onChange={e => setVal('status', e.target.value)}
-                className='mt-1 w-full rounded border border-zinc-800 bg-zinc-900 px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-zinc-600 h-8'>
+                className='mt-1 w-full rounded border border-border bg-card px-2 py-1 text-xs text-foreground focus:outline-none focus:border-input h-8'>
                 {STATUS_OPTIONS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
               </select>
             </div>
           </div>
 
           <div>
-            <Label className='text-[9px] text-zinc-500 uppercase tracking-widest'>CVSS Vector</Label>
-            <Input className='mt-1 bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder:text-zinc-700 text-xs h-8 font-mono'
+            <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>CVSS Vector</Label>
+            <Input className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8 font-mono'
               placeholder='CVSS:3.1/AV:N/AC:L/PR:N/UI:N/...'
               value={data.cvss_vector ?? ''} onChange={setField('cvss_vector')} />
           </div>
 
           <div>
-            <Label className='text-[9px] text-zinc-500 uppercase tracking-widest'>Advisory URL</Label>
-            <Input className='mt-1 bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder:text-zinc-700 text-xs h-8'
+            <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Advisory URL</Label>
+            <Input className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8'
               placeholder='https://...' value={data.advisory_url ?? ''} onChange={setField('advisory_url')} />
           </div>
 
           <div>
-            <Label className='text-[9px] text-zinc-500 uppercase tracking-widest'>Tags</Label>
-            <Input className='mt-1 bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder:text-zinc-700 text-xs h-8'
+            <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Tags</Label>
+            <Input className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8'
               placeholder='RCE, SMB, Windows, CVE, ...'
               value={data.tags ?? ''} onChange={setField('tags')} />
           </div>
         </div>
 
         {/* Bottom actions */}
-        <div className='border-t border-zinc-800 p-3 space-y-2'>
+        <div className='border-t border-border p-3 space-y-2'>
           {currentId && (
             <div className='flex items-center gap-1.5 text-[10px] text-amber-400/80 bg-amber-500/10 rounded px-2 py-1 border border-amber-500/20'>
               <FolderOpen className='h-3 w-3 shrink-0' />
@@ -918,12 +918,12 @@ export function Papers() {
           <div className='flex gap-2'>
             <Button variant='outline' size='sm' onClick={handleSave}
               disabled={!canGenerate || saving}
-              className='flex-1 gap-1.5 text-xs border-zinc-700 text-zinc-300 hover:bg-zinc-800'>
+              className='flex-1 gap-1.5 text-xs border-border text-foreground hover:bg-muted'>
               {saving ? <Loader2 className='h-3 w-3 animate-spin' /> : <Save className='h-3 w-3' />}
               {saving ? 'Guardando...' : currentId ? 'Actualizar' : 'Guardar'}
             </Button>
             <Button variant='ghost' size='sm' onClick={reset} title='Nuevo'
-              className='text-zinc-600 hover:text-zinc-400 text-xs h-8 px-3'>
+              className='text-muted-foreground hover:text-muted-foreground text-xs h-8 px-3'>
               <RotateCcw className='h-3 w-3' />
             </Button>
           </div>
@@ -934,14 +934,14 @@ export function Papers() {
       <div className='flex-1 flex flex-col overflow-hidden'>
 
         {/* Tab bar */}
-        <div className='border-b border-zinc-800 bg-zinc-950/50 px-5 pt-3 pb-0 flex gap-1'>
+        <div className='border-b border-border bg-background/50 px-5 pt-3 pb-0 flex gap-1'>
           <button
             onClick={() => setActiveTab('editor')}
             className={cn(
               'flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors -mb-px',
               activeTab === 'editor'
-                ? 'border-current text-zinc-100'
-                : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                ? 'border-current text-foreground'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             )}
             style={activeTab === 'editor' ? { borderColor: accent, color: accent } : {}}
           >
@@ -960,7 +960,7 @@ export function Papers() {
               'flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors -mb-px',
               activeTab === 'exploitdb'
                 ? 'border-green-500 text-green-400'
-                : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             )}
           >
             <BookOpen className='h-3.5 w-3.5' />
@@ -983,7 +983,7 @@ export function Papers() {
                   <p className='font-bold text-sm truncate' style={{ color: accent }}>
                     {selectedTmpl?.label ?? 'Paper'} - {CATEGORY_OPTIONS.find(c => c.id === data.category)?.label ?? ''}
                   </p>
-                  <p className='text-xs text-zinc-500 truncate mt-0.5'>
+                  <p className='text-xs text-muted-foreground truncate mt-0.5'>
                     {data.title ? `"${data.title}"` : 'Escribe el título en el panel izquierdo'}
                     {data.cve_id ? ` · ${data.cve_id}` : ''}
                     {data.cvss_score != null ? ` · CVSS ${Number(data.cvss_score).toFixed(1)}` : ''}
@@ -992,7 +992,7 @@ export function Papers() {
                 {filledSecs > 0 && (
                   <div className='text-right shrink-0'>
                     <p className='text-xs font-semibold' style={{ color: accent }}>{filledSecs}</p>
-                    <p className='text-[9px] text-zinc-600'>secciones</p>
+                    <p className='text-[9px] text-muted-foreground'>secciones</p>
                   </div>
                 )}
               </div>
@@ -1013,13 +1013,13 @@ export function Papers() {
               ))}
 
               {/* Generate CTA */}
-              <div className='rounded-xl border border-zinc-800 bg-zinc-950 p-5'>
+              <div className='rounded-xl border border-border bg-background p-5'>
                 <div className='flex items-center justify-between gap-4'>
                   <div>
-                    <p className='text-sm font-medium text-zinc-200'>
+                    <p className='text-sm font-medium text-foreground'>
                       {selectedTmpl?.label ?? 'Research'} Paper - PDF
                     </p>
-                    <p className='text-xs text-zinc-500 mt-0.5'>
+                    <p className='text-xs text-muted-foreground mt-0.5'>
                       Portada · Abstract · {filledSecs} secciones · Pie de página
                     </p>
                     {!canGenerate && (
@@ -1028,7 +1028,7 @@ export function Papers() {
                       </p>
                     )}
                     {canGenerate && (
-                      <p className='mt-2 flex items-center gap-1.5 text-xs text-zinc-600'>
+                      <p className='mt-2 flex items-center gap-1.5 text-xs text-muted-foreground'>
                         <CheckCircle2 className='h-3.5 w-3.5 text-green-600' /> Listo - {filledSecs} de 16 secciones completadas
                       </p>
                     )}
@@ -1047,9 +1047,9 @@ export function Papers() {
               </div>
 
               {/* Note */}
-              <div className='flex items-start gap-2 rounded-lg bg-zinc-900/30 border border-zinc-800/50 p-3'>
-                <Shield className='h-3.5 w-3.5 text-zinc-600 mt-0.5 shrink-0' />
-                <p className='text-[11px] text-zinc-600 leading-relaxed'>
+              <div className='flex items-start gap-2 rounded-lg bg-card/30 border border-border/50 p-3'>
+                <Shield className='h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0' />
+                <p className='text-[11px] text-muted-foreground leading-relaxed'>
                   Seguí un proceso de responsible disclosure antes de publicar investigaciones de vulnerabilidades. Black Hat indica que el contenido generado por LLM no puede ser el cuerpo principal de una submission - usá esta herramienta para estructurar y formatear, pero la investigación debe ser tuya.
                 </p>
               </div>

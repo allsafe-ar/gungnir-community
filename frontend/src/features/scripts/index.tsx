@@ -49,7 +49,7 @@ const LANG_LABEL: Record<Lang, string>          = { bash: 'Bash', powershell: 'P
 const LANG_EXT: Record<Lang, string>            = { bash: '.sh', powershell: '.ps1', python: '.py', batch: '.bat' }
 
 const SEVERITY_META: Record<Severity, { label: string; cls: string }> = {
-  info:     { label: 'Info',     cls: 'text-zinc-400  bg-zinc-800/80  border-zinc-700'  },
+  info:     { label: 'Info',     cls: 'text-muted-foreground  bg-muted/80  border-border'  },
   low:      { label: 'Bajo',     cls: 'text-blue-400  bg-blue-900/30  border-blue-700'  },
   medium:   { label: 'Medio',    cls: 'text-yellow-400 bg-yellow-900/30 border-yellow-700' },
   high:     { label: 'Alto',     cls: 'text-orange-400 bg-orange-900/30 border-orange-700' },
@@ -1284,7 +1284,7 @@ function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500) }}
-      className='p-1.5 rounded text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition' title='Copiar'>
+      className='p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition' title='Copiar'>
       {copied ? <Check className='h-3.5 w-3.5 text-green-400' /> : <Copy className='h-3.5 w-3.5' />}
     </button>
   )
@@ -1304,7 +1304,7 @@ function DownloadBtn({ script }: { script: Script }) {
   }
   return (
     <button onClick={download}
-      className='flex items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-400 hover:border-red-800 hover:text-red-400 transition'>
+      className='flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:border-red-800 hover:text-red-400 transition'>
       <Download className='h-3 w-3' />
       Descargar {LANG_EXT[script.language]}
     </button>
@@ -1322,29 +1322,29 @@ function ScriptCard({ script, onEdit, onDelete }: ScriptCardProps) {
   const sev = SEVERITY_META[script.severity]
 
   return (
-    <div className={cn('rounded-lg border bg-zinc-900/60', script.isCustom ? 'border-red-900/40' : 'border-zinc-800')}>
+    <div className={cn('rounded-lg border bg-card/60', script.isCustom ? 'border-red-900/40' : 'border-border')}>
       {/* Header */}
       <div className='flex items-start gap-3 p-4'>
-        <FileCode2 className='h-4 w-4 text-zinc-500 mt-0.5 shrink-0' />
+        <FileCode2 className='h-4 w-4 text-muted-foreground mt-0.5 shrink-0' />
         <div className='flex-1 min-w-0'>
           <div className='flex items-center gap-2 flex-wrap'>
             {script.isCustom && <span className='text-[9px] font-bold text-red-500 bg-red-500/10 border border-red-500/20 px-1 py-0.5 rounded'>CUSTOM</span>}
             {script.isModified && <span className='text-[9px] font-bold text-yellow-600 bg-yellow-600/10 border border-yellow-600/20 px-1 py-0.5 rounded'>EDIT</span>}
-            <span className='font-semibold text-sm text-zinc-100'>{script.name}</span>
+            <span className='font-semibold text-sm text-foreground'>{script.name}</span>
           </div>
-          <p className='mt-1 text-xs text-zinc-400 leading-relaxed'>{script.description}</p>
+          <p className='mt-1 text-xs text-muted-foreground leading-relaxed'>{script.description}</p>
 
           {/* Badges row */}
           <div className='mt-2 flex flex-wrap items-center gap-1.5'>
-            <span className='text-[10px] text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded'>{PLATFORM_LABEL[script.platform]}</span>
-            <span className='text-[10px] text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded font-mono'>{LANG_LABEL[script.language]}</span>
+            <span className='text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded'>{PLATFORM_LABEL[script.platform]}</span>
+            <span className='text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono'>{LANG_LABEL[script.language]}</span>
             <span className={cn('text-[10px] border px-1.5 py-0.5 rounded', sev.cls)}>{sev.label}</span>
-            <span className='text-[10px] text-zinc-600 bg-zinc-800/60 px-1.5 py-0.5 rounded'>{TYPE_LABEL[script.script_type]}</span>
+            <span className='text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded'>{TYPE_LABEL[script.script_type]}</span>
 
             {/* MITRE links */}
             {script.mitre_ids.map(id => (
               <Link key={id} to='/tecnicas' search={{ mitre: id }}
-                className='flex items-center gap-0.5 text-[10px] text-zinc-600 hover:text-red-400 transition'>
+                className='flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-red-400 transition'>
                 <ExternalLink className='h-2.5 w-2.5' />{id}
               </Link>
             ))}
@@ -1354,7 +1354,7 @@ function ScriptCard({ script, onEdit, onDelete }: ScriptCardProps) {
           {script.related_tools.length > 0 && (
             <div className='mt-1.5 flex flex-wrap gap-1'>
               {script.related_tools.map(t => (
-                <span key={t} className='text-[9px] text-zinc-600 border border-zinc-800 px-1.5 py-0.5 rounded-full'>
+                <span key={t} className='text-[9px] text-muted-foreground border border-border px-1.5 py-0.5 rounded-full'>
                   🔧 {t}
                 </span>
               ))}
@@ -1363,7 +1363,7 @@ function ScriptCard({ script, onEdit, onDelete }: ScriptCardProps) {
 
           {/* Notes */}
           {script.notes && (
-            <p className='mt-1.5 text-[10px] text-zinc-600 italic flex items-center gap-1'>
+            <p className='mt-1.5 text-[10px] text-muted-foreground italic flex items-center gap-1'>
               <Info className='h-3 w-3 shrink-0' /> {script.notes}
             </p>
           )}
@@ -1372,19 +1372,19 @@ function ScriptCard({ script, onEdit, onDelete }: ScriptCardProps) {
         {/* Actions */}
         <div className='flex items-center gap-1 shrink-0'>
           {onEdit && (
-            <button onClick={onEdit} className='p-1.5 rounded text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition' title='Editar'>
+            <button onClick={onEdit} className='p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition' title='Editar'>
               <Pencil className='h-3.5 w-3.5' />
             </button>
           )}
           {onDelete && (
-            <button onClick={onDelete} className='p-1.5 rounded text-zinc-600 hover:text-red-400 hover:bg-red-900/20 transition' title='Eliminar'>
+            <button onClick={onDelete} className='p-1.5 rounded text-muted-foreground hover:text-red-400 hover:bg-red-900/20 transition' title='Eliminar'>
               <Trash2 className='h-3.5 w-3.5' />
             </button>
           )}
           <CopyBtn text={script.content} />
           <DownloadBtn script={script} />
           <button onClick={() => setExpanded(e => !e)}
-            className='p-1.5 rounded text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition'>
+            className='p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition'>
             {expanded ? <ChevronDown className='h-3.5 w-3.5' /> : <ChevronRight className='h-3.5 w-3.5' />}
           </button>
         </div>
@@ -1392,8 +1392,8 @@ function ScriptCard({ script, onEdit, onDelete }: ScriptCardProps) {
 
       {/* Script content (expandable) */}
       {expanded && (
-        <div className='border-t border-zinc-800 relative'>
-          <pre className='overflow-x-auto px-4 py-3 text-[11px] font-mono text-zinc-300 leading-relaxed max-h-96 overflow-y-auto bg-zinc-950/60 whitespace-pre'>
+        <div className='border-t border-border relative'>
+          <pre className='overflow-x-auto px-4 py-3 text-[11px] font-mono text-foreground leading-relaxed max-h-96 overflow-y-auto bg-background/60 whitespace-pre'>
             {script.content}
           </pre>
           <div className='absolute top-2 right-2'>
@@ -1437,70 +1437,70 @@ function ScriptForm({ initial, onSave, onCancel, saving }: ScriptFormProps) {
   })
 
   return (
-    <div className='space-y-3 rounded-lg border border-red-900/40 bg-zinc-900/80 p-4'>
+    <div className='space-y-3 rounded-lg border border-red-900/40 bg-card/80 p-4'>
       <div className='flex items-center justify-between'>
-        <span className='text-xs font-semibold text-zinc-300'>{initial ? 'Editar script' : 'Nuevo script'}</span>
-        <button onClick={onCancel}><X className='h-4 w-4 text-zinc-500 hover:text-zinc-300' /></button>
+        <span className='text-xs font-semibold text-foreground'>{initial ? 'Editar script' : 'Nuevo script'}</span>
+        <button onClick={onCancel}><X className='h-4 w-4 text-muted-foreground hover:text-foreground' /></button>
       </div>
       <div className='grid grid-cols-2 gap-2'>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-zinc-500 uppercase'>Nombre *</label>
-          <Input value={name} onChange={e => setName(e.target.value)} placeholder='Ej: EternalBlue Check' className='h-7 text-xs bg-zinc-950 border-zinc-700' />
+          <label className='text-[10px] text-muted-foreground uppercase'>Nombre *</label>
+          <Input value={name} onChange={e => setName(e.target.value)} placeholder='Ej: EternalBlue Check' className='h-7 text-xs bg-background border-border' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-zinc-500 uppercase'>Categoría</label>
-          <select value={cat} onChange={e => setCat(e.target.value)} className='h-7 w-full rounded-md border border-zinc-700 bg-zinc-950 px-2 text-xs text-zinc-200'>
+          <label className='text-[10px] text-muted-foreground uppercase'>Categoría</label>
+          <select value={cat} onChange={e => setCat(e.target.value)} className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-zinc-500 uppercase'>Tipo</label>
-          <select value={stype} onChange={e => setStype(e.target.value as ScriptType)} className='h-7 w-full rounded-md border border-zinc-700 bg-zinc-950 px-2 text-xs text-zinc-200'>
+          <label className='text-[10px] text-muted-foreground uppercase'>Tipo</label>
+          <select value={stype} onChange={e => setStype(e.target.value as ScriptType)} className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             {Object.entries(TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-zinc-500 uppercase'>Plataforma</label>
-          <select value={platform} onChange={e => setPlatform(e.target.value as Platform)} className='h-7 w-full rounded-md border border-zinc-700 bg-zinc-950 px-2 text-xs text-zinc-200'>
+          <label className='text-[10px] text-muted-foreground uppercase'>Plataforma</label>
+          <select value={platform} onChange={e => setPlatform(e.target.value as Platform)} className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             {Object.entries(PLATFORM_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-zinc-500 uppercase'>Lenguaje</label>
-          <select value={lang} onChange={e => setLang(e.target.value as Lang)} className='h-7 w-full rounded-md border border-zinc-700 bg-zinc-950 px-2 text-xs text-zinc-200'>
+          <label className='text-[10px] text-muted-foreground uppercase'>Lenguaje</label>
+          <select value={lang} onChange={e => setLang(e.target.value as Lang)} className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             {Object.entries(LANG_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-zinc-500 uppercase'>Severidad</label>
-          <select value={severity} onChange={e => setSeverity(e.target.value as Severity)} className='h-7 w-full rounded-md border border-zinc-700 bg-zinc-950 px-2 text-xs text-zinc-200'>
+          <label className='text-[10px] text-muted-foreground uppercase'>Severidad</label>
+          <select value={severity} onChange={e => setSeverity(e.target.value as Severity)} className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             {Object.entries(SEVERITY_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
         </div>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-zinc-500 uppercase'>Descripción</label>
-          <Textarea value={desc} onChange={e => setDesc(e.target.value)} rows={2} className='text-xs bg-zinc-950 border-zinc-700 resize-none' />
+          <label className='text-[10px] text-muted-foreground uppercase'>Descripción</label>
+          <Textarea value={desc} onChange={e => setDesc(e.target.value)} rows={2} className='text-xs bg-background border-border resize-none' />
         </div>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-zinc-500 uppercase'>Contenido del script *</label>
+          <label className='text-[10px] text-muted-foreground uppercase'>Contenido del script *</label>
           <Textarea value={content} onChange={e => setContent(e.target.value)} rows={10}
-            className='text-xs font-mono bg-zinc-950 border-zinc-700 resize-y' placeholder='#!/bin/bash&#10;...' />
+            className='text-xs font-mono bg-background border-border resize-y' placeholder='#!/bin/bash&#10;...' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-zinc-500 uppercase'>MITRE IDs (comas)</label>
-          <Input value={mitres} onChange={e => setMitres(e.target.value)} placeholder='T1190, T1210' className='h-7 text-xs font-mono bg-zinc-950 border-zinc-700' />
+          <label className='text-[10px] text-muted-foreground uppercase'>MITRE IDs (comas)</label>
+          <Input value={mitres} onChange={e => setMitres(e.target.value)} placeholder='T1190, T1210' className='h-7 text-xs font-mono bg-background border-border' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-zinc-500 uppercase'>Arsenal tools (comas)</label>
-          <Input value={tools} onChange={e => setTools(e.target.value)} placeholder='nmap, metasploit' className='h-7 text-xs bg-zinc-950 border-zinc-700' />
+          <label className='text-[10px] text-muted-foreground uppercase'>Arsenal tools (comas)</label>
+          <Input value={tools} onChange={e => setTools(e.target.value)} placeholder='nmap, metasploit' className='h-7 text-xs bg-background border-border' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-zinc-500 uppercase'>Tags</label>
-          <Input value={tags} onChange={e => setTags(e.target.value)} placeholder='smb, windows, cve' className='h-7 text-xs bg-zinc-950 border-zinc-700' />
+          <label className='text-[10px] text-muted-foreground uppercase'>Tags</label>
+          <Input value={tags} onChange={e => setTags(e.target.value)} placeholder='smb, windows, cve' className='h-7 text-xs bg-background border-border' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-zinc-500 uppercase'>Notas</label>
-          <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder='Requisitos, advertencias...' className='h-7 text-xs bg-zinc-950 border-zinc-700' />
+          <label className='text-[10px] text-muted-foreground uppercase'>Notas</label>
+          <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder='Requisitos, advertencias...' className='h-7 text-xs bg-background border-border' />
         </div>
       </div>
       <div className='flex gap-2 justify-end'>
@@ -1638,27 +1638,27 @@ export function Scripts() {
   return (
     <div className='flex h-[calc(100vh-4rem)] -m-6 overflow-hidden'>
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <div className='flex w-72 shrink-0 flex-col border-r border-zinc-800 overflow-hidden'>
-        <div className='border-b border-zinc-800 p-4 space-y-3'>
+      <div className='flex w-72 shrink-0 flex-col border-r border-border overflow-hidden'>
+        <div className='border-b border-border p-4 space-y-3'>
           <div className='flex items-center gap-2'>
             <FileCode2 className='h-4 w-4 text-red-500' />
-            <h1 className='font-semibold text-sm text-zinc-200'>Scripts</h1>
-            <span className='ml-auto text-xs text-zinc-500'>{allScripts.length} scripts</span>
+            <h1 className='font-semibold text-sm text-foreground'>Scripts</h1>
+            <span className='ml-auto text-xs text-muted-foreground'>{allScripts.length} scripts</span>
           </div>
           <div className='relative'>
-            <Search className='absolute left-2.5 top-2.5 h-3.5 w-3.5 text-zinc-500' />
+            <Search className='absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground' />
             <Input placeholder='Buscar script...' value={search} onChange={e => setSearch(e.target.value)}
-              className='h-8 pl-8 text-xs bg-zinc-950 border-zinc-800' />
+              className='h-8 pl-8 text-xs bg-background border-border' />
           </div>
         </div>
 
         {/* Filters */}
-        <div className='border-b border-zinc-800 px-3 py-2 space-y-2'>
+        <div className='border-b border-border px-3 py-2 space-y-2'>
           <div className='flex flex-wrap gap-1'>
-            <button onClick={() => setFPlatform('')} className={cn('rounded px-2 py-0.5 text-[10px] transition', filterPlatform === '' ? 'bg-zinc-700 text-zinc-200' : 'text-zinc-500 hover:text-zinc-300')}>Todas</button>
+            <button onClick={() => setFPlatform('')} className={cn('rounded px-2 py-0.5 text-[10px] transition', filterPlatform === '' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground')}>Todas</button>
             {(['linux', 'windows', 'cross'] as Platform[]).map(p => (
               <button key={p} onClick={() => setFPlatform(p === filterPlatform ? '' : p)}
-                className={cn('rounded border px-2 py-0.5 text-[10px] transition', filterPlatform === p ? 'border-red-800 text-red-400 bg-red-900/20' : 'border-transparent text-zinc-500 hover:text-zinc-300')}>
+                className={cn('rounded border px-2 py-0.5 text-[10px] transition', filterPlatform === p ? 'border-red-800 text-red-400 bg-red-900/20' : 'border-transparent text-muted-foreground hover:text-foreground')}>
                 {p === 'linux' ? '🐧' : p === 'windows' ? '🪟' : '🔄'} {p}
               </button>
             ))}
@@ -1666,7 +1666,7 @@ export function Scripts() {
           <div className='flex flex-wrap gap-1'>
             {(['bash', 'powershell', 'python'] as Lang[]).map(l => (
               <button key={l} onClick={() => setFLang(l === filterLang ? '' : l)}
-                className={cn('rounded px-1.5 py-0.5 text-[10px] font-mono transition', filterLang === l ? 'bg-red-900/30 text-red-400' : 'text-zinc-600 hover:text-zinc-300')}>
+                className={cn('rounded px-1.5 py-0.5 text-[10px] font-mono transition', filterLang === l ? 'bg-red-900/30 text-red-400' : 'text-muted-foreground hover:text-foreground')}>
                 {l}
               </button>
             ))}
@@ -1677,9 +1677,9 @@ export function Scripts() {
         <div className='flex-1 overflow-y-auto py-2'>
           <button onClick={() => setFCat('')}
             className={cn('flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs mx-1 transition mb-1',
-              filterCat === '' ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200')}>
+              filterCat === '' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-card hover:text-foreground')}>
             <span className='flex-1 text-left font-medium'>Todos los scripts</span>
-            <span className='rounded bg-zinc-700 px-1.5 py-0.5 text-[10px] text-zinc-400'>{sidebarList.length}</span>
+            <span className='rounded bg-accent px-1.5 py-0.5 text-[10px] text-muted-foreground'>{sidebarList.length}</span>
           </button>
           {CATEGORIES.map(cat => {
             const count = sidebarList.filter(s => s.category === cat).length
@@ -1688,10 +1688,10 @@ export function Scripts() {
               <div key={cat}>
                 <button onClick={() => { setFCat(cat === filterCat ? '' : cat); toggleCat(cat) }}
                   className={cn('flex w-full items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide transition',
-                    filterCat === cat ? 'text-red-400' : 'text-zinc-500 hover:text-zinc-300')}>
+                    filterCat === cat ? 'text-red-400' : 'text-muted-foreground hover:text-foreground')}>
                   {expandedCats.has(cat) ? <ChevronDown className='h-3 w-3 shrink-0' /> : <ChevronRight className='h-3 w-3 shrink-0' />}
                   <span className='flex-1 text-left truncate'>{cat}</span>
-                  <span className='text-zinc-700'>{count}</span>
+                  <span className='text-muted-foreground'>{count}</span>
                 </button>
               </div>
             )
@@ -1700,7 +1700,7 @@ export function Scripts() {
 
         {/* Admin: add script */}
         {isAdmin && (
-          <div className='border-t border-zinc-800 p-3'>
+          <div className='border-t border-border p-3'>
             <Button size='sm' className='w-full h-7 text-xs' variant='outline'
               onClick={() => { setShowForm(true); setEditScript(null) }}>
               <Plus className='h-3 w-3 mr-1' /> Agregar script custom
@@ -1711,11 +1711,11 @@ export function Scripts() {
 
       {/* ── Right panel ─────────────────────────────────────────────── */}
       <div className='flex-1 overflow-y-auto'>
-        <div className='sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/95 px-6 py-4 backdrop-blur'>
+        <div className='sticky top-0 z-10 border-b border-border bg-background/95 px-6 py-4 backdrop-blur'>
           <div className='flex items-center gap-3'>
             <div>
-              <h2 className='font-semibold text-zinc-100'>{filterCat || 'Scripts de seguridad ofensiva'}</h2>
-              <p className='text-xs text-zinc-500'>
+              <h2 className='font-semibold text-foreground'>{filterCat || 'Scripts de seguridad ofensiva'}</h2>
+              <p className='text-xs text-muted-foreground'>
                 {filtered.length} script{filtered.length !== 1 ? 's' : ''}
                 {filterPlatform && ` · ${PLATFORM_LABEL[filterPlatform]}`}
                 {filterLang && ` · ${LANG_LABEL[filterLang]}`}
@@ -1723,7 +1723,7 @@ export function Scripts() {
               </p>
             </div>
             <div className='ml-auto flex items-center gap-2'>
-              <div className='flex items-center gap-1 text-[10px] text-zinc-600'>
+              <div className='flex items-center gap-1 text-[10px] text-muted-foreground'>
                 <Shield className='h-3 w-3' /> Solo usar con autorización explícita
               </div>
             </div>
@@ -1740,8 +1740,8 @@ export function Scripts() {
 
           {filtered.length === 0 && !showForm ? (
             <div className='flex flex-col items-center justify-center py-24 text-center'>
-              <AlertTriangle className='mb-3 h-8 w-8 text-zinc-700' />
-              <p className='text-sm text-zinc-500'>No se encontraron scripts</p>
+              <AlertTriangle className='mb-3 h-8 w-8 text-muted-foreground' />
+              <p className='text-sm text-muted-foreground'>No se encontraron scripts</p>
             </div>
           ) : filterCat ? (
             <div className='space-y-4'>
@@ -1754,7 +1754,7 @@ export function Scripts() {
           ) : (
             byCategory.map(({ cat, scripts }) => scripts.length > 0 && (
               <div key={cat}>
-                <h3 className='mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-600 border-b border-zinc-800 pb-2'>{cat}</h3>
+                <h3 className='mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border pb-2'>{cat}</h3>
                 <div className='space-y-3'>
                   {scripts.map(s => (
                     <ScriptCard key={s.id} script={s}

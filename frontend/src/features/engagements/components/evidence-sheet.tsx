@@ -46,12 +46,12 @@ function formatBytes(bytes: number): string {
 }
 
 function fileIcon(type?: string) {
-  if (!type) return <File className='h-4 w-4 text-zinc-500' />
+  if (!type) return <File className='h-4 w-4 text-muted-foreground' />
   if (type.startsWith('image/')) return <Image className='h-4 w-4 text-blue-400' />
   if (type.includes('pdf')) return <FileText className='h-4 w-4 text-red-400' />
   if (type.includes('text') || type.includes('json') || type.includes('xml'))
     return <FileText className='h-4 w-4 text-green-400' />
-  return <File className='h-4 w-4 text-zinc-400' />
+  return <File className='h-4 w-4 text-muted-foreground' />
 }
 
 // ─── Drop zone ────────────────────────────────────────────────────────────────
@@ -77,13 +77,13 @@ function DropZone({ onFile }: { onFile: (f: File) => void }) {
         'flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 text-center cursor-pointer transition-colors',
         over
           ? 'border-red-700 bg-red-950/20'
-          : 'border-zinc-700 hover:border-zinc-600 hover:bg-zinc-900/50'
+          : 'border-border hover:border-input hover:bg-card/50'
       )}
     >
-      <Upload className={cn('h-6 w-6 transition-colors', over ? 'text-red-500' : 'text-zinc-600')} />
+      <Upload className={cn('h-6 w-6 transition-colors', over ? 'text-red-500' : 'text-muted-foreground')} />
       <div>
-        <p className='text-sm text-zinc-400'>{t('evidence.dropzone')}</p>
-        <p className='text-xs text-zinc-600 mt-0.5'>{t('evidence.dropzone_hint')}</p>
+        <p className='text-sm text-muted-foreground'>{t('evidence.dropzone')}</p>
+        <p className='text-xs text-muted-foreground mt-0.5'>{t('evidence.dropzone_hint')}</p>
       </div>
       <input
         ref={inputRef}
@@ -213,7 +213,7 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
             <Paperclip className='h-4 w-4 text-muted-foreground' />
             {t('evidence.title')}
             {evidences.length > 0 && (
-              <span className='ml-auto rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-normal text-zinc-400'>
+              <span className='ml-auto rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground'>
                 {evidences.length}
               </span>
             )}
@@ -226,17 +226,17 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
             {!pendingFile ? (
               <DropZone onFile={onFile} />
             ) : (
-              <div className='rounded-lg border border-zinc-700 bg-zinc-900 p-4 space-y-3'>
+              <div className='rounded-lg border border-border bg-card p-4 space-y-3'>
                 {/* File info */}
                 <div className='flex items-center gap-3'>
                   {fileIcon(pendingFile.type)}
                   <div className='flex-1 min-w-0'>
-                    <p className='text-xs font-medium text-zinc-200 truncate'>{pendingFile.name}</p>
-                    <p className='text-[10px] text-zinc-500'>{formatBytes(pendingFile.size)}</p>
+                    <p className='text-xs font-medium text-foreground truncate'>{pendingFile.name}</p>
+                    <p className='text-[10px] text-muted-foreground'>{formatBytes(pendingFile.size)}</p>
                   </div>
                   <button
                     onClick={() => setPendingFile(null)}
-                    className='rounded p-1 text-zinc-600 hover:text-zinc-300 transition'
+                    className='rounded p-1 text-muted-foreground hover:text-foreground transition'
                   >
                     <X className='h-3.5 w-3.5' />
                   </button>
@@ -247,13 +247,13 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
                   <img
                     src={URL.createObjectURL(pendingFile)}
                     alt='preview'
-                    className='rounded border border-zinc-800 max-h-40 w-full object-contain bg-zinc-950'
+                    className='rounded border border-border max-h-40 w-full object-contain bg-background'
                   />
                 )}
 
                 {/* Fase */}
                 <div className='space-y-1'>
-                  <Label className='text-xs text-zinc-400'>{t('evidence.phase_label')}</Label>
+                  <Label className='text-xs text-muted-foreground'>{t('evidence.phase_label')}</Label>
                   <Select value={phase} onValueChange={setPhase}>
                     <SelectTrigger className='h-8 text-xs'>
                       <SelectValue />
@@ -268,7 +268,7 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
 
                 {/* Caption */}
                 <div className='space-y-1'>
-                  <Label className='text-xs text-zinc-400'>Descripción (opcional)</Label>
+                  <Label className='text-xs text-muted-foreground'>Descripción (opcional)</Label>
                   <Input
                     value={caption}
                     onChange={e => setCaption(e.target.value)}
@@ -296,10 +296,10 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
           {/* Evidence list */}
           {loading ? (
             <div className='flex justify-center py-8'>
-              <Loader2 className='h-5 w-5 animate-spin text-zinc-600' />
+              <Loader2 className='h-5 w-5 animate-spin text-muted-foreground' />
             </div>
           ) : evidences.length === 0 ? (
-            <div className='flex flex-col items-center py-8 text-center text-zinc-600 gap-2'>
+            <div className='flex flex-col items-center py-8 text-center text-muted-foreground gap-2'>
               <Paperclip className='h-6 w-6' />
               <p className='text-xs'>{t('evidence.no_files')}</p>
             </div>
@@ -307,28 +307,28 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
             <div className='space-y-5'>
               {Object.entries(byPhase).map(([p, evs]) => (
                 <div key={p}>
-                  <p className='mb-2 text-[10px] uppercase tracking-wider text-zinc-600 font-semibold'>
+                  <p className='mb-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold'>
                     {PHASE_LABELS[p] ?? p} · {evs.length}
                   </p>
                   <div className='space-y-2'>
                     {evs.map(ev => (
-                      <div key={ev.id} className='group rounded-lg border border-zinc-800 bg-zinc-900/40 p-3'>
+                      <div key={ev.id} className='group rounded-lg border border-border bg-card/40 p-3'>
                         {/* Image preview */}
                         {ev.file_type?.startsWith('image/') && (
                           <img
                             src={`${API_BASE}/uploads/${ev.filename}?token=${localStorage.getItem('gungnir_token')}`}
                             alt={ev.original_name}
-                            className='rounded mb-2 border border-zinc-800 max-h-32 w-full object-contain bg-zinc-950'
+                            className='rounded mb-2 border border-border max-h-32 w-full object-contain bg-background'
                           />
                         )}
                         <div className='flex items-start gap-2'>
                           {fileIcon(ev.file_type)}
                           <div className='flex-1 min-w-0'>
-                            <p className='text-xs font-medium text-zinc-300 truncate'>{ev.original_name}</p>
+                            <p className='text-xs font-medium text-foreground truncate'>{ev.original_name}</p>
                             {ev.caption && (
-                              <p className='text-[10px] text-zinc-500 mt-0.5 line-clamp-2'>{ev.caption}</p>
+                              <p className='text-[10px] text-muted-foreground mt-0.5 line-clamp-2'>{ev.caption}</p>
                             )}
-                            <p className='text-[10px] text-zinc-700 mt-1'>
+                            <p className='text-[10px] text-muted-foreground mt-1'>
                               {ev.file_size ? formatBytes(ev.file_size) : ''} ·{' '}
                               {new Date(ev.uploaded_at).toLocaleDateString('es-AR')}
                             </p>
@@ -336,14 +336,14 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
                           <div className='flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0'>
                             <button
                               onClick={() => handleDownload(ev)}
-                              className='rounded p-1 text-zinc-600 hover:text-zinc-300 transition'
+                              className='rounded p-1 text-muted-foreground hover:text-foreground transition'
                               title={t('evidence.download')}
                             >
                               <Download className='h-3.5 w-3.5' />
                             </button>
                             <button
                               onClick={() => handleDelete(ev)}
-                              className='rounded p-1 text-zinc-600 hover:text-red-400 transition'
+                              className='rounded p-1 text-muted-foreground hover:text-red-400 transition'
                               title={t('common.delete')}
                             >
                               <Trash2 className='h-3.5 w-3.5' />

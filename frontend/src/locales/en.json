@@ -71,6 +71,24 @@
       "sent_pre": "Request sent for",
       "sent_post": ". The administrator will contact you shortly.",
       "back": "Back to login"
+    },
+    "forgotpw": {
+      "continue": "Continue",
+      "desc": "Enter your email and we will send you the instructions to reset it.",
+      "email": "Email",
+      "email_required": "Enter your email address.",
+      "no_account": "No account yet?",
+      "sending": "Sending...",
+      "sent": "If the address is registered, you will receive the instructions in a few minutes.",
+      "signup": "Ask your administrator for access",
+      "title": "Reset password"
+    },
+    "otp": {
+      "desc": "Enter the code from your authenticator app",
+      "not_received": "Code did not arrive?",
+      "resend": "Resend code",
+      "title": "Verify identity",
+      "verify": "Verify"
     }
   },
   "common": {
@@ -193,7 +211,8 @@
     "confirm": "Sign out"
   },
   "confirm": {
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "continue": "Continue"
   },
   "profile": {
     "my_account": "My account",
@@ -270,7 +289,8 @@
     "503": {
       "title": "Service unavailable",
       "desc": "The system is under maintenance. Please try again in a few minutes."
-    }
+    },
+    "learn_more": "Learn more"
   },
   "notas": {
     "title": "Notes",
@@ -523,7 +543,12 @@
     "delete_error": "Error deleting",
     "download": "Download",
     "delete": "Delete",
-    "empty": "No evidence uploaded yet"
+    "empty": "No evidence uploaded yet",
+    "delete_confirm": "Delete this evidence file?",
+    "dropzone": "Drag the files in or click to select",
+    "dropzone_hint": "Screenshots, console output and files that back the finding",
+    "no_files": "No evidence uploaded yet",
+    "upload": "Upload evidence"
   },
   "techniques": {
     "title": "Engagement Techniques",
@@ -571,7 +596,16 @@
     "phaseRecon": "Reconnaissance",
     "phaseScanning": "Scanning",
     "phaseExploitation": "Exploitation",
-    "phasePostExploitation": "Post-Exploitation"
+    "phasePostExploitation": "Post-Exploitation",
+    "add": "Add technique",
+    "custom_add": "Add your own technique",
+    "label_name": "Technique name",
+    "label_notes": "Notes",
+    "label_tool": "Tool",
+    "no_techniques": "No techniques recorded yet",
+    "removed": "Technique removed",
+    "tab_current": "From the engagement",
+    "tab_custom": "Custom"
   },
   "auditoria": {
     "title": "Audit Log",
@@ -1697,5 +1731,94 @@
     "a_none_desc": "No impact on availability",
     "a_low_desc": "Partial service degradation",
     "a_high_desc": "Service completely inaccessible"
+  },
+  "analytics": {
+    "avg_session": "Average session duration",
+    "bounce_rate": "Bounce rate",
+    "devices": "Devices",
+    "devices_desc": "What kind of device was used to access",
+    "referrers": "Traffic sources",
+    "referrers_desc": "Where the visits came from",
+    "total_clicks": "Total clicks",
+    "traffic_overview": "Traffic overview",
+    "unique_visitors": "Unique visitors",
+    "weekly_clicks": "Clicks this week"
+  },
+  "attack_map": {
+    "add_attacker": "Add attacker",
+    "add_attacker_title": "Add your attacker machine to the map (Parrot OS by default)",
+    "add_target": "Add target",
+    "attacker_added": "Attacker node added",
+    "attacker_default_notes": "Attacker machine",
+    "attacker_hint": "Enter your machine's IP (VPN, tun0, eth0…). OS is pre-selected as Parrot OS.",
+    "col_host": "Host",
+    "col_os": "OS",
+    "col_pivot": "Pivot from",
+    "col_status": "Status",
+    "compromised": "Compromised",
+    "connect_dest_hint": " — click the destination node to create the arrow",
+    "connect_mode_title": "Connect mode: click source → click destination to draw a lateral movement arrow",
+    "connect_nodes": "Connect nodes",
+    "connect_source_hint": "Click the SOURCE node of the lateral movement arrow (Kali, pivot, etc.)",
+    "connecting": "Connecting...",
+    "dialog_add": "Add target",
+    "dialog_add_attacker": "Add attacker node",
+    "dialog_edit": "Edit target",
+    "edge_created": "Connection created",
+    "error_disconnect": "Error disconnecting",
+    "error_edge": "Error creating connection",
+    "error_import": "Error importing from Scope",
+    "error_load": "Error loading the Attack Map",
+    "error_sync": "Error syncing from phases",
+    "export_png": "Export PNG",
+    "fit": "Fit",
+    "import_all_exist": "All scope assets already existed in the map ({{count}} skipped).",
+    "import_empty": "No assets in scope to import.",
+    "import_from_scope": "Import from Scope",
+    "import_skipped": " ({{count}} already existed)",
+    "import_success": "{{count}} target(s) imported from Scope{{skipped}}.",
+    "importing": "Importing...",
+    "label_fqdn": "FQDN",
+    "label_ip": "IP Address",
+    "label_notes": "Notes",
+    "label_os": "Operating System",
+    "label_owned": "Compromised",
+    "label_pivot": "Pivot from",
+    "label_url": "URL",
+    "lateral_movement_edge": "Lateral movement",
+    "lateral_movement_legend": "-- Lateral movement",
+    "loading": "Loading map...",
+    "no_ports": "No ports scanned",
+    "no_targets": "No targets. Add the first one to build the map.",
+    "not_compromised": "Not compromised",
+    "notes_placeholder": "Credentials, exploited vulnerability...",
+    "origin_label": "Source:",
+    "owned_legend": "Compromised",
+    "pivot_none": "None (origin)",
+    "pivot_none_placeholder": "None",
+    "ports_count": "Ports ({{count}})",
+    "positions_saved": "Positions saved",
+    "refresh": "Refresh",
+    "remove_connection": "Remove connection",
+    "save_positions": "Save positions",
+    "saving": "Saving...",
+    "sync": "Sync",
+    "sync_edges": "{{count}} connection(s) detected",
+    "sync_os": "{{count}} OS updated",
+    "sync_owned": "{{count}} target(s) marked as compromised",
+    "sync_ports": "{{count}} port(s) synced",
+    "sync_title": "Sync ports from scan logs and mark targets as compromised on successful exploitation",
+    "sync_up_to_date": "The map is already up to date with phase data.",
+    "syncing": "Syncing...",
+    "target_added": "Target added",
+    "target_deleted": "Target deleted",
+    "target_updated": "Target updated"
+  },
+  "session": {
+    "expired": {
+      "desc": "Your session was closed for security. Sign in again to continue.",
+      "login": "Sign in",
+      "title": "Session expired"
+    }
   }
 }

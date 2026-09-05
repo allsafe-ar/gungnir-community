@@ -86,7 +86,7 @@ const SEV_DOT: Record<string, string> = {
 function FieldGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className='space-y-3'>
-      <h3 className='text-[10px] font-semibold uppercase tracking-widest text-zinc-600 border-b border-zinc-800/60 pb-1'>
+      <h3 className='text-[10px] font-semibold uppercase tracking-widest text-muted-foreground border-b border-border/60 pb-1'>
         {title}
       </h3>
       {children}
@@ -97,9 +97,9 @@ function FieldGroup({ title, children }: { title: string; children: React.ReactN
 function FormField({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div className='space-y-1.5'>
-      <Label className='text-xs text-zinc-400'>
+      <Label className='text-xs text-muted-foreground'>
         {label}
-        {hint && <span className='ml-2 text-zinc-600 font-normal'>{hint}</span>}
+        {hint && <span className='ml-2 text-muted-foreground font-normal'>{hint}</span>}
       </Label>
       {children}
     </div>
@@ -124,8 +124,8 @@ function PillSelect({
           className={cn(
             'rounded px-2.5 py-0.5 text-xs font-medium border transition-all',
             value === opt
-              ? 'border-zinc-500 bg-zinc-700 text-zinc-100'
-              : 'border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-400'
+              ? 'border-input bg-accent text-foreground'
+              : 'border-border text-muted-foreground hover:border-border hover:text-muted-foreground'
           )}
         >
           {colorMap?.[opt] && (
@@ -138,8 +138,8 @@ function PillSelect({
   )
 }
 
-const INPUT_CLS = 'bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder:text-zinc-700 text-xs h-8 focus:border-zinc-600'
-const TA_CLS = 'bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder:text-zinc-600 text-xs focus:border-zinc-600 resize-y min-h-[80px]'
+const INPUT_CLS = 'bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8 focus:border-input'
+const TA_CLS = 'bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs focus:border-input resize-y min-h-[80px]'
 
 // ─── Valores por defecto ──────────────────────────────────────────────────────
 const EMPTY_DATA: Omit<WriteupData, 'platform'> = {
@@ -215,20 +215,20 @@ export function Writeups() {
     <div className='flex h-[calc(100vh-4rem)] -m-6 overflow-hidden'>
 
       {/* ── Left: platform selector + metadata ─────────────────────────────── */}
-      <div className='w-80 shrink-0 flex flex-col border-r border-zinc-800 overflow-hidden'>
+      <div className='w-80 shrink-0 flex flex-col border-r border-border overflow-hidden'>
         {/* Header */}
-        <div className='border-b border-zinc-800 p-4'>
+        <div className='border-b border-border p-4'>
           <div className='flex items-center gap-2 mb-1'>
             <Crosshair className='h-4 w-4 text-red-500' />
-            <h1 className='font-semibold text-sm text-zinc-200'>Writeup Generator</h1>
+            <h1 className='font-semibold text-sm text-foreground'>Writeup Generator</h1>
           </div>
-          <p className='text-[11px] text-zinc-500'>
+          <p className='text-[11px] text-muted-foreground'>
             Writeups para plataformas de práctica
           </p>
         </div>
 
         {/* Platform grid */}
-        <div className='p-3 border-b border-zinc-800 grid grid-cols-2 gap-2'>
+        <div className='p-3 border-b border-border grid grid-cols-2 gap-2'>
           {PLATFORMS.map(pl => (
             <button
               key={pl.id}
@@ -237,16 +237,16 @@ export function Writeups() {
                 'text-left rounded-lg border p-3 transition-all',
                 platform === pl.id
                   ? `${pl.bg} ${pl.border}`
-                  : 'border-zinc-800 hover:border-zinc-700 bg-zinc-900/30'
+                  : 'border-border hover:border-border bg-card/30'
               )}
             >
-              <div className={cn('mb-1', platform === pl.id ? pl.textColor : 'text-zinc-600')}>
+              <div className={cn('mb-1', platform === pl.id ? pl.textColor : 'text-muted-foreground')}>
                 {pl.icon}
               </div>
-              <p className={cn('text-xs font-semibold leading-tight', platform === pl.id ? pl.textColor : 'text-zinc-400')}>
+              <p className={cn('text-xs font-semibold leading-tight', platform === pl.id ? pl.textColor : 'text-muted-foreground')}>
                 {pl.label}
               </p>
-              <p className='text-[10px] text-zinc-600 mt-0.5'>{pl.sub}</p>
+              <p className='text-[10px] text-muted-foreground mt-0.5'>{pl.sub}</p>
             </button>
           ))}
         </div>
@@ -280,7 +280,7 @@ export function Writeups() {
               </FormField>
               <FormField label='IP objetivo'>
                 <div className='relative'>
-                  <Globe className='absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-600' />
+                  <Globe className='absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground' />
                   <Input className={cn(INPUT_CLS, 'pl-7')} placeholder='10.10.11.xxx' value={data.ip} onChange={set('ip')} />
                 </div>
               </FormField>
@@ -301,7 +301,7 @@ export function Writeups() {
             <FieldGroup title='Target'>
               <FormField label='Hostname'>
                 <div className='relative'>
-                  <Server className='absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-600' />
+                  <Server className='absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground' />
                   <Input className={cn(INPUT_CLS, 'pl-7')} placeholder='CONFLUENCE01' value={data.hostname} onChange={set('hostname')} />
                 </div>
               </FormField>
@@ -351,13 +351,13 @@ export function Writeups() {
             <FieldGroup title='Flags'>
               <FormField label='User flag'>
                 <div className='relative'>
-                  <Hash className='absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-600' />
+                  <Hash className='absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground' />
                   <Input className={cn(INPUT_CLS, 'pl-7 font-mono')} placeholder='3f4b...' value={data.user_flag} onChange={set('user_flag')} />
                 </div>
               </FormField>
               <FormField label='Root flag'>
                 <div className='relative'>
-                  <Hash className='absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-600' />
+                  <Hash className='absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground' />
                   <Input className={cn(INPUT_CLS, 'pl-7 font-mono')} placeholder='8a2c...' value={data.root_flag} onChange={set('root_flag')} />
                 </div>
               </FormField>
@@ -388,7 +388,7 @@ export function Writeups() {
         </div>
 
         {/* Action buttons */}
-        <div className='border-t border-zinc-800 p-3 space-y-2'>
+        <div className='border-t border-border p-3 space-y-2'>
           <Button
             onClick={handleGenerate}
             disabled={!canGenerate || generating}
@@ -409,7 +409,7 @@ export function Writeups() {
             variant='ghost'
             size='sm'
             onClick={reset}
-            className='w-full gap-1.5 text-zinc-600 hover:text-zinc-400 text-xs h-7'
+            className='w-full gap-1.5 text-muted-foreground hover:text-muted-foreground text-xs h-7'
           >
             <RotateCcw className='h-3 w-3' /> Limpiar todo
           </Button>
@@ -429,7 +429,7 @@ export function Writeups() {
               </div>
               <div>
                 <p className={cn('font-bold text-sm', P.textColor)}>{P.label}</p>
-                <p className='text-xs text-zinc-500'>
+                <p className='text-xs text-muted-foreground'>
                   {platform === 'htb' && 'Resumen · Enumeración · Foothold · Escalada · Flags'}
                   {platform === 'thm' && 'Resumen · Enumeración · Foothold · Escalada · Flags'}
                   {platform === 'oscp' && 'Resumen lab · Enum servicios · Explotación · Escalada · Proof hashes'}
@@ -607,13 +607,13 @@ export function Writeups() {
           </SectionCard>
 
           {/* Generate CTA */}
-          <div className='rounded-xl border border-zinc-800 bg-zinc-950 p-5'>
+          <div className='rounded-xl border border-border bg-background p-5'>
             <div className='flex items-center justify-between gap-4'>
               <div>
-                <p className='text-sm font-medium text-zinc-200'>
+                <p className='text-sm font-medium text-foreground'>
                   Writeup PDF — {P.label}
                 </p>
-                <p className='text-xs text-zinc-500 mt-0.5'>
+                <p className='text-xs text-muted-foreground mt-0.5'>
                   Portada · Info card · Secciones de contenido · Pie de página
                 </p>
                 {!canGenerate && (
@@ -645,9 +645,9 @@ export function Writeups() {
           </div>
 
           {/* Privacy note */}
-          <div className='flex items-start gap-2 rounded-lg bg-zinc-900/30 border border-zinc-800/50 p-3'>
-            <Shield className='h-3.5 w-3.5 text-zinc-600 mt-0.5 shrink-0' />
-            <p className='text-[11px] text-zinc-600 leading-relaxed'>
+          <div className='flex items-start gap-2 rounded-lg bg-card/30 border border-border/50 p-3'>
+            <Shield className='h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0' />
+            <p className='text-[11px] text-muted-foreground leading-relaxed'>
               El PDF se genera completamente en el cliente. No se envía ningún dato al servidor.
               Los writeups son para uso personal / práctica — respetá las reglas de cada plataforma respecto a publicación de soluciones.
             </p>
@@ -664,11 +664,11 @@ export function Writeups() {
 // ─── SectionCard ──────────────────────────────────────────────────────────────
 function SectionCard({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div className='rounded-xl border border-zinc-800 bg-zinc-900/30 overflow-hidden'>
-      <div className='border-b border-zinc-800 px-4 py-3 flex items-center gap-2'>
+    <div className='rounded-xl border border-border bg-card/30 overflow-hidden'>
+      <div className='border-b border-border px-4 py-3 flex items-center gap-2'>
         <div className='h-2.5 w-0.5 rounded-full bg-red-600' />
-        <h3 className='text-xs font-semibold text-zinc-300'>{title}</h3>
-        {hint && <span className='text-[10px] text-zinc-600'>— {hint}</span>}
+        <h3 className='text-xs font-semibold text-foreground'>{title}</h3>
+        {hint && <span className='text-[10px] text-muted-foreground'>— {hint}</span>}
       </div>
       <div className='p-4'>
         {children}

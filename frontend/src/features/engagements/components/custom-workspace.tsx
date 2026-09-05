@@ -76,7 +76,7 @@ function parseContent(raw: string): Block[] {
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const STATUS_CFG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  not_started: { label: 'Pendiente',  color: 'text-zinc-500',  icon: <Circle className='h-3.5 w-3.5' /> },
+  not_started: { label: 'Pendiente',  color: 'text-muted-foreground',  icon: <Circle className='h-3.5 w-3.5' /> },
   in_progress: { label: 'En curso',   color: 'text-blue-400',  icon: <Clock className='h-3.5 w-3.5' /> },
   completed:   { label: 'Completada', color: 'text-green-400', icon: <CheckCircle2 className='h-3.5 w-3.5' /> },
 }
@@ -98,7 +98,7 @@ const LANG_LABEL: Record<BlockLang, string> = {
 
 const LANG_COLOR: Record<BlockLang, string> = {
   bash: 'text-green-400', python: 'text-yellow-400', sql: 'text-blue-400',
-  javascript: 'text-orange-400', output: 'text-zinc-400', other: 'text-violet-400',
+  javascript: 'text-orange-400', output: 'text-muted-foreground', other: 'text-violet-400',
 }
 
 function fmtSize(bytes: number) {
@@ -119,12 +119,12 @@ function DropZone({ onFile }: { onFile: (f: File) => void }) {
       onDrop={e => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; if (f) onFile(f) }}
       className={cn(
         'flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 cursor-pointer transition-colors',
-        drag ? 'border-blue-500/60 bg-blue-950/20' : 'border-zinc-700 hover:border-zinc-600'
+        drag ? 'border-blue-500/60 bg-blue-950/20' : 'border-border hover:border-input'
       )}
     >
-      <Upload className='h-6 w-6 text-zinc-600' />
-      <p className='text-xs text-zinc-500'>Arrastrá un archivo o hacé click</p>
-      <p className='text-[10px] text-zinc-700'>PDF, DOCX, XLSX, imágenes · máx 100 MB</p>
+      <Upload className='h-6 w-6 text-muted-foreground' />
+      <p className='text-xs text-muted-foreground'>Arrastrá un archivo o hacé click</p>
+      <p className='text-[10px] text-muted-foreground'>PDF, DOCX, XLSX, imágenes · máx 100 MB</p>
       <input ref={ref} type='file' className='hidden' onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f) }} />
     </div>
   )
@@ -149,12 +149,12 @@ function BlockEditor({
   return (
     <div className='space-y-2'>
       {blocks.map((block, idx) => (
-        <div key={block.id} className='group relative rounded-lg border border-zinc-800 overflow-hidden'>
+        <div key={block.id} className='group relative rounded-lg border border-border overflow-hidden'>
           {/* Block header */}
-          <div className='flex items-center justify-between px-3 py-1.5 bg-zinc-900 border-b border-zinc-800'>
+          <div className='flex items-center justify-between px-3 py-1.5 bg-card border-b border-border'>
             <div className='flex items-center gap-2'>
               {block.type === 'text' ? (
-                <span className='flex items-center gap-1 text-[10px] text-zinc-500 font-medium'>
+                <span className='flex items-center gap-1 text-[10px] text-muted-foreground font-medium'>
                   <Type className='h-3 w-3' /> Texto
                 </span>
               ) : (
@@ -168,10 +168,10 @@ function BlockEditor({
                     <ChevronDown className='h-2.5 w-2.5' />
                   </button>
                   {langMenu === block.id && (
-                    <div className='absolute z-50 top-full left-0 mt-1 rounded-md border border-zinc-700 bg-zinc-900 shadow-lg py-1'>
+                    <div className='absolute z-50 top-full left-0 mt-1 rounded-md border border-border bg-card shadow-lg py-1'>
                       {LANGS.map(l => (
                         <button key={l} onClick={() => { update(block.id, { language: l }); setLangMenu(null) }}
-                          className={cn('w-full text-left px-3 py-1 text-xs font-mono hover:bg-zinc-800', LANG_COLOR[l])}>
+                          className={cn('w-full text-left px-3 py-1 text-xs font-mono hover:bg-muted', LANG_COLOR[l])}>
                           {l}
                         </button>
                       ))}
@@ -184,14 +184,14 @@ function BlockEditor({
               {block.type === 'code' && (
                 <button
                   onClick={() => { navigator.clipboard.writeText(block.content); toast.success('Copiado') }}
-                  className='rounded p-1 text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition'
+                  className='rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition'
                   title='Copiar'
                 >
                   <Copy className='h-3 w-3' />
                 </button>
               )}
               <button onClick={() => remove(block.id)}
-                className='rounded p-1 text-zinc-700 hover:text-red-400 hover:bg-red-950/30 transition'>
+                className='rounded p-1 text-muted-foreground hover:text-red-400 hover:bg-red-950/30 transition'>
                 <X className='h-3 w-3' />
               </button>
             </div>
@@ -204,7 +204,7 @@ function BlockEditor({
               onChange={e => update(block.id, { content: e.target.value })}
               placeholder='Escribí tu texto acá...'
               rows={3}
-              className='border-0 rounded-none bg-zinc-950/40 text-zinc-200 text-xs resize-y font-sans focus-visible:ring-0'
+              className='border-0 rounded-none bg-background/40 text-foreground text-xs resize-y font-sans focus-visible:ring-0'
             />
           ) : (
             <Textarea
@@ -221,12 +221,12 @@ function BlockEditor({
       {/* Add block */}
       <div className='flex items-center gap-2 flex-wrap'>
         <button onClick={() => add(mkTextBlock())}
-          className='flex items-center gap-1.5 rounded-md border border-dashed border-zinc-700 px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-500 hover:text-zinc-300 transition-colors'>
+          className='flex items-center gap-1.5 rounded-md border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground hover:border-input hover:text-foreground transition-colors'>
           <Type className='h-3 w-3' /> Texto
         </button>
         {(['bash','python','sql','javascript','output','other'] as BlockLang[]).map(lang => (
           <button key={lang} onClick={() => add(mkCodeBlock(lang))}
-            className={cn('flex items-center gap-1.5 rounded-md border border-dashed border-zinc-700 px-3 py-1.5 text-xs hover:border-zinc-500 transition-colors', LANG_COLOR[lang])}>
+            className={cn('flex items-center gap-1.5 rounded-md border border-dashed border-border px-3 py-1.5 text-xs hover:border-input transition-colors', LANG_COLOR[lang])}>
             <Code2 className='h-3 w-3' /> {lang}
           </button>
         ))}
@@ -242,16 +242,16 @@ function BlockViewer({ blocks }: { blocks: Block[] }) {
       {blocks.map(block => (
         <div key={block.id}>
           {block.type === 'text' ? (
-            <p className='text-xs text-zinc-300 whitespace-pre-wrap leading-relaxed'>{block.content}</p>
+            <p className='text-xs text-foreground whitespace-pre-wrap leading-relaxed'>{block.content}</p>
           ) : (
-            <div className='relative rounded-lg border border-zinc-800 overflow-hidden'>
-              <div className='flex items-center justify-between px-3 py-1 bg-zinc-900 border-b border-zinc-800'>
+            <div className='relative rounded-lg border border-border overflow-hidden'>
+              <div className='flex items-center justify-between px-3 py-1 bg-card border-b border-border'>
                 <span className={cn('text-[10px] font-mono font-bold', LANG_COLOR[block.language ?? 'bash'])}>
                   {LANG_LABEL[block.language ?? 'bash']}
                 </span>
                 <button
                   onClick={() => { navigator.clipboard.writeText(block.content); toast.success('Copiado') }}
-                  className='flex items-center gap-1 text-[10px] text-zinc-600 hover:text-zinc-300 transition'>
+                  className='flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition'>
                   <Copy className='h-2.5 w-2.5' /> copiar
                 </button>
               </div>
@@ -477,7 +477,7 @@ function PhaseDetail({
       {/* Phase header */}
       <div className='border-b border-border px-6 py-4 space-y-3'>
         <div className='flex items-center justify-between gap-3'>
-          <h2 className='text-base font-semibold text-zinc-100 truncate'>{phase.name}</h2>
+          <h2 className='text-base font-semibold text-foreground truncate'>{phase.name}</h2>
           <div className='flex items-center gap-1 shrink-0'>
             {Object.entries(STATUS_CFG).map(([s, cfg]) => (
               <button key={s} onClick={() => phase.status !== s && changeStatus(s)} disabled={savingStatus}
@@ -485,7 +485,7 @@ function PhaseDetail({
                   'flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-all border',
                   phase.status === s
                     ? `${cfg.color} border-current bg-current/10`
-                    : 'text-zinc-600 border-transparent hover:border-zinc-700 hover:text-zinc-400'
+                    : 'text-muted-foreground border-transparent hover:border-border hover:text-muted-foreground'
                 )}>
                 {cfg.icon}
                 <span className='hidden sm:inline'>{cfg.label}</span>
@@ -494,7 +494,7 @@ function PhaseDetail({
           </div>
         </div>
         {phase.description && (
-          <p className='text-xs text-zinc-500 leading-relaxed'>{phase.description}</p>
+          <p className='text-xs text-muted-foreground leading-relaxed'>{phase.description}</p>
         )}
       </div>
 
@@ -508,7 +508,7 @@ function PhaseDetail({
             )}>
             {t.icon}{t.label}
             {t.count != null && t.count > 0 && (
-              <span className='ml-1 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[10px]'>{t.count}</span>
+              <span className='ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px]'>{t.count}</span>
             )}
           </button>
         ))}
@@ -520,7 +520,7 @@ function PhaseDetail({
         {/* ── Plan de trabajo ──────────────────────────────────────────────── */}
         {tab === 'plan' && (
           <div className='space-y-3'>
-            <p className='text-xs text-zinc-500'>
+            <p className='text-xs text-muted-foreground'>
               Documentá el plan de trabajo, objetivos, criterios de aceptación y cualquier información relevante para esta etapa.
             </p>
             <Textarea
@@ -528,7 +528,7 @@ function PhaseDetail({
               onChange={e => { setPlan(e.target.value); setPlanDirty(true) }}
               rows={12}
               placeholder={`Objetivos de esta etapa:\n- ...\n\nActividades planificadas:\n1. ...\n\nCriterios de aceptación:\n- ...`}
-              className='bg-zinc-900/60 border-zinc-800 text-zinc-200 text-xs resize-y font-mono'
+              className='bg-card/60 border-border text-foreground text-xs resize-y font-mono'
             />
             <div className='flex items-center gap-3'>
               <Button size='sm' onClick={savePlan} disabled={savingPlan || !planDirty} className='gap-1.5'>
@@ -546,19 +546,19 @@ function PhaseDetail({
             {!pendingFile ? (
               <DropZone onFile={setPendingFile} />
             ) : (
-              <div className='rounded-lg border border-zinc-700 bg-zinc-900/50 p-4 space-y-3'>
+              <div className='rounded-lg border border-border bg-card/50 p-4 space-y-3'>
                 <div className='flex items-center gap-3'>
-                  <FileText className='h-8 w-8 text-zinc-500 shrink-0' />
+                  <FileText className='h-8 w-8 text-muted-foreground shrink-0' />
                   <div className='flex-1 min-w-0'>
-                    <p className='text-sm font-medium text-zinc-200 truncate'>{pendingFile.name}</p>
-                    <p className='text-xs text-zinc-500'>{fmtSize(pendingFile.size)}</p>
+                    <p className='text-sm font-medium text-foreground truncate'>{pendingFile.name}</p>
+                    <p className='text-xs text-muted-foreground'>{fmtSize(pendingFile.size)}</p>
                   </div>
-                  <button onClick={() => setPendingFile(null)} className='text-zinc-600 hover:text-zinc-300'>
+                  <button onClick={() => setPendingFile(null)} className='text-muted-foreground hover:text-foreground'>
                     <X className='h-4 w-4' />
                   </button>
                 </div>
                 <Input value={fileCaption} onChange={e => setFileCaption(e.target.value)}
-                  placeholder='Descripción del documento (opcional)' className='bg-zinc-900 border-zinc-700 text-xs h-8' />
+                  placeholder='Descripción del documento (opcional)' className='bg-card border-border text-xs h-8' />
                 <div className='flex gap-2'>
                   <Button size='sm' onClick={uploadDoc} disabled={uploading} className='gap-1.5'>
                     {uploading ? <Loader2 className='h-3.5 w-3.5 animate-spin' /> : <Upload className='h-3.5 w-3.5' />}
@@ -570,31 +570,31 @@ function PhaseDetail({
             )}
 
             {loadingDocs ? (
-              <div className='flex justify-center py-6'><Loader2 className='h-5 w-5 animate-spin text-zinc-600' /></div>
+              <div className='flex justify-center py-6'><Loader2 className='h-5 w-5 animate-spin text-muted-foreground' /></div>
             ) : docs.length === 0 ? (
               <div className='flex flex-col items-center gap-2 py-8 text-center'>
-                <FolderOpen className='h-8 w-8 text-zinc-700' />
-                <p className='text-xs text-zinc-600'>Sin documentos adjuntos</p>
+                <FolderOpen className='h-8 w-8 text-muted-foreground' />
+                <p className='text-xs text-muted-foreground'>Sin documentos adjuntos</p>
               </div>
             ) : (
               <div className='space-y-2'>
                 {docs.map(doc => (
-                  <div key={doc.id} className='flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/30 px-4 py-3'>
-                    <FileText className='h-5 w-5 text-zinc-500 shrink-0' />
+                  <div key={doc.id} className='flex items-center gap-3 rounded-lg border border-border bg-card/30 px-4 py-3'>
+                    <FileText className='h-5 w-5 text-muted-foreground shrink-0' />
                     <div className='flex-1 min-w-0'>
-                      <p className='text-xs font-medium text-zinc-200 truncate'>{doc.original_name}</p>
+                      <p className='text-xs font-medium text-foreground truncate'>{doc.original_name}</p>
                       <div className='flex items-center gap-2 mt-0.5'>
-                        <span className='text-[10px] text-zinc-600'>{fmtSize(doc.file_size)}</span>
-                        {doc.caption && <span className='text-[10px] text-zinc-500 truncate'>· {doc.caption}</span>}
+                        <span className='text-[10px] text-muted-foreground'>{fmtSize(doc.file_size)}</span>
+                        {doc.caption && <span className='text-[10px] text-muted-foreground truncate'>· {doc.caption}</span>}
                       </div>
                     </div>
                     <div className='flex items-center gap-1 shrink-0'>
                       <button onClick={() => downloadDoc(doc.id)}
-                        className='rounded p-1.5 text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800 transition' title='Descargar'>
+                        className='rounded p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition' title='Descargar'>
                         <Download className='h-3.5 w-3.5' />
                       </button>
                       <button onClick={() => deleteDoc(doc.id)}
-                        className='rounded p-1.5 text-zinc-700 hover:text-red-400 hover:bg-red-950/30 transition' title='Eliminar'>
+                        className='rounded p-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-950/30 transition' title='Eliminar'>
                         <Trash2 className='h-3.5 w-3.5' />
                       </button>
                     </div>
@@ -609,8 +609,8 @@ function PhaseDetail({
         {tab === 'updates' && (
           <div className='space-y-5'>
             {/* Block editor */}
-            <div className='rounded-lg border border-zinc-800 bg-zinc-950/40 p-4 space-y-3'>
-              <p className='text-[10px] text-zinc-600 uppercase tracking-widest font-semibold'>Nueva entrada</p>
+            <div className='rounded-lg border border-border bg-background/40 p-4 space-y-3'>
+              <p className='text-[10px] text-muted-foreground uppercase tracking-widest font-semibold'>Nueva entrada</p>
 
               <BlockEditor blocks={blocks} onChange={setBlocks} />
 
@@ -618,10 +618,10 @@ function PhaseDetail({
               {pendingImages.length > 0 && (
                 <div className='flex flex-wrap gap-2'>
                   {imagePreviews.map((src, i) => (
-                    <div key={i} className='relative group rounded overflow-hidden border border-zinc-700'>
+                    <div key={i} className='relative group rounded overflow-hidden border border-border'>
                       <img src={src} alt='preview' className='h-20 w-auto max-w-[160px] object-cover' />
                       <button onClick={() => removeImage(i)}
-                        className='absolute top-1 right-1 rounded-full bg-black/70 p-0.5 text-zinc-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition'>
+                        className='absolute top-1 right-1 rounded-full bg-black/70 p-0.5 text-foreground hover:text-red-400 opacity-0 group-hover:opacity-100 transition'>
                         <X className='h-3 w-3' />
                       </button>
                     </div>
@@ -635,28 +635,28 @@ function PhaseDetail({
                   {savingUpd ? <Loader2 className='h-3.5 w-3.5 animate-spin' /> : <Send className='h-3.5 w-3.5' />}
                   {savingUpd ? 'Guardando...' : 'Guardar entrada'}
                 </Button>
-                <label className='flex items-center gap-1.5 cursor-pointer rounded-md border border-zinc-700 px-3 py-1.5 text-xs text-zinc-500 hover:border-zinc-500 hover:text-zinc-300 transition-colors'>
+                <label className='flex items-center gap-1.5 cursor-pointer rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:border-input hover:text-foreground transition-colors'>
                   <Image className='h-3 w-3' /> Imagen
                   <input type='file' accept='image/*' className='hidden' onChange={e => { const f = e.target.files?.[0]; if (f) addImageFile(f) }} />
                 </label>
-                <span className='text-[10px] text-zinc-700'>o pegá una captura con Ctrl+V</span>
+                <span className='text-[10px] text-muted-foreground'>o pegá una captura con Ctrl+V</span>
               </div>
             </div>
 
             {/* Feed de entradas */}
             {loadingUpd ? (
-              <div className='flex justify-center py-6'><Loader2 className='h-5 w-5 animate-spin text-zinc-600' /></div>
+              <div className='flex justify-center py-6'><Loader2 className='h-5 w-5 animate-spin text-muted-foreground' /></div>
             ) : updates.length === 0 ? (
               <div className='flex flex-col items-center gap-2 py-8 text-center'>
-                <MessageSquare className='h-8 w-8 text-zinc-700' />
-                <p className='text-xs text-zinc-600'>Sin entradas registradas</p>
+                <MessageSquare className='h-8 w-8 text-muted-foreground' />
+                <p className='text-xs text-muted-foreground'>Sin entradas registradas</p>
               </div>
             ) : (
               <div className='space-y-4'>
                 {updates.map(u => {
                   const parsedBlocks = parseContent(u.content)
                   return (
-                    <div key={u.id} className='rounded-lg border border-zinc-800 bg-zinc-900/30 overflow-hidden'>
+                    <div key={u.id} className='rounded-lg border border-border bg-card/30 overflow-hidden'>
                       <div className='p-4 space-y-3'>
                         {/* Bloques */}
                         <BlockViewer blocks={parsedBlocks} />
@@ -665,7 +665,7 @@ function PhaseDetail({
                         {u.images && u.images.length > 0 && (
                           <div className='flex flex-wrap gap-2 mt-2'>
                             {u.images.map(img => (
-                              <div key={img.id} className='relative group rounded overflow-hidden border border-zinc-700'>
+                              <div key={img.id} className='relative group rounded overflow-hidden border border-border'>
                                 <img
                                   src={`/api/uploads/${img.filename}`}
                                   alt={img.original_name}
@@ -674,7 +674,7 @@ function PhaseDetail({
                                 />
                                 <button
                                   onClick={() => deleteUpdateImage(u.id, img.id)}
-                                  className='absolute top-1 right-1 rounded-full bg-black/70 p-0.5 text-zinc-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition'>
+                                  className='absolute top-1 right-1 rounded-full bg-black/70 p-0.5 text-foreground hover:text-red-400 opacity-0 group-hover:opacity-100 transition'>
                                   <X className='h-3 w-3' />
                                 </button>
                               </div>
@@ -684,15 +684,15 @@ function PhaseDetail({
                       </div>
 
                       {/* Footer */}
-                      <div className='flex items-center justify-between px-4 py-2 bg-zinc-950/40 border-t border-zinc-800'>
+                      <div className='flex items-center justify-between px-4 py-2 bg-background/40 border-t border-border'>
                         <div className='flex items-center gap-2'>
-                          {u.author_name && <span className='text-[10px] text-zinc-600'>{u.author_name}</span>}
-                          <span className='text-[10px] text-zinc-700'>
+                          {u.author_name && <span className='text-[10px] text-muted-foreground'>{u.author_name}</span>}
+                          <span className='text-[10px] text-muted-foreground'>
                             {new Date(u.created_at).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
                           </span>
                         </div>
                         <button onClick={() => deleteUpdate(u.id)}
-                          className='rounded p-1 text-zinc-700 hover:text-red-400 transition'>
+                          className='rounded p-1 text-muted-foreground hover:text-red-400 transition'>
                           <Trash2 className='h-3 w-3' />
                         </button>
                       </div>
@@ -810,7 +810,7 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
   }
 
   if (loading) {
-    return <div className='flex h-64 items-center justify-center'><Loader2 className='h-8 w-8 animate-spin text-zinc-600' /></div>
+    return <div className='flex h-64 items-center justify-center'><Loader2 className='h-8 w-8 animate-spin text-muted-foreground' /></div>
   }
   if (!engagement) {
     return (
@@ -838,22 +838,22 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
                 value={titleInput}
                 onChange={e => setTitleInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') setEditingTitle(false) }}
-                className='flex-1 min-w-0 bg-zinc-800 rounded px-1.5 py-0.5 text-xs text-zinc-100 border border-zinc-600 outline-none'
+                className='flex-1 min-w-0 bg-muted rounded px-1.5 py-0.5 text-xs text-foreground border border-input outline-none'
               />
               <button onClick={saveTitle} className='text-green-400 hover:text-green-300 shrink-0'><Check className='h-3 w-3' /></button>
-              <button onClick={() => setEditingTitle(false)} className='text-zinc-500 hover:text-zinc-300 shrink-0'><X className='h-3 w-3' /></button>
+              <button onClick={() => setEditingTitle(false)} className='text-muted-foreground hover:text-foreground shrink-0'><X className='h-3 w-3' /></button>
             </div>
           ) : (
             <div className='group/title flex items-center gap-1'>
-              <p className='text-xs font-semibold text-zinc-200 truncate flex-1'>{engagement.title}</p>
+              <p className='text-xs font-semibold text-foreground truncate flex-1'>{engagement.title}</p>
               <button
                 onClick={() => { setTitleInput(engagement.title); setEditingTitle(true) }}
-                className='opacity-0 group-hover/title:opacity-100 transition rounded p-0.5 text-zinc-600 hover:text-zinc-300 shrink-0'>
+                className='opacity-0 group-hover/title:opacity-100 transition rounded p-0.5 text-muted-foreground hover:text-foreground shrink-0'>
                 <Pencil className='h-2.5 w-2.5' />
               </button>
             </div>
           )}
-          <p className='text-[10px] text-zinc-500 mt-0.5 truncate'>{engagement.client_name}</p>
+          <p className='text-[10px] text-muted-foreground mt-0.5 truncate'>{engagement.client_name}</p>
           <div className='mt-2'>
             <span className='rounded bg-blue-950/60 border border-blue-900/40 px-1.5 py-0.5 text-[10px] text-blue-300'>
               {TYPE_LABELS[engagement.type] ?? engagement.type}
@@ -872,19 +872,19 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
                   <div className='flex items-center gap-1 px-2 py-1.5'>
                     <input autoFocus value={editName} onChange={e => setEditName(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') saveEditName(phase); if (e.key === 'Escape') setEditing(null) }}
-                      className='flex-1 min-w-0 bg-zinc-800 rounded px-1.5 py-0.5 text-xs text-zinc-100 border border-zinc-600 outline-none' />
+                      className='flex-1 min-w-0 bg-muted rounded px-1.5 py-0.5 text-xs text-foreground border border-input outline-none' />
                     <button onClick={() => saveEditName(phase)} className='text-green-400 hover:text-green-300'><Check className='h-3 w-3' /></button>
-                    <button onClick={() => setEditing(null)} className='text-zinc-500 hover:text-zinc-300'><X className='h-3 w-3' /></button>
+                    <button onClick={() => setEditing(null)} className='text-muted-foreground hover:text-foreground'><X className='h-3 w-3' /></button>
                   </div>
                 ) : (
                   <>
                     <button onClick={() => setSelected(phase)} className='w-full text-left px-2 py-2 pr-14'>
                       <div className='flex items-center gap-1.5'>
                         <span className={cfg.color}>{cfg.icon}</span>
-                        <span className='text-xs text-zinc-300 flex-1 truncate'>{phase.name}</span>
+                        <span className='text-xs text-foreground flex-1 truncate'>{phase.name}</span>
                       </div>
                       {(phase.docs_count || phase.updates_count) ? (
-                        <div className='ml-5 mt-0.5 flex gap-2 text-[10px] text-zinc-700'>
+                        <div className='ml-5 mt-0.5 flex gap-2 text-[10px] text-muted-foreground'>
                           {phase.docs_count ? <span>{phase.docs_count} doc{phase.docs_count !== 1 ? 's' : ''}</span> : null}
                           {phase.updates_count ? <span>{phase.updates_count} entrada{phase.updates_count !== 1 ? 's' : ''}</span> : null}
                         </div>
@@ -892,11 +892,11 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
                     </button>
                     <div className='absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 flex items-center gap-0.5 z-10'>
                       <button onClick={() => { setEditing(phase.id); setEditName(phase.name) }}
-                        className='rounded p-0.5 text-zinc-600 hover:text-zinc-300 transition'>
+                        className='rounded p-0.5 text-muted-foreground hover:text-foreground transition'>
                         <Pencil className='h-2.5 w-2.5' />
                       </button>
                       <button onClick={() => deletePhase(phase)}
-                        className='rounded p-0.5 text-zinc-700 hover:text-red-400 transition'>
+                        className='rounded p-0.5 text-muted-foreground hover:text-red-400 transition'>
                         <Trash2 className='h-2.5 w-2.5' />
                       </button>
                     </div>
@@ -908,28 +908,28 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
 
           {/* Add phase form */}
           {adding ? (
-            <div className='rounded-md border border-zinc-700 bg-zinc-900/50 p-2 space-y-1.5'>
+            <div className='rounded-md border border-border bg-card/50 p-2 space-y-1.5'>
               <input autoFocus value={newName} onChange={e => setNewName(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') createPhase(); if (e.key === 'Escape') setAdding(false) }}
                 placeholder='Nombre de la etapa...'
-                className='w-full bg-zinc-800 rounded px-2 py-1 text-xs text-zinc-100 border border-zinc-600 outline-none' />
+                className='w-full bg-muted rounded px-2 py-1 text-xs text-foreground border border-input outline-none' />
               <input value={newDesc} onChange={e => setNewDesc(e.target.value)}
                 placeholder='Descripción (opcional)'
-                className='w-full bg-zinc-800 rounded px-2 py-1 text-xs text-zinc-400 border border-zinc-700 outline-none' />
+                className='w-full bg-muted rounded px-2 py-1 text-xs text-muted-foreground border border-border outline-none' />
               <div className='flex gap-1'>
                 <button onClick={createPhase} disabled={savingNew || !newName.trim()}
                   className='flex-1 rounded bg-blue-700 hover:bg-blue-600 disabled:opacity-50 px-2 py-1 text-[10px] text-white font-medium transition'>
                   {savingNew ? '...' : 'Crear'}
                 </button>
                 <button onClick={() => setAdding(false)}
-                  className='rounded px-2 py-1 text-[10px] text-zinc-500 hover:text-zinc-300 transition'>
+                  className='rounded px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground transition'>
                   Cancelar
                 </button>
               </div>
             </div>
           ) : (
             <button onClick={() => setAdding(true)}
-              className='w-full flex items-center gap-1.5 rounded-md px-2 py-2 text-xs text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800/50 transition-colors'>
+              className='w-full flex items-center gap-1.5 rounded-md px-2 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors'>
               <Plus className='h-3 w-3' /> Nueva etapa
             </button>
           )}
@@ -979,8 +979,8 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
           <PhaseDetail phase={selected} engagementId={engagementId} onPhaseChange={onPhaseChange} />
         ) : (
           <div className='flex flex-col items-center justify-center h-full gap-3 text-center'>
-            <FolderOpen className='h-12 w-12 text-zinc-700' />
-            <p className='text-sm text-zinc-500'>Seleccioná o creá una etapa.</p>
+            <FolderOpen className='h-12 w-12 text-muted-foreground' />
+            <p className='text-sm text-muted-foreground'>Seleccioná o creá una etapa.</p>
           </div>
         )}
       </div>

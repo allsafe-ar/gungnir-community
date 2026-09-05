@@ -280,17 +280,17 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
                 value={titleInput}
                 onChange={e => setTitleInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') setEditingTitle(false) }}
-                className='flex-1 min-w-0 rounded bg-zinc-800 px-1.5 py-0.5 text-xs text-zinc-100 border border-zinc-600 outline-none'
+                className='flex-1 min-w-0 rounded bg-muted px-1.5 py-0.5 text-xs text-foreground border border-input outline-none'
               />
               <button onClick={saveTitle} className='text-green-400 hover:text-green-300 shrink-0'><Check className='size-3' /></button>
-              <button onClick={() => setEditingTitle(false)} className='text-zinc-500 hover:text-zinc-300 shrink-0'><X className='size-3' /></button>
+              <button onClick={() => setEditingTitle(false)} className='text-muted-foreground hover:text-foreground shrink-0'><X className='size-3' /></button>
             </div>
           ) : (
             <div className='group/title flex items-center gap-1'>
               <p className='font-semibold text-sm leading-tight truncate flex-1'>{engagement.title}</p>
               <button
                 onClick={() => { setTitleInput(engagement.title); setEditingTitle(true) }}
-                className='opacity-0 group-hover/title:opacity-100 transition rounded p-0.5 text-zinc-600 hover:text-zinc-300 shrink-0'>
+                className='opacity-0 group-hover/title:opacity-100 transition rounded p-0.5 text-muted-foreground hover:text-foreground shrink-0'>
                 <Pencil className='size-3' />
               </button>
             </div>

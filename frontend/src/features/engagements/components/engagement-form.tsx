@@ -65,16 +65,16 @@ function ModeSelector({ value, onChange }: { value: string; onChange: (v: string
           'text-left rounded-lg border p-4 transition-all',
           value === 'pentesting'
             ? 'border-red-700/60 bg-red-950/30'
-            : 'border-zinc-800 hover:border-zinc-700'
+            : 'border-border hover:border-border'
         )}
       >
         <div className='flex items-center gap-2 mb-1'>
-          <Crosshair className={cn('h-4 w-4', value === 'pentesting' ? 'text-red-400' : 'text-zinc-500')} />
-          <p className={cn('text-sm font-semibold', value === 'pentesting' ? 'text-red-300' : 'text-zinc-300')}>
+          <Crosshair className={cn('h-4 w-4', value === 'pentesting' ? 'text-red-400' : 'text-muted-foreground')} />
+          <p className={cn('text-sm font-semibold', value === 'pentesting' ? 'text-red-300' : 'text-foreground')}>
             {t('engform.mode_pentesting_label')}
           </p>
         </div>
-        <p className='text-xs text-zinc-600 leading-relaxed'>
+        <p className='text-xs text-muted-foreground leading-relaxed'>
           {t('engform.mode_pentesting_desc')}
         </p>
       </button>
@@ -86,16 +86,16 @@ function ModeSelector({ value, onChange }: { value: string; onChange: (v: string
           'text-left rounded-lg border p-4 transition-all',
           value === 'custom'
             ? 'border-blue-700/60 bg-blue-950/30'
-            : 'border-zinc-800 hover:border-zinc-700'
+            : 'border-border hover:border-border'
         )}
       >
         <div className='flex items-center gap-2 mb-1'>
-          <Settings2 className={cn('h-4 w-4', value === 'custom' ? 'text-blue-400' : 'text-zinc-500')} />
-          <p className={cn('text-sm font-semibold', value === 'custom' ? 'text-blue-300' : 'text-zinc-300')}>
+          <Settings2 className={cn('h-4 w-4', value === 'custom' ? 'text-blue-400' : 'text-muted-foreground')} />
+          <p className={cn('text-sm font-semibold', value === 'custom' ? 'text-blue-300' : 'text-foreground')}>
             {t('engform.mode_custom_label')}
           </p>
         </div>
-        <p className='text-xs text-zinc-600 leading-relaxed'>
+        <p className='text-xs text-muted-foreground leading-relaxed'>
           {t('engform.mode_custom_desc')}
         </p>
       </button>

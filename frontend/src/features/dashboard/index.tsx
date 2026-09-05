@@ -53,11 +53,11 @@ function SevTooltip({ active, payload }: { active?: boolean; payload?: { payload
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (
-    <div className='rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs shadow'>
+    <div className='rounded-md border border-border bg-card px-3 py-2 text-xs shadow'>
       <p className='font-semibold' style={{ color: SEV_COLORS[d.severity] }}>
         {d.label}
       </p>
-      <p className='text-zinc-400'>{d.count}</p>
+      <p className='text-muted-foreground'>{d.count}</p>
     </div>
   )
 }

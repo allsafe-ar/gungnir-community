@@ -71,6 +71,24 @@
       "sent_pre": "Se envió la solicitud para",
       "sent_post": ". El administrador te contactará pronto.",
       "back": "Volver al login"
+    },
+    "forgotpw": {
+      "continue": "Continuar",
+      "desc": "Ingresá tu correo y te enviamos las instrucciones para restablecerla.",
+      "email": "Correo electrónico",
+      "email_required": "Ingresá tu correo electrónico.",
+      "no_account": "No tenés cuenta?",
+      "sending": "Enviando...",
+      "sent": "Si el correo está registrado, vas a recibir las instrucciones en unos minutos.",
+      "signup": "Pedí acceso al administrador",
+      "title": "Recuperar contraseña"
+    },
+    "otp": {
+      "desc": "Ingresá el código de tu aplicación autenticadora",
+      "not_received": "No te llegó el código?",
+      "resend": "Reenviar código",
+      "title": "Verificar identidad",
+      "verify": "Verificar"
     }
   },
   "common": {
@@ -193,7 +211,8 @@
     "confirm": "Cerrar sesión"
   },
   "confirm": {
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "continue": "Continuar"
   },
   "profile": {
     "my_account": "Mi cuenta",
@@ -270,7 +289,8 @@
     "503": {
       "title": "Servicio no disponible",
       "desc": "El sistema está en mantenimiento. Volvé en unos minutos."
-    }
+    },
+    "learn_more": "Más información"
   },
   "notas": {
     "title": "Notas",
@@ -523,7 +543,12 @@
     "delete_error": "Error al eliminar",
     "download": "Descargar",
     "delete": "Eliminar",
-    "empty": "Sin evidencias subidas aun"
+    "empty": "Sin evidencias subidas aun",
+    "delete_confirm": "Eliminar este archivo de evidencia?",
+    "dropzone": "Arrastrá los archivos o hacé clic para seleccionar",
+    "dropzone_hint": "Capturas, salidas de consola y archivos que respalden el hallazgo",
+    "no_files": "Todavía no hay evidencia cargada",
+    "upload": "Subir evidencia"
   },
   "techniques": {
     "title": "Tecnicas del engagement",
@@ -571,7 +596,16 @@
     "phaseRecon": "Reconocimiento",
     "phaseScanning": "Escaneo",
     "phaseExploitation": "Explotación",
-    "phasePostExploitation": "Post-explotación"
+    "phasePostExploitation": "Post-explotación",
+    "add": "Agregar técnica",
+    "custom_add": "Agregar técnica propia",
+    "label_name": "Nombre de la técnica",
+    "label_notes": "Notas",
+    "label_tool": "Herramienta",
+    "no_techniques": "Todavía no hay técnicas registradas",
+    "removed": "Técnica eliminada",
+    "tab_current": "Del engagement",
+    "tab_custom": "Propias"
   },
   "auditoria": {
     "title": "Auditoria",
@@ -1697,5 +1731,94 @@
     "a_none_desc": "Sin impacto en disponibilidad",
     "a_low_desc": "Degradación parcial del servicio",
     "a_high_desc": "Servicio completamente inaccesible"
+  },
+  "analytics": {
+    "avg_session": "Duración media de sesión",
+    "bounce_rate": "Tasa de rebote",
+    "devices": "Dispositivos",
+    "devices_desc": "Desde qué tipo de dispositivo se accedió",
+    "referrers": "Origen del tráfico",
+    "referrers_desc": "Desde dónde llegaron las visitas",
+    "total_clicks": "Clics totales",
+    "traffic_overview": "Resumen de tráfico",
+    "unique_visitors": "Visitantes únicos",
+    "weekly_clicks": "Clics de la semana"
+  },
+  "attack_map": {
+    "add_attacker": "Agregar atacante",
+    "add_attacker_title": "Agrega tu máquina atacante al mapa (Parrot OS por defecto)",
+    "add_target": "Agregar target",
+    "attacker_added": "Nodo atacante agregado",
+    "attacker_default_notes": "Máquina atacante",
+    "attacker_hint": "Ingresá la IP de tu máquina (VPN, tun0, eth0…). El OS está pre-seleccionado como Parrot OS.",
+    "col_host": "Host",
+    "col_os": "OS",
+    "col_pivot": "Pivot desde",
+    "col_status": "Estado",
+    "compromised": "Comprometido",
+    "connect_dest_hint": " — clic en el nodo destino para crear la flecha",
+    "connect_mode_title": "Modo conexión: clic en origen → clic en destino para dibujar una flecha de movimiento lateral",
+    "connect_nodes": "Conectar nodos",
+    "connect_source_hint": "Clic en el nodo ORIGEN de la flecha de movimiento lateral (Kali, pivote, etc.)",
+    "connecting": "Conectando...",
+    "dialog_add": "Agregar target",
+    "dialog_add_attacker": "Agregar nodo atacante",
+    "dialog_edit": "Editar target",
+    "edge_created": "Conexión creada",
+    "error_disconnect": "Error al desconectar",
+    "error_edge": "Error al crear conexión",
+    "error_import": "Error al importar desde Scope",
+    "error_load": "Error cargando el Attack Map",
+    "error_sync": "Error al sincronizar desde fases",
+    "export_png": "Exportar PNG",
+    "fit": "Ajustar",
+    "import_all_exist": "Todos los activos del scope ya estaban en el mapa ({{count}} omitidos).",
+    "import_empty": "No hay activos en scope para importar.",
+    "import_from_scope": "Importar desde Scope",
+    "import_skipped": " ({{count}} ya existían)",
+    "import_success": "{{count}} target(s) importado(s) desde Scope{{skipped}}.",
+    "importing": "Importando...",
+    "label_fqdn": "FQDN",
+    "label_ip": "IP Address",
+    "label_notes": "Notas",
+    "label_os": "Sistema Operativo",
+    "label_owned": "Comprometido",
+    "label_pivot": "Pivot desde",
+    "label_url": "URL",
+    "lateral_movement_edge": "Movimiento lateral",
+    "lateral_movement_legend": "- - Movimiento lateral",
+    "loading": "Cargando mapa...",
+    "no_ports": "Sin puertos escaneados",
+    "no_targets": "No hay targets. Agrega el primero para construir el mapa.",
+    "not_compromised": "Sin comprometer",
+    "notes_placeholder": "Credenciales, vulnerabilidad explotada...",
+    "origin_label": "Origen:",
+    "owned_legend": "Comprometido",
+    "pivot_none": "Ninguno (origen)",
+    "pivot_none_placeholder": "Ninguno",
+    "ports_count": "Puertos ({{count}})",
+    "positions_saved": "Posiciones guardadas",
+    "refresh": "Refrescar",
+    "remove_connection": "Quitar conexión",
+    "save_positions": "Guardar posiciones",
+    "saving": "Guardando...",
+    "sync": "Sincronizar",
+    "sync_edges": "{{count}} conexión(es) detectada(s)",
+    "sync_os": "{{count}} OS actualizado(s)",
+    "sync_owned": "{{count}} target(s) marcado(s) como comprometido",
+    "sync_ports": "{{count}} puerto(s) sincronizado(s)",
+    "sync_title": "Sincroniza puertos desde logs de Escaneo y marca como comprometidos los targets con explotación exitosa",
+    "sync_up_to_date": "El mapa ya está al día con los datos de las fases.",
+    "syncing": "Sincronizando...",
+    "target_added": "Target agregado",
+    "target_deleted": "Target eliminado",
+    "target_updated": "Target actualizado"
+  },
+  "session": {
+    "expired": {
+      "desc": "Por seguridad se cerró la sesión. Iniciá sesión nuevamente para continuar.",
+      "login": "Iniciar sesión",
+      "title": "Sesión expirada"
+    }
   }
 }
