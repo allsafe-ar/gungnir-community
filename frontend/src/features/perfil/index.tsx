@@ -98,9 +98,8 @@ export function Perfil() {
     onError: (e: Error) => toast.error(e.message),
   })
 
-  // El QR se dibuja en el navegador, así que el secreto TOTP no sale de acá.
-  // ⚠️ Antes se le pedía a api.qrserver.com con el secreto dentro de la URL, o sea
-  // que el segundo factor de cada usuario viajaba a un tercero. (2026-09-05)
+  // El QR se dibuja en el navegador: el secreto TOTP no puede salir de acá.
+  // Es el segundo factor, así que un generador remoto lo entregaría a un tercero.
   const [qrUrl, setQrUrl] = useState<string | null>(null)
   useEffect(() => {
     if (!totpData) { setQrUrl(null); return }

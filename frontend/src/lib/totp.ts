@@ -100,10 +100,10 @@ export function totpUri(secret: string, username: string): string {
 /**
  * Genera el QR en el navegador y devuelve un data URI.
  *
- * ⚠️ Antes esto armaba una URL a `api.qrserver.com` con el secreto TOTP adentro,
- * o sea que **el segundo factor de cada usuario viajaba a un servicio de terceros**
- * en cada alta, y quedaba en sus logs. Ahora el QR se dibuja localmente y el
- * secreto no sale del navegador. (2026-09-05)
+ * ⚠️ El secreto TOTP no puede salir del navegador. Es el segundo factor: quien lo
+ * tenga puede generar los códigos, así que dibujar el QR con un generador remoto
+ * lo entrega a un tercero y lo deja en sus registros. Se dibuja siempre local,
+ * aunque implique una dependencia más. (2026-09-05)
  */
 export async function totpQRUrl(secret: string, username: string): Promise<string> {
   const QR = (await import('qrcode')).default
