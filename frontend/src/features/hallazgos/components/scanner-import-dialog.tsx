@@ -6,7 +6,6 @@
 import { useState, useRef } from 'react'
 import { Upload, FileUp, CheckCircle2, AlertCircle, X } from 'lucide-react'
 import { toast } from 'sonner'
-import { apiFetch } from '@/lib/api'
 import { useAuthStore } from '@/stores/auth-store'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'

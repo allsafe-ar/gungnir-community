@@ -12,7 +12,6 @@ import { Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
@@ -1525,7 +1524,8 @@ export function Scripts() {
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set(CATEGORIES.slice(0, 3)))
 
   const [customScripts, setCustomScripts]     = useState<Script[]>([])
-  const [loadingCustom, setLoadingCustom]     = useState(true)
+  // Nada renderiza este estado todavia: se conserva el setter porque la carga lo marca.
+  const [, setLoadingCustom] = useState(true)
   const [showForm, setShowForm]               = useState(false)
   const [editScript, setEditScript]           = useState<Script | null>(null)
   const [editScriptIsBuiltin, setEditBuiltin] = useState(false)

@@ -7,7 +7,12 @@ export interface ArpUser {
   username: string
   email?: string | null
   full_name?: string | null
-  role: 'admin' | 'lead' | 'analyst' | 'viewer'
+  // ⚠️ Este tipo NO coincidia con el backend: decia 'lead', 'analyst' y 'viewer', y el ENUM
+  // real de la tabla users es ('admin','auditor','pentester','lector'). En ejecucion
+  // funcionaba porque los valores llegan del servidor, pero el tipo mentia y TypeScript
+  // marcaba como imposibles comparaciones que si ocurren. La edicion Pro se alineo el
+  // 2026-09-06 y este fork habia quedado atras. El perfil 'mural' es solo de Pro.
+  role: 'admin' | 'auditor' | 'pentester' | 'lector'
   totp_enabled?: boolean
 }
 

@@ -238,7 +238,7 @@ export function Dashboard() {
                       width={20}
                     />
                     <Tooltip
-                      formatter={(v: number) => [v, t('dash.engagements_label')]}
+                      formatter={(v) => [v as number, t('dash.engagements_label')]}
                       contentStyle={{ background: '#18181b', border: '1px solid #3f3f46', borderRadius: 6, fontSize: 11 }}
                       labelStyle={{ color: '#e4e4e7' }}
                       cursor={{ fill: 'rgba(255,255,255,0.04)' }}

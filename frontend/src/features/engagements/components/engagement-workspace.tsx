@@ -61,16 +61,6 @@ interface EngagementDetail {
 // ─── Constantes ───────────────────────────────────────────────────────────────
 const PHASES_ORDER = ['planning','recon','scanning','exploitation','post_exploitation','reporting']
 
-function getPhaseDesc(t: (k: string, o?: Record<string, unknown>) => string): Record<string, string> {
-  return {
-    planning:          t('planning.objectives_label'),
-    recon:             'OSINT, enumeración de activos, superficie de ataque',
-    scanning:          'Nmap, Nessus, Burp, nuclei, análisis de vulnerabilidades',
-    exploitation:      'Explotación controlada, evidencias, impacto demostrado',
-    post_exploitation: 'Solo si autorizado: escalamiento, movimiento lateral',
-    reporting:         'Consolidación de hallazgos, informe ejecutivo y técnico',
-  }
-}
 
 const SEV_COLOR: Record<string, string> = {
   critical: 'bg-red-500/10 text-red-500 border-red-500/20',

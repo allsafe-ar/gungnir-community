@@ -3,7 +3,7 @@
  * Usado en los headers de Arsenal, Scripts, Técnicas, Biblioteca y Templates.
  */
 
-import { CircleHelp, X } from 'lucide-react'
+import { CircleHelp } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 interface HelpPopoverProps {

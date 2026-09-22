@@ -5,10 +5,13 @@ async function importAuthStore() {
   return useAuthStore
 }
 
+// La forma real de ArpUser en Gungnir: id es string y el rol sale del ENUM del backend
+// ('admin','auditor','pentester','lector'). El sample anterior venia copiado del CRM
+// ('comercial', id numerico) y el test no probaba el modelo de este sistema.
 const sampleUser = {
-  id: 1,
+  id: 'usr-1',
   username: 'testuser',
-  role: 'comercial' as const,
+  role: 'pentester' as const,
 }
 
 describe('useAuthStore', () => {

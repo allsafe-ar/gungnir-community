@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import {
-  Key, Globe, ScanLine, TriangleAlert, Loader2, Save,
+  Key, Globe, ScanLine, Loader2, Save,
   Eye, EyeOff, CheckCircle2, XCircle,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -34,7 +34,6 @@ export function IntegracionesApiKeysPage() {
 
   const [keys, setKeys]     = useState<Record<string, string>>({ shodan: '', virustotal: '', censys: '' })
   const [status, setStatus] = useState<Record<string, boolean>>({})
-  const [platforms, setPlatforms] = useState<Array<{ platform: string; enabled: number; has_key: boolean }>>([])
   const [showKey, setShowKey] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving]   = useState(false)
@@ -42,12 +41,12 @@ export function IntegracionesApiKeysPage() {
   async function load() {
     setLoading(true)
     try {
-      const [statusR, platformsR] = await Promise.allSettled([
-        apiFetch<{ status: Record<string, boolean> }>('/integrations/recon-keys/status'),
-        Promise.resolve([]),
-      ])
-      if (statusR.status === 'fulfilled') setStatus(statusR.value.status)
-      if (platformsR.status === 'fulfilled') setPlatforms(platformsR.value)
+      // Un solo pedido. El segundo elemento del allSettled era un Promise.resolve([])
+      // que alimentaba un estado de plataformas SOC (OpenVAS, Nessus), que son Pro y
+      // esta pantalla no muestra.
+      const st = await apiFetch<{ status: Record<string, boolean> }>('/integrations/recon-keys/status')
+        .catch(() => ({ status: {} as Record<string, boolean> }))
+      setStatus(st.status)
 
       if (isAdmin) {
         const keysR = await apiFetch<{ keys: Record<string, string> }>('/integrations/recon-keys').catch(() => ({ keys: {} }))
@@ -68,10 +67,6 @@ export function IntegracionesApiKeysPage() {
     } catch (e: any) { toast.error(e.message) } finally { setSaving(false) }
   }
 
-  const PLATFORM_META: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-    openvas: { label: 'OpenVAS / GVM',    color: '#22c55e', icon: <ScanLine className='h-3.5 w-3.5' /> },
-    nessus:  { label: 'Nessus (Tenable)', color: '#ef4444', icon: <TriangleAlert className='h-3.5 w-3.5' /> },
-  }
 
   const activeReconCount = Object.values(status).filter(Boolean).length
 

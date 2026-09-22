@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   Globe, Search, Loader2, Server,
   ChevronDown, ChevronRight,
@@ -115,7 +115,6 @@ function Kv({ label, value }: { label: string; value?: string | number | null })
 
 // ── Shodan IP result card ───────────────────────────────────────────────────
 function ShodanIPCard({ data }: { data: ShodanResult }) {
-  const { t } = useTranslation()
 
   if (!data.ok) {
     return (
@@ -252,7 +251,6 @@ function IPResultView({ result }: { result: IPQueryResult }) {
 
 // ── Domain result view ──────────────────────────────────────────────────────
 function DomainResultView({ result }: { result: DomainQueryResult }) {
-  const { t } = useTranslation()
 
   return (
     <div className='space-y-3'>
@@ -381,128 +379,6 @@ function DomainResultView({ result }: { result: DomainQueryResult }) {
   )
 }
 
-// ── REMOVED: ReconKeysPanel moved to /integraciones/api-keys ───────────────
-function _unused_ReconKeysPanel_deleted() {
-  const { t } = useTranslation()
-  const [keys, setKeys] = useState<Record<string, string>>({ shodan: '', virustotal: '', censys: '' })
-  const [status, setStatus] = useState<Record<string, boolean>>({})
-  const [showKey, setShowKey] = useState<Record<string, boolean>>({})
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-
-  const SERVICES = [
-    { key: 'shodan',      label: 'Shodan',     url: 'account.shodan.io',     desc: 'IP info, puertos, CVEs, DNS reverso' },
-    { key: 'virustotal',  label: 'VirusTotal', url: 'virustotal.com',         desc: 'Passive DNS, reputación de dominios/IPs' },
-    { key: 'censys',      label: 'Censys',     url: 'censys.io',              desc: 'Internet-wide scan data, certificados' },
-  ]
-
-  useEffect(() => {
-    setLoading(true)
-    Promise.all([
-      apiFetch<{ keys: Record<string, string> }>('/integrations/recon-keys').catch(() => ({ keys: {} })),
-      apiFetch<{ status: Record<string, boolean> }>('/integrations/recon-keys/status').catch(() => ({ status: {} })),
-    ]).then(([k, s]) => {
-      setKeys(prev => ({ ...prev, ...k.keys }))
-      setStatus(s.status)
-    }).finally(() => setLoading(false))
-  }, [])
-
-  async function save() {
-    setSaving(true)
-    try {
-      await apiFetch('/integrations/recon-keys', { method: 'PUT', body: { keys } })
-      toast.success(t('common.success'))
-      const s = await apiFetch<{ status: Record<string, boolean> }>('/integrations/recon-keys/status')
-      setStatus(s.status)
-    } catch (e: any) {
-      toast.error(e.message)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  if (loading) return (
-    <div className='flex items-center gap-2 text-sm text-muted-foreground py-4'>
-      <Loader2 className='h-4 w-4 animate-spin' />{t('common.loading')}
-    </div>
-  )
-
-  return (
-    <div className='space-y-3'>
-      <div className='rounded-lg border bg-card p-4'>
-        <div className='flex items-center gap-2 mb-4'>
-          <Key className='h-3.5 w-3.5 text-muted-foreground' />
-          <span className='text-xs font-semibold uppercase tracking-widest text-muted-foreground'>{t('recon.keys.title')}</span>
-        </div>
-        <div className='space-y-4'>
-          {SERVICES.map(svc => (
-            <div key={svc.key}>
-              <div className='flex items-center gap-2 mb-1.5'>
-                {status[svc.key]
-                  ? <CheckCircle2 className='h-3.5 w-3.5 text-green-500 shrink-0' />
-                  : <XCircle className='h-3.5 w-3.5 text-muted-foreground/30 shrink-0' />
-                }
-                <Label className='text-sm font-medium'>{svc.label}</Label>
-                <span className='text-[10px] text-muted-foreground ml-1'>{svc.url}</span>
-                <Badge variant={status[svc.key] ? 'default' : 'secondary'}
-                  className={cn('text-[10px] ml-auto shrink-0', status[svc.key] && 'bg-green-500/15 text-green-500 border-green-500/30')}
-                >
-                  {status[svc.key] ? t('recon.keys.configured') : t('recon.keys.notConfigured')}
-                </Badge>
-              </div>
-              <p className='text-xs text-muted-foreground mb-1.5 ml-5'>{svc.desc}</p>
-              <div className='relative ml-5'>
-                <Input
-                  type={showKey[svc.key] ? 'text' : 'password'}
-                  placeholder={status[svc.key] ? '***configured***' : `API key de ${svc.label}`}
-                  value={keys[svc.key] || ''}
-                  onChange={e => setKeys(k => ({ ...k, [svc.key]: e.target.value }))}
-                  className='h-8 text-sm font-mono pr-8'
-                />
-                <button
-                  type='button'
-                  onClick={() => setShowKey(s => ({ ...s, [svc.key]: !s[svc.key] }))}
-                  className='absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
-                >
-                  {showKey[svc.key] ? <EyeOff className='h-3.5 w-3.5' /> : <Eye className='h-3.5 w-3.5' />}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className='flex justify-end mt-4'>
-          <Button size='sm' onClick={save} disabled={saving}>
-            {saving ? <Loader2 className='h-3.5 w-3.5 mr-1.5 animate-spin' /> : <Save className='h-3.5 w-3.5 mr-1.5' />}
-            {t('common.save')}
-          </Button>
-        </div>
-      </div>
-
-      {/* Free sources */}
-      <div className='rounded-lg border bg-card p-4'>
-        <div className='flex items-center gap-2 mb-3'>
-          <Globe className='h-3.5 w-3.5 text-muted-foreground' />
-          <span className='text-xs font-semibold uppercase tracking-widest text-muted-foreground'>{t('recon.keys.freeSources')}</span>
-        </div>
-        <div className='space-y-1.5'>
-          {[
-            { label: 'crt.sh (Certificate Transparency)',  url: 'crt.sh',          desc: 'Enumeración de subdominios' },
-            { label: 'RDAP / WHOIS',                        url: 'rdap.org',         desc: 'Información de registro de dominios' },
-            { label: 'DNS Live Lookup',                     url: 'Node.js dns',      desc: 'Registros A, AAAA, MX, NS, TXT, CNAME' },
-            { label: 'Shodan DNS Reverse (con key)',        url: 'api.shodan.io',    desc: 'Dominios alojados en una IP' },
-            { label: 'Shodan DNS Resolve (con key)',        url: 'api.shodan.io',    desc: 'IP de un dominio/hostname' },
-          ].map(s => (
-            <div key={s.label} className='flex items-center gap-2 py-0.5'>
-              <CheckCircle2 className='h-3 w-3 text-green-500 shrink-0' />
-              <span className='text-sm flex-1'>{s.label}</span>
-              <span className='text-[10px] text-muted-foreground'>{s.desc}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // ── Main recon page ─────────────────────────────────────────────────────────
 export function ReconPage() {

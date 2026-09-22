@@ -163,7 +163,7 @@ export function generateWriteup(data: WriteupData) {
     return y
   }
 
-  const infoRow = (label: string, value: string, x: number, y: number, colW: number): void => {
+  const infoRow = (label: string, value: string, x: number, y: number, _colW: number): void => {
     doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); setColor(GRAY)
     doc.text(label.toUpperCase(), x, y)
     doc.setFont('helvetica', 'normal'); setColor(DARK)

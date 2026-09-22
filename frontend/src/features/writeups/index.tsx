@@ -7,7 +7,7 @@
 import { useState } from 'react'
 import {
   Download, Loader2, Shield, Sword, Bug, Flag, ChevronRight,
-  User, Calendar, Globe, Server, Hash, AlertTriangle, Crosshair,
+  Globe, Server, Hash, AlertTriangle, Crosshair,
   RotateCcw,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'

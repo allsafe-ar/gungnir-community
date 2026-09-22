@@ -22,7 +22,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
 import { TecnicasSheet } from './tecnicas-sheet'
@@ -148,7 +147,7 @@ function BlockEditor({
 
   return (
     <div className='space-y-2'>
-      {blocks.map((block, idx) => (
+      {blocks.map((block) => (
         <div key={block.id} className='group relative rounded-lg border border-border overflow-hidden'>
           {/* Block header */}
           <div className='flex items-center justify-between px-3 py-1.5 bg-card border-b border-border'>
@@ -437,9 +436,8 @@ function PhaseDetail({
         const fd = new FormData(); fd.append('file', img)
         await fetch(imageUrl, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd })
       }
-      // Reload to get images attached
-      const fresh = await apiFetch<PhaseUpdate>(`${base}/updates`)
-      // Reload all updates
+      // Recarga para traer las imagenes ya adjuntas. Antes habia aca un segundo pedido
+      // a /updates cuyo resultado se descartaba: loadUpdates() ya hace esa recarga.
       loadUpdates()
       setBlocks([mkTextBlock()])
       pendingImages.forEach((_, i) => URL.revokeObjectURL(imagePreviews[i]))

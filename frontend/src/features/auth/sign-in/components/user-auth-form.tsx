@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useNavigate } from '@tanstack/react-router'
 import { Loader2, LogIn, Mail, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
@@ -46,7 +45,6 @@ export function UserAuthForm({ className, redirectTo }: UserAuthFormProps) {
   const [totpError, setTotpError]         = useState('')
   const [forgotUser, setForgotUser]       = useState('')
   const [forgotSent, setForgotSent]       = useState(false)
-  const navigate = useNavigate()
   const { auth } = useAuthStore()
 
   const loginSchema = z.object({

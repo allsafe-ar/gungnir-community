@@ -9,7 +9,6 @@ import {
   Shield, CheckCircle2, Clock, Package, Eye, EyeOff,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'

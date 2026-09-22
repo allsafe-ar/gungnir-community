@@ -2016,9 +2016,6 @@ export const COMANDOS: Comando[] = [
 ]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function toolCount(tool: string) {
-  return COMANDOS.filter(c => c.tool === tool).length
-}
 
 const KALI_BADGE: Record<string, { label: string; cls: string }> = {
   yes:     { label: '✓ Kali', cls: 'text-green-500' },
@@ -2301,13 +2298,12 @@ interface CmdFormInitial {
 }
 interface CmdFormProps {
   toolKey: string
-  allToolMeta: Record<string, ToolMeta>
   initial?: CmdFormInitial
   onSave: (data: Partial<CustomCmd>) => Promise<void>
   onCancel: () => void
   saving: boolean
 }
-function CmdForm({ toolKey, allToolMeta, initial, onSave, onCancel, saving }: CmdFormProps) {
+function CmdForm({ toolKey, initial, onSave, onCancel, saving }: CmdFormProps) {
   const [title, setTitle]         = useState(initial?.title ?? '')
   const [command, setCommand]     = useState(initial?.command ?? '')
   const [description, setDesc]    = useState(initial?.description ?? '')
@@ -2460,7 +2456,8 @@ export function Comandos({ initialTool }: ComandosProps) {
   // Custom DB data
   const [customTools, setCustomTools]       = useState<CustomTool[]>([])
   const [customCmds, setCustomCmds]         = useState<CustomCmd[]>([])
-  const [loadingCustom, setLoadingCustom]   = useState(true)
+  // Nada renderiza este estado todavia: se conserva el setter porque la carga lo marca.
+  const [, setLoadingCustom] = useState(true)
 
   // Built-in overrides (admin edit/delete of hardcoded commands)
   const [cmdOverrides, setCmdOverrides]     = useState<Record<string, Partial<Comando>>>({})
@@ -2637,7 +2634,7 @@ export function Comandos({ initialTool }: ComandosProps) {
     try {
       if (editCmd.isBuiltin) {
         // Built-in: store override in DB
-        const updated = await apiFetch<Record<string, unknown>>(`/arsenal/cmd-overrides/${editCmd.cmd.id}`, { method: 'PUT', body: { ...data, mitre_id: data.mitre_id ?? data.mitreId } })
+        const updated = await apiFetch<Record<string, unknown>>(`/arsenal/cmd-overrides/${editCmd.cmd.id}`, { method: 'PUT', body: { ...data, mitre_id: data.mitre_id ?? (data as { mitreId?: string }).mitreId } })
         setCmdOverrides(prev => ({ ...prev, [editCmd.cmd.id]: { title: updated.title as string, command: updated.command as string, description: updated.description as string ?? '', phase: updated.phase as Phase, category: updated.category as string, tags: updated.tags as string[] ?? [], notes: updated.notes as string, mitreId: updated.mitre_id as string } }))
         toast.success('Comando actualizado')
       } else {
@@ -2839,14 +2836,14 @@ export function Comandos({ initialTool }: ComandosProps) {
           {/* Inline add-command form */}
           {isAdmin && addCmdTool && addCmdTool === selectedTool && !editCmd && (
             <div className='mb-6'>
-              <CmdForm toolKey={addCmdTool} allToolMeta={allToolMeta} saving={formSaving}
+              <CmdForm toolKey={addCmdTool} saving={formSaving}
                 onCancel={() => setAddCmdTool(null)} onSave={saveNewCmd} />
             </div>
           )}
           {/* Inline edit-command form */}
           {isAdmin && editCmd && (
             <div className='mb-6'>
-              <CmdForm toolKey={editCmd.cmd.tool} allToolMeta={allToolMeta}
+              <CmdForm toolKey={editCmd.cmd.tool}
                 initial={{ title: editCmd.cmd.title, command: editCmd.cmd.command, description: editCmd.cmd.description, phase: editCmd.cmd.phase, category: editCmd.cmd.category, notes: editCmd.cmd.notes, mitreId: editCmd.cmd.mitreId, tags: editCmd.cmd.tags }}
                 saving={formSaving}
                 onCancel={() => setEditCmd(null)} onSave={saveEditCmd} />

@@ -7,7 +7,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronsUpDown, UserCog, ClipboardList, Settings2, Bug, Settings, Key, ScanLine } from 'lucide-react'
+import { ChevronsUpDown, UserCog, ClipboardList, Settings2, Bug, Settings, Key } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import {
   SidebarMenu,
