@@ -68,81 +68,25 @@ function validatePassword(pass) {
   return null;
 }
 
-// ── TOTP (pure JS, RFC 6238) ──────────────────────────────────────────────────
-const B32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-function base32ToBytes(s) {
-  const str = s.toUpperCase().replace(/=+$/, "").replace(/[^A-Z2-7]/g, "");
-  let bits = 0, val = 0; const out = [];
-  for (const ch of str) {
-    const idx = B32.indexOf(ch); if (idx === -1) continue;
-    val = (val << 5) | idx; bits += 5;
-    if (bits >= 8) { bits -= 8; out.push((val >> bits) & 0xff); val &= (1 << bits) - 1; }
-  }
-  return Buffer.from(out);
-}
-function sha1(data) {
-  let h0=0x67452301,h1=0xEFCDAB89,h2=0x98BADCFE,h3=0x10325476,h4=0xC3D2E1F0;
-  const msg=Array.from(data),len=msg.length; msg.push(0x80);
-  while(msg.length%64!==56)msg.push(0);
-  const bits=len*8;
-  for(let i=7;i>=0;i--)msg.push(Math.floor(bits/Math.pow(256,i))&0xff);
-  for(let i=0;i<msg.length;i+=64){
-    const w=[];
-    for(let j=0;j<16;j++)w[j]=(msg[i+j*4]<<24)|(msg[i+j*4+1]<<16)|(msg[i+j*4+2]<<8)|msg[i+j*4+3];
-    for(let j=16;j<80;j++){const n=w[j-3]^w[j-8]^w[j-14]^w[j-16];w[j]=(n<<1)|(n>>>31);}
-    let a=h0,b=h1,c=h2,d=h3,e=h4;
-    for(let j=0;j<80;j++){
-      let f,k;
-      if(j<20){f=(b&c)|(~b&d);k=0x5A827999}else if(j<40){f=b^c^d;k=0x6ED9EBA1}
-      else if(j<60){f=(b&c)|(b&d)|(c&d);k=0x8F1BBCDC}else{f=b^c^d;k=0xCA62C1D6}
-      const t=(((a<<5)|(a>>>27))+f+e+k+w[j])|0;
-      e=d;d=c;c=(b<<30)|(b>>>2);b=a;a=t;
-    }
-    h0=(h0+a)|0;h1=(h1+b)|0;h2=(h2+c)|0;h3=(h3+d)|0;h4=(h4+e)|0;
-  }
-  const r=Buffer.alloc(20);
-  [h0,h1,h2,h3,h4].forEach((h,i)=>{r[i*4]=(h>>>24)&0xff;r[i*4+1]=(h>>>16)&0xff;r[i*4+2]=(h>>>8)&0xff;r[i*4+3]=h&0xff;});
-  return r;
-}
-function hmacSha1(key,msg){
-  let k=key.length>64?sha1(key):key;
-  const kb=Buffer.alloc(64);k.copy(kb);
-  const inner=sha1(Buffer.from([...kb.map(b=>b^0x36),...msg]));
-  return sha1(Buffer.from([...kb.map(b=>b^0x5c),...inner]));
-}
-function totpCode(secret){
-  const counter=Math.floor(Date.now()/1000/30);
-  const key=base32ToBytes(secret);
-  const msg=Buffer.alloc(8);
-  const hi=Math.floor(counter/0x100000000),lo=counter>>>0;
-  msg[0]=(hi>>>24)&0xff;msg[1]=(hi>>>16)&0xff;msg[2]=(hi>>>8)&0xff;msg[3]=hi&0xff;
-  msg[4]=(lo>>>24)&0xff;msg[5]=(lo>>>16)&0xff;msg[6]=(lo>>>8)&0xff;msg[7]=lo&0xff;
-  const sig=hmacSha1(key,msg);
-  const offset=sig[19]&0x0f;
-  const code=((sig[offset]&0x7f)*0x1000000)+((sig[offset+1]&0xff)*0x10000)+((sig[offset+2]&0xff)*0x100)+(sig[offset+3]&0xff);
-  return(code%1000000).toString().padStart(6,"0");
-}
-function verifyTotp(secret, token) {
-  for (let d = -1; d <= 1; d++) {
-    const counter = Math.floor(Date.now()/1000/30) + d;
-    const key = base32ToBytes(secret);
-    const msg = Buffer.alloc(8);
-    const hi=Math.floor(counter/0x100000000),lo=counter>>>0;
-    msg[0]=(hi>>>24)&0xff;msg[1]=(hi>>>16)&0xff;msg[2]=(hi>>>8)&0xff;msg[3]=hi&0xff;
-    msg[4]=(lo>>>24)&0xff;msg[5]=(lo>>>16)&0xff;msg[6]=(lo>>>8)&0xff;msg[7]=lo&0xff;
-    const sig=hmacSha1(key,msg);
-    const offset=sig[19]&0x0f;
-    const code=((sig[offset]&0x7f)*0x1000000)+((sig[offset+1]&0xff)*0x10000)+((sig[offset+2]&0xff)*0x100)+(sig[offset+3]&0xff);
-    if ((code%1000000).toString().padStart(6,"0") === token) return true;
-  }
-  return false;
-}
-function generateTotpSecret() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  let s = "";
-  for (let i = 0; i < 32; i++) s += chars[Math.floor(Math.random() * chars.length)];
-  return s;
-}
+// ── TOTP ──────────────────────────────────────────────────────────────────────
+/**
+ * Segundo factor: se usa el módulo canónico, el mismo que los demás sistemas.
+ *
+ * ⛔ Acá vivía una implementación propia con **SHA-1 escrita a mano en JavaScript**, sin usar
+ * `crypto`, y con una ventana de ±1 paso mientras el resto usaba ±2. Un usuario con el reloj
+ * cuarenta segundos atrasado entraba en un sistema y era rechazado en este, sin explicación.
+ *
+ * ⛔ Y el secreto se generaba con `Math.random()`, que **no es un generador criptográfico**.
+ * Un secreto de doble factor predecible no es un segundo factor. Ahora sale de
+ * `crypto.randomBytes`.
+ *
+ * ⚠️ Esta copia fue la que **no estaba** en la lista de la prueba de equivalencia, así que la
+ * prueba daba en verde diciendo que no quedaba ninguna implementación propia. Por eso la
+ * prueba ahora **descubre** los backends en vez de leer una lista escrita a mano.
+ */
+const totpCanonico = require("./totp");
+const verifyTotp = totpCanonico.verificar;
+const generateTotpSecret = totpCanonico.generarSecreto;
 
 // ── App ───────────────────────────────────────────────────────────────────────
 const app = express();
@@ -2093,9 +2037,9 @@ app.post("/api/auth/totp/setup", auth(), async (req, res) => {
   const secret = generateTotpSecret();
   // Guardar secreto provisionalmente (no habilitar aún — se habilita tras verificar)
   await qRun("UPDATE users SET totp_secret=? WHERE id=?", [secret, req.user.id]);
-  const issuer = "Gungnir";
-  const label = encodeURIComponent(`${issuer}:${user.username}`);
-  const uri = `otpauth://totp/${label}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=30`;
+  // ⚠️ El nombre de cuenta se escapa dentro de `uriDeAlta`. Armarlo a mano y volver a
+  // codificarlo rompe el QR para cualquier usuario con ':' o '&' en el nombre.
+  const uri = totpCanonico.uriDeAlta(secret, user.username, "Gungnir");
   res.json({ secret, uri });
 });
 
