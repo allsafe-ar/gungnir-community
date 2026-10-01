@@ -7,6 +7,8 @@ const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const express  = require("express");
+// Que ningún error de una ruta async pueda tirar el proceso (ver async-seguro.js).
+require("./async-seguro").instalar();
 const jwt      = require("jsonwebtoken");
 const bcrypt   = require("bcryptjs");
 const cors     = require("cors");
