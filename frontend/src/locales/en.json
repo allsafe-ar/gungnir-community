@@ -219,6 +219,7 @@
     "sign_out": "Sign out"
   },
   "mi_cuenta": {
+    "must_change": "For security, change the initial password before continuing. You will need to sign in again afterwards.",
     "title": "My account",
     "password": {
       "title": "Change password",

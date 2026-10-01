@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { apiFetch, API_BASE } from '@/lib/api'
+import { ImagenProtegida, descargarProtegido } from '@/components/imagen-protegida'
 import { toast } from 'sonner'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -38,6 +39,7 @@ interface EvidenceSheetProps {
 }
 
 const MAX_SIZE_MB = 20
+
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -189,13 +191,13 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
   }
 
   // Download
-  function handleDownload(ev: Evidence) {
-    const token = localStorage.getItem('gungnir_token')
-    const url = `${API_BASE}/uploads/${ev.filename}`
-    const a = document.createElement('a')
-    a.href = token ? `${url}?token=${token}` : url
-    a.download = ev.original_name
-    a.click()
+  // 🔴 U-05: con el header Authorization, no con el JWT en la URL (ver imagen-protegida).
+  async function handleDownload(ev: Evidence) {
+    try {
+      await descargarProtegido(ev.filename, ev.original_name)
+    } catch {
+      toast.error('Error al descargar el archivo')
+    }
   }
 
   const byPhase = evidences.reduce<Record<string, Evidence[]>>((acc, e) => {
@@ -315,8 +317,8 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
                       <div key={ev.id} className='group rounded-lg border border-border bg-card/40 p-3'>
                         {/* Image preview */}
                         {ev.file_type?.startsWith('image/') && (
-                          <img
-                            src={`${API_BASE}/uploads/${ev.filename}?token=${localStorage.getItem('gungnir_token')}`}
+                          <ImagenProtegida
+                            filename={ev.filename}
                             alt={ev.original_name}
                             className='rounded mb-2 border border-border max-h-32 w-full object-contain bg-background'
                           />

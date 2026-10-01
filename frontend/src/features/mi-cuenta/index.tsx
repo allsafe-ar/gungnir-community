@@ -36,6 +36,8 @@ export function MiCuenta() {
   const { t, i18n } = useTranslation()
   const [lang, setLang] = useState(localStorage.getItem('lang') || 'es')
   const [has2FA, setHas2FA] = useState(!!user?.totp_enabled)
+  // 🔴 U-11: con la contraseña inicial el servidor solo deja cambiarla.
+  const [mustChange, setMustChange] = useState(false)
 
   // Logo branding
   const [showLogo, setShowLogo] = useState(
@@ -47,8 +49,8 @@ export function MiCuenta() {
   )
 
   useEffect(() => {
-    apiFetch<{ totp_enabled: boolean }>('/auth/me')
-      .then(d => setHas2FA(!!d.totp_enabled))
+    apiFetch<{ totp_enabled: boolean; must_change_password?: boolean }>('/auth/me')
+      .then(d => { setHas2FA(!!d.totp_enabled); setMustChange(!!d.must_change_password) })
       .catch(() => {})
   }, [])
 
@@ -111,9 +113,11 @@ export function MiCuenta() {
   const [totpToken, setTotpToken] = useState('')
   const [totpError, setTotpError] = useState('')
 
+  // 🔴 U-10: el alta del 2FA pide la contraseña; con la sesión sola no alcanza.
+  const [enablePass, setEnablePass] = useState('')
   const totpSetupMutation = useMutation({
-    mutationFn: () => apiFetch<TotpSetupResponse>('/auth/totp/setup', { method: 'POST' }),
-    onSuccess: (data) => { setTotpData(data); setTotpToken(''); setTotpError('') },
+    mutationFn: () => apiFetch<TotpSetupResponse>('/auth/totp/setup', { method: 'POST', body: { password: enablePass } }),
+    onSuccess: (data) => { setTotpData(data); setTotpToken(''); setTotpError(''); setEnablePass('') },
     onError: (e: Error) => toast.error(e.message),
   })
 
@@ -159,6 +163,12 @@ export function MiCuenta() {
         <User2 className='size-5 text-primary' />
         {t('mi_cuenta.title')}
       </h1>
+
+      {mustChange && (
+        <div className='rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm'>
+          {t('mi_cuenta.must_change')}
+        </div>
+      )}
 
       <div className='grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6'>
         {/* ── Columna izquierda ─────────────────────────────────────────── */}
@@ -218,8 +228,12 @@ export function MiCuenta() {
                     {has2FA ? t('mi_cuenta.2fa.desc_active') : t('mi_cuenta.2fa.desc_inactive')}
                   </p>
                   {!has2FA && (
+                    <Input type='password' value={enablePass} onChange={(e) => setEnablePass(e.target.value)}
+                      placeholder={t('mi_cuenta.2fa.disable_password')} autoComplete='current-password' />
+                  )}
+                  {!has2FA && (
                     <Button variant='outline' size='sm' className='w-full'
-                      onClick={() => totpSetupMutation.mutate()} disabled={totpSetupMutation.isPending}>
+                      onClick={() => totpSetupMutation.mutate()} disabled={totpSetupMutation.isPending || !enablePass}>
                       {totpSetupMutation.isPending ? <Loader2 className='mr-2 h-3.5 w-3.5 animate-spin' /> : <ShieldCheck className='mr-2 size-4' />}
                       {t('mi_cuenta.2fa.enable')}
                     </Button>

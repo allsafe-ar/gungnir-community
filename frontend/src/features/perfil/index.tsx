@@ -73,9 +73,11 @@ export function Perfil() {
   const [totpToken, setTotpToken] = useState('')
   const [totpError, setTotpError] = useState('')
 
+  // 🔴 U-10: el alta del 2FA pide la contraseña; con la sesión sola no alcanza.
+  const [enablePass, setEnablePass] = useState('')
   const totpSetupMutation = useMutation({
-    mutationFn: () => apiFetch<TotpSetupResponse>('/auth/totp/setup', { method: 'POST' }),
-    onSuccess: (data) => { setTotpData(data); setTotpToken(''); setTotpError('') },
+    mutationFn: () => apiFetch<TotpSetupResponse>('/auth/totp/setup', { method: 'POST', body: { password: enablePass } }),
+    onSuccess: (data) => { setTotpData(data); setTotpToken(''); setTotpError(''); setEnablePass('') },
     onError: (e: Error) => toast.error(e.message),
   })
 
@@ -204,7 +206,11 @@ export function Perfil() {
               </p>
               <div className='flex gap-3'>
                 {!has2FA && (
-                  <Button variant='outline' size='sm' onClick={() => totpSetupMutation.mutate()} disabled={totpSetupMutation.isPending}>
+                  <Input type='password' value={enablePass} onChange={(e) => setEnablePass(e.target.value)}
+                    placeholder={t('perfil.2fa.disable_password')} autoComplete='current-password' className='h-9 max-w-56' />
+                )}
+                {!has2FA && (
+                  <Button variant='outline' size='sm' onClick={() => totpSetupMutation.mutate()} disabled={totpSetupMutation.isPending || !enablePass}>
                     {totpSetupMutation.isPending ? <Loader2 className='mr-2 h-3.5 w-3.5 animate-spin' /> : <ShieldCheck className='mr-2 size-4' />}
                     {t('perfil.2fa.enable')}
                   </Button>

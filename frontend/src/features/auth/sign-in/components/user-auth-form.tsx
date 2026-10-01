@@ -29,6 +29,7 @@ interface LoginResponse {
     full_name: string
     role: string
     totp_enabled: boolean
+    must_change_password?: boolean
   }
   error?: string
 }
@@ -64,7 +65,8 @@ export function UserAuthForm({ className, redirectTo }: UserAuthFormProps) {
     // Redirect duro en lugar de navigate() para forzar una recarga completa
     // del HTML y CSS. Evita que un CSS cacheado (de algún deploy anterior) quede
     // activo durante la sesión causando estilos incorrectos (bordes blancos, etc.)
-    window.location.replace(redirectTo || '/')
+    // 🔴 U-11: con la contraseña inicial el servidor solo deja cambiarla; se va directo a Mi cuenta.
+    window.location.replace(user?.must_change_password ? '/mi-cuenta' : (redirectTo || '/'))
   }
 
   async function onLoginSubmit(data: z.infer<typeof loginSchema>) {

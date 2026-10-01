@@ -25,6 +25,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { apiFetch } from '@/lib/api'
 import { TecnicasSheet } from './tecnicas-sheet'
+import { ImagenProtegida, abrirProtegido } from '@/components/imagen-protegida'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 interface Engagement {
@@ -664,11 +665,12 @@ function PhaseDetail({
                           <div className='flex flex-wrap gap-2 mt-2'>
                             {u.images.map(img => (
                               <div key={img.id} className='relative group rounded overflow-hidden border border-border'>
-                                <img
-                                  src={`/api/uploads/${img.filename}`}
+                                {/* 🔴 U-05: /api/uploads exige el header Authorization (ver imagen-protegida). */}
+                                <ImagenProtegida
+                                  filename={img.filename}
                                   alt={img.original_name}
                                   className='h-32 w-auto max-w-xs object-cover cursor-pointer'
-                                  onClick={() => window.open(`/api/uploads/${img.filename}`, '_blank')}
+                                  onClick={() => abrirProtegido(img.filename)}
                                 />
                                 <button
                                   onClick={() => deleteUpdateImage(u.id, img.id)}

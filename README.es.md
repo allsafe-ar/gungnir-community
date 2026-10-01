@@ -292,7 +292,7 @@ npm install
 npm run build   # Build de producción → dist/
 ```
 
-Credenciales por defecto (primer arranque): `admin` / `admin123` - **cambiar inmediatamente**.
+Credenciales iniciales (primer arranque): usuario `admin`. No hay contraseña por defecto: se toma de `ADMIN_PASSWORD_INICIAL` si está definida, y si no se genera una aleatoria que aparece **una sola vez** en el log del backend (`pm2 logs gungnir` o `docker compose logs app`). El primer ingreso obliga a cambiarla. Las cuentas que ya existen no se modifican.
 
 Después de instalar, probá importar un engagement de la comunidad para explorar todas las funcionalidades: andá a **Engagements → Importar** y seleccioná un `.zip` de [`community-engagements/`](community-engagements/).
 

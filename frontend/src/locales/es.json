@@ -219,6 +219,7 @@
     "sign_out": "Cerrar sesión"
   },
   "mi_cuenta": {
+    "must_change": "Por seguridad, cambiá la contraseña inicial antes de seguir. Después vas a tener que volver a ingresar.",
     "title": "Mi cuenta",
     "password": {
       "title": "Cambiar contraseña",

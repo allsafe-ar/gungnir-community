@@ -120,13 +120,31 @@ app.set('trust proxy', TRUST_PROXY === "false" ? false : /^\d+$/.test(TRUST_PROX
 const limiter = rateLimit({ windowMs: 15*60*1000, max: 200, standardHeaders: true, legacyHeaders: false });
 app.use(limiter);
 
+// 🔴 CSP: la que había bloqueaba el script en línea del tema y las fuentes de Google del panel
+// compilado, y helmet le sumaba upgrade-insecure-requests, que rompe una instalación por HTTP.
+// El script en línea se autoriza por su hash, calculado del index.html que se sirve.
+function hashesDeScriptsEnLinea() {
+  const candidatos = [path.join(__dirname, "public", "index.html"), path.join(__dirname, "..", "frontend", "dist", "index.html")];
+  const archivo = candidatos.find(f => fs.existsSync(f));
+  if (!archivo) return [];
+  const html = fs.readFileSync(archivo, "utf8");
+  return [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)]
+    .map(m => `'sha256-${require("crypto").createHash("sha256").update(m[1], "utf8").digest("base64")}'`);
+}
 app.use(helmet({
   contentSecurityPolicy: {
+    useDefaults: false,
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc:  ["'self'"],
-      styleSrc:   ["'self'", "'unsafe-inline'"],
+      scriptSrc:  ["'self'", ...hashesDeScriptsEnLinea()],
+      styleSrc:   ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc:    ["'self'", "data:", "https://fonts.gstatic.com"],
       imgSrc:     ["'self'", "data:", "blob:"],
+      connectSrc: ["'self'"],
+      objectSrc:  ["'none'"],
+      baseUri:    ["'self'"],
+      frameAncestors: ["'none'"],
+      formAction: ["'self'"],
     }
   }
 }));
@@ -141,6 +159,7 @@ app.use(express.json({ limit: "2mb" }));
 // El lector es de solo lectura: con auth() a secas creaba y borraba igual que los demás.
 const ESCRIBEN = ["admin", "auditor", "pentester"];
 
+const RUTAS_CAMBIO_OBLIGATORIO = new Set(["/api/auth/change-password", "/api/auth/me", "/api/auth/theme"]);
 function auth(roles = []) {
   return async (req, res, next) => {
     const h = req.headers.authorization;
@@ -148,10 +167,13 @@ function auth(roles = []) {
     try {
       const decoded = jwt.verify(h.slice(7), JWT_SECRET);
       const user = await qRow(
-        "SELECT id, username, email, full_name, role, token_version FROM users WHERE id=? AND is_active=1",
+        "SELECT id, username, email, full_name, role, token_version, must_change_password FROM users WHERE id=? AND is_active=1",
         [decoded.id]
       );
       if (!user || user.token_version !== decoded.tv) return res.status(401).json({ error: "Token inválido" });
+      // 🔴 U-11: con la contraseña inicial solo se puede cambiarla.
+      if (user.must_change_password && !RUTAS_CAMBIO_OBLIGATORIO.has(req.originalUrl.split("?")[0]))
+        return res.status(403).json({ error: "Tenés que cambiar la contraseña inicial antes de seguir.", mustChangePassword: true });
       if (roles.length && !roles.includes(user.role)) return res.status(403).json({ error: "Sin permiso" });
       req.user = user;
       next();
@@ -204,6 +226,7 @@ async function initDB() {
 
   // Migración: columnas para integración CRM
   try { await qRun("ALTER TABLE users ADD COLUMN theme VARCHAR(10) NOT NULL DEFAULT 'system'"); } catch(_) {}
+  try { await qRun("ALTER TABLE users ADD COLUMN must_change_password TINYINT(1) NOT NULL DEFAULT 0"); } catch(_) {}
   try { await qRun("ALTER TABLE clients ADD COLUMN crm_id VARCHAR(36) NULL"); } catch(_) {}
   try { await qRun("ALTER TABLE clients ADD COLUMN crm_synced_at DATETIME NULL"); } catch(_) {}
 
@@ -824,13 +847,20 @@ async function initDB() {
 
   // Admin por defecto
   const existing = await qRow("SELECT id FROM users WHERE username='admin'");
+  // 🔴 U-11: era admin/admin123 y nada obligaba a cambiarla. Ahora la inicial sale de
+  // ADMIN_PASSWORD_INICIAL o es aleatoria (se muestra una sola vez en el log), y el primer ingreso
+  // exige cambiarla. Las cuentas que ya existen no se tocan.
   if (!existing) {
-    const hash = await bcrypt.hash("admin123", 12);
+    const desdeEnv = process.env.ADMIN_PASSWORD_INICIAL;
+    const inicial = desdeEnv || require("crypto").randomBytes(12).toString("base64url");
+    const hash = await bcrypt.hash(inicial, 12);
     await qRun(
-      "INSERT INTO users (id,username,email,full_name,password_hash,role) VALUES (?,?,?,?,?,?)",
+      "INSERT INTO users (id,username,email,full_name,password_hash,role,must_change_password) VALUES (?,?,?,?,?,?,1)",
       [uuidv4(), "admin", "", "Administrador", hash, "admin"]
     );
-    console.log("[GUNGNIR] Usuario admin creado — cambiar contraseña inmediatamente.");
+    console.log(desdeEnv
+      ? "[GUNGNIR] Usuario admin creado con la contraseña de ADMIN_PASSWORD_INICIAL. El primer ingreso obliga a cambiarla."
+      : `[GUNGNIR] Usuario admin creado. Contraseña inicial (se muestra una sola vez): ${inicial} . El primer ingreso obliga a cambiarla.`);
   }
 
   // Audit log trim: keep max 5000 rows to prevent unbounded table growth
@@ -904,13 +934,13 @@ app.post("/api/auth/login", async (req, res) => {
   const token = jwt.sign({ id: user.id, role: user.role, tv: user.token_version }, JWT_SECRET, { expiresIn: "12h" });
   res.json({
     token,
-    user: { id: user.id, username: user.username, email: user.email, full_name: user.full_name, role: user.role, totp_enabled: !!user.totp_enabled }
+    user: { id: user.id, username: user.username, email: user.email, full_name: user.full_name, role: user.role, totp_enabled: !!user.totp_enabled, must_change_password: !!user.must_change_password }
   });
 });
 
 app.get("/api/auth/me", auth(), async (req, res) => {
-  const user = await qRow("SELECT id,username,email,full_name,role,totp_enabled,last_login,theme FROM users WHERE id=?", [req.user.id]);
-  res.json(user);
+  const user = await qRow("SELECT id,username,email,full_name,role,totp_enabled,last_login,theme,must_change_password FROM users WHERE id=?", [req.user.id]);
+  res.json(user ? { ...user, must_change_password: !!user.must_change_password } : user);
 });
 
 // Preferencia de tema del usuario (dark/light/system), persistida en la DB.
@@ -927,13 +957,15 @@ app.put("/api/auth/theme", auth(), async (req, res) => {
 });
 
 app.post("/api/auth/change-password", auth(), async (req, res) => {
-  const { current_password, new_password } = req.body;
+  const { current_password, new_password } = req.body || {};
+  if (typeof current_password !== "string" || !current_password) return res.status(400).json({ error: "La contraseña actual es requerida" });
   const user = await qRow("SELECT * FROM users WHERE id=?", [req.user.id]);
   if (!await bcrypt.compare(current_password, user.password_hash)) return res.status(400).json({ error: "Contraseña actual incorrecta" });
   const err = validatePassword(new_password);
   if (err) return res.status(400).json({ error: err });
+  if (new_password === current_password) return res.status(400).json({ error: "La nueva contraseña tiene que ser distinta de la actual" });
   const hash = await bcrypt.hash(new_password, 12);
-  await qRun("UPDATE users SET password_hash=?, token_version=token_version+1 WHERE id=?", [hash, req.user.id]);
+  await qRun("UPDATE users SET password_hash=?, must_change_password=0, token_version=token_version+1 WHERE id=?", [hash, req.user.id]);
   auditLog(req.user.id, req.user.username, "change_password", "users", req.user.id, null, req.ip);
   res.json({ ok: true });
 });
@@ -1962,29 +1994,18 @@ app.delete("/api/engagements/:id/evidences/:eid", auth(ESCRIBEN), async (req, re
   res.json({ ok: true });
 });
 
-// Servir archivos de evidencia — acepta token via Authorization header O ?token= query param
-// (necesario para <img src=> en browser, que no puede enviar headers custom)
-app.get("/api/uploads/:filename", async (req, res) => {
-  try {
-    // Solo nombres generados por el servidor (hex de 32 de multer o UUID): evita path traversal.
-    if (!/^(?:[0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.test(req.params.filename)) {
-      return res.status(400).json({ error: "Nombre de archivo inválido" });
-    }
-    const h = req.headers.authorization;
-    const rawToken = h?.startsWith("Bearer ") ? h.slice(7) : req.query.token;
-    if (!rawToken) return res.status(401).json({ error: "Sin token" });
-    const decoded = jwt.verify(rawToken, JWT_SECRET);
-    const user = await qRow(
-      "SELECT id, token_version FROM users WHERE id=? AND is_active=1",
-      [decoded.id]
-    );
-    if (!user || user.token_version !== decoded.tv) return res.status(401).json({ error: "Token inválido" });
-    const filepath = path.join(UPLOADS_DIR, req.params.filename);
-    if (!fs.existsSync(filepath)) return res.status(404).json({ error: "Archivo no encontrado" });
-    res.sendFile(filepath);
-  } catch {
-    return res.status(401).json({ error: "Token inválido" });
+// Servir archivos de evidencia.
+// 🔴 U-05: aceptaba el JWT por ?token=, y la URL con la sesión quedaba en el historial, en los
+// registros del proxy y en lo que se copiaba o compartía. Ahora solo con el header Authorization
+// (auth(), igual que el resto de la API); el panel los baja con fetch y los muestra como blob.
+app.get("/api/uploads/:filename", auth(), async (req, res) => {
+  // Solo nombres generados por el servidor (hex de 32 de multer o UUID): evita path traversal.
+  if (!/^(?:[0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.test(req.params.filename)) {
+    return res.status(400).json({ error: "Nombre de archivo inválido" });
   }
+  const filepath = path.join(UPLOADS_DIR, req.params.filename);
+  if (!fs.existsSync(filepath)) return res.status(404).json({ error: "Archivo no encontrado" });
+  res.sendFile(filepath);
 });
 
 // ── USUARIOS ──────────────────────────────────────────────────────────────────
@@ -2058,8 +2079,13 @@ app.put("/api/usuarios/:id/toggle", auth(["admin"]), async (req, res) => {
 });
 
 // ── TOTP personal (perfil) ────────────────────────────────────────────────────
+// 🔴 U-10: el alta del 2FA pedía solo la sesión: con un token robado se ataba la cuenta a un
+// autenticador ajeno. Ahora exige la contraseña antes de generar y mostrar el secreto.
 app.post("/api/auth/totp/setup", auth(), async (req, res) => {
-  const user = await qRow("SELECT id,username,email,totp_enabled FROM users WHERE id=?", [req.user.id]);
+  const { password } = req.body || {};
+  if (typeof password !== "string" || !password) return res.status(400).json({ error: "Contraseña requerida para activar 2FA" });
+  const user = await qRow("SELECT id,username,email,totp_enabled,password_hash FROM users WHERE id=?", [req.user.id]);
+  if (!user || !await bcrypt.compare(password, user.password_hash)) return res.status(400).json({ error: "Contraseña incorrecta" });
   if (user.totp_enabled) return res.status(400).json({ error: "2FA ya está activo" });
   const secret = generateTotpSecret();
   // Guardar secreto provisionalmente (no habilitar aún — se habilita tras verificar)
@@ -2210,12 +2236,29 @@ app.delete("/api/templates/findings/:id", auth(["admin","auditor"]), async (req,
 // ── SCANNER IMPORT ────────────────────────────────────────────────────────────
 const scannerUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
+// 🔴 U-09: las regex `<tag…>([\s\S]*?)</tag>` son cuadráticas cuando hay muchas aperturas sin
+// cierre (cada una recorre hasta el final), y la subida admite 50 MB. Estas búsquedas son
+// lineales y dan el mismo resultado: si la primera apertura no tiene cierre, ninguna lo tiene.
+function xmlBloque(xml, tag, desde = 0) {
+  const abre = new RegExp(`<${tag}(?=[\\s>])`, 'gi');
+  abre.lastIndex = desde;
+  const a = abre.exec(xml);
+  if (!a) return null;
+  const finAbre = xml.indexOf('>', a.index);
+  if (finAbre < 0) return null;
+  const cierra = new RegExp(`</${tag}>`, 'gi');
+  cierra.lastIndex = finAbre + 1;
+  const c = cierra.exec(xml);
+  if (!c) return null;
+  return { inicio: a.index, attrs: xml.slice(a.index + a[0].length, finAbre), cuerpo: xml.slice(finAbre + 1, c.index), fin: c.index + c[0].length };
+}
 function xmlGetTag(xml, tag) {
-  const re = new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tag}>`, 'i');
-  const m = re.exec(xml); return m ? m[1].replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g,' ').trim() : '';
+  const b = xmlBloque(xml, tag);
+  return b ? b.cuerpo.replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g,' ').trim() : '';
 }
 function xmlGetAttr(xml, tag, attr) {
-  const re = new RegExp(`<${tag}[^>]*\\s${attr}="([^"]*)"`, 'i');
+  // Anclada al principio: sin el ^, cada "<tag" dentro de los atributos era otro punto de partida.
+  const re = new RegExp(`^<${tag}[^>]*\\s${attr}="([^"]*)"`, 'i');
   const m = re.exec(xml); return m ? m[1] : '';
 }
 function nessusToSeverity(s) { return {4:'critical',3:'high',2:'medium',1:'low',0:'info'}[s]||'medium'; }
@@ -2230,16 +2273,20 @@ function openvasToSeverity(score) {
 
 function parseNessus(xml) {
   const findings = [];
-  const re = /<ReportItem\s([^>]*)>([\s\S]*?)<\/ReportItem>/gi;
-  let m;
-  while ((m = re.exec(xml)) !== null) {
-    const attrs = m[1]; const body = m[2];
+  // Inicio de cada ReportHost, en una sola pasada: antes se buscaba desde el principio del
+  // archivo para cada hallazgo (cuadrático) y además siempre daba el primer host.
+  const hosts = [];
+  for (const hm of xml.matchAll(/<ReportHost name="([^"]*)"/g)) hosts.push({ pos: hm.index, name: hm[1] });
+  let h = -1;
+  for (let b = xmlBloque(xml, 'ReportItem'); b; b = xmlBloque(xml, 'ReportItem', b.fin)) {
+    const attrs = b.attrs; const body = b.cuerpo;
+    while (h + 1 < hosts.length && hosts[h + 1].pos < b.inicio) h++;
     const pluginName = xmlGetAttr(`<x ${attrs}/>`, 'x', 'pluginName')||xmlGetTag(body,'pluginName');
     const port       = xmlGetAttr(`<x ${attrs}/>`, 'x', 'port');
     const protocol   = xmlGetAttr(`<x ${attrs}/>`, 'x', 'protocol');
     const severityN  = xmlGetAttr(`<x ${attrs}/>`, 'x', 'severity');
     const svcName    = xmlGetAttr(`<x ${attrs}/>`, 'x', 'svc_name');
-    const host       = (() => { const hm = /<ReportHost name="([^"]*)"/.exec(xml.substring(0,m.index+m[0].length)); return hm?hm[1]:''; })();
+    const host       = h >= 0 ? hosts[h].name : '';
     if (!pluginName || pluginName==='Nessus SYN scanner' || pluginName==='Nessus TCP scanner') continue;
     findings.push({
       title: pluginName,
@@ -2795,12 +2842,35 @@ function toMysqlDate(val) {
 }
 
 const importUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } });
+// 🔴 U-08: el ZIP se descomprimía sin tope: un archivo chico que declara gigas llenaba la memoria
+// y el disco. adm-zip corta cada entrada en su tamaño declarado, así que alcanza con revisar lo
+// declarado ANTES de descomprimir nada. Los topes siguen los de las subidas (100 MB por archivo).
+const ZIP_MAX_ENTRADAS = 10000;
+const ZIP_MAX_ARCHIVO  = 100 * 1024 * 1024;
+const ZIP_MAX_MANIFEST = 50 * 1024 * 1024;
+const ZIP_MAX_TOTAL    = 2 * 1024 * 1024 * 1024;
+function problemaDeZip(zip) {
+  const entradas = zip.getEntries();
+  if (entradas.length > ZIP_MAX_ENTRADAS) return `ZIP con demasiadas entradas (máximo ${ZIP_MAX_ENTRADAS})`;
+  let total = 0;
+  for (const e of entradas) {
+    if (e.isDirectory) continue;
+    const tam = Number(e.header.size) || 0;
+    const tope = e.entryName === "engagement.json" ? ZIP_MAX_MANIFEST : ZIP_MAX_ARCHIVO;
+    if (tam > tope) return `ZIP inválido: ${e.entryName.slice(0, 100)} supera el tamaño permitido`;
+    total += tam;
+  }
+  if (total > ZIP_MAX_TOTAL) return "ZIP inválido: el contenido descomprimido supera el máximo permitido";
+  return null;
+}
 
 app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.single("file"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No se recibió ningún archivo" });
   if (!req.file.originalname.endsWith(".zip")) return res.status(400).json({ error: "El archivo debe ser un .zip" });
   try {
     const zip = new AdmZip(req.file.buffer);
+    const problema = problemaDeZip(zip);
+    if (problema) return res.status(400).json({ error: problema });
     const manifestEntry = zip.getEntry("engagement.json");
     if (!manifestEntry) return res.status(400).json({ error: "ZIP inválido: falta engagement.json" });
     const manifest = JSON.parse(manifestEntry.getData().toString("utf8"));
@@ -2989,6 +3059,8 @@ const DIST = fs.existsSync(path.join(__dirname, "public"))
   : path.join(__dirname, "..", "frontend", "dist");
 // ── Scripts custom ───────────────────────────────────────────────────────────
 // mysql2 ya entrega parseadas las columnas JSON: JSON.parse sobre un array fallaba.
+// 🔴 U-06: el arsenal y los overrides de comandos y scripts seguían con JSON.parse directo (con
+// un comando propio cargado, GET /api/arsenal/commands daba 500); ahora pasan todos por acá.
 const jsonOLista = v => (!v ? [] : typeof v === "string" ? JSON.parse(v) : v);
 const parseScriptRow = r => ({
   ...r,
@@ -3076,7 +3148,7 @@ app.get("/api/arsenal/commands", auth(), async (req, res) => {
   const cmds = await qRows(
     "SELECT c.*, u.full_name AS author_name FROM arsenal_commands c LEFT JOIN users u ON u.id=c.created_by ORDER BY c.tool_key, c.created_at"
   );
-  res.json(cmds.map(c => ({ ...c, tags: c.tags ? JSON.parse(c.tags) : [] })));
+  res.json(cmds.map(c => ({ ...c, tags: jsonOLista(c.tags) })));
 });
 
 app.post("/api/arsenal/commands", auth(["admin"]), async (req, res) => {
@@ -3090,7 +3162,7 @@ app.post("/api/arsenal/commands", auth(["admin"]), async (req, res) => {
   );
   await auditLog(req.user.id, req.user.username, 'create', 'arsenal_command', id, `Comando: ${title}`, req.ip);
   const cmd = await qRow("SELECT c.*, u.full_name AS author_name FROM arsenal_commands c LEFT JOIN users u ON u.id=c.created_by WHERE c.id=?", [id]);
-  res.status(201).json({ ...cmd, tags: cmd.tags ? JSON.parse(cmd.tags) : [] });
+  res.status(201).json({ ...cmd, tags: jsonOLista(cmd.tags) });
 });
 
 app.put("/api/arsenal/commands/:id", auth(["admin"]), async (req, res) => {
@@ -3103,7 +3175,7 @@ app.put("/api/arsenal/commands/:id", auth(["admin"]), async (req, res) => {
      description?.trim()||null, JSON.stringify(tags||[]), notes?.trim()||null, mitre_id?.trim()||null, req.params.id]
   );
   const updated = await qRow("SELECT c.*, u.full_name AS author_name FROM arsenal_commands c LEFT JOIN users u ON u.id=c.created_by WHERE c.id=?", [req.params.id]);
-  res.json({ ...updated, tags: updated.tags ? JSON.parse(updated.tags) : [] });
+  res.json({ ...updated, tags: jsonOLista(updated.tags) });
 });
 
 app.delete("/api/arsenal/commands/:id", auth(["admin"]), async (req, res) => {
@@ -3117,7 +3189,7 @@ app.delete("/api/arsenal/commands/:id", auth(["admin"]), async (req, res) => {
 // ── Arsenal command overrides (edit/delete built-ins) ────────────────────────
 app.get("/api/arsenal/cmd-overrides", auth(), async (req, res) => {
   const rows = await qRows("SELECT * FROM cmd_overrides");
-  res.json(rows.map(r => ({ ...r, tags: r.tags ? JSON.parse(r.tags) : [] })));
+  res.json(rows.map(r => ({ ...r, tags: jsonOLista(r.tags) })));
 });
 
 app.put("/api/arsenal/cmd-overrides/:id", auth(["admin"]), async (req, res) => {
@@ -3134,7 +3206,7 @@ app.put("/api/arsenal/cmd-overrides/:id", auth(["admin"]), async (req, res) => {
   );
   const row = await qRow("SELECT * FROM cmd_overrides WHERE item_id=?", [req.params.id]);
   await auditLog(req.user.id, req.user.username, 'update', 'cmd_override', req.params.id, `Override cmd: ${req.params.id}`, req.ip);
-  res.json({ ...row, tags: row.tags ? JSON.parse(row.tags) : [] });
+  res.json({ ...row, tags: jsonOLista(row.tags) });
 });
 
 app.delete("/api/arsenal/cmd-overrides/:id", auth(["admin"]), async (req, res) => {
@@ -3152,9 +3224,9 @@ app.get("/api/scripts/overrides", auth(), async (req, res) => {
   const rows = await qRows("SELECT * FROM script_overrides");
   res.json(rows.map(r => ({
     ...r,
-    mitre_ids:     r.mitre_ids     ? JSON.parse(r.mitre_ids)     : [],
-    related_tools: r.related_tools ? JSON.parse(r.related_tools) : [],
-    tags:          r.tags          ? JSON.parse(r.tags)          : [],
+    mitre_ids:     jsonOLista(r.mitre_ids),
+    related_tools: jsonOLista(r.related_tools),
+    tags:          jsonOLista(r.tags),
   })));
 });
 
@@ -3177,9 +3249,9 @@ app.put("/api/scripts/overrides/:id", auth(["admin"]), async (req, res) => {
   await auditLog(req.user.id, req.user.username, 'update', 'script_override', req.params.id, `Override script: ${req.params.id}`, req.ip);
   res.json({
     ...row,
-    mitre_ids:     row.mitre_ids     ? JSON.parse(row.mitre_ids)     : [],
-    related_tools: row.related_tools ? JSON.parse(row.related_tools) : [],
-    tags:          row.tags          ? JSON.parse(row.tags)          : [],
+    mitre_ids:     jsonOLista(row.mitre_ids),
+    related_tools: jsonOLista(row.related_tools),
+    tags:          jsonOLista(row.tags),
   });
 });
 
