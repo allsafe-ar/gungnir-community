@@ -245,7 +245,8 @@
       "cancel": "Cancelar",
       "enabled": "2FA activado correctamente",
       "disabled": "2FA desactivado",
-      "error": "Código incorrecto. Intentá nuevamente."
+      "error": "Código incorrecto. Intentá nuevamente.",
+      "disable_password": "Tu contraseña actual"
     },
     "lang": {
       "title": "Idioma",
@@ -780,7 +781,8 @@
       "cancel": "Cancelar",
       "enabled": "2FA activado correctamente",
       "disabled": "2FA desactivado",
-      "error": "Código incorrecto"
+      "error": "Código incorrecto",
+      "disable_password": "Tu contraseña actual"
     },
     "lang": {
       "title": "Idioma",

@@ -245,7 +245,8 @@
       "cancel": "Cancel",
       "enabled": "2FA enabled successfully",
       "disabled": "2FA disabled",
-      "error": "Incorrect code. Please try again."
+      "error": "Incorrect code. Please try again.",
+      "disable_password": "Your current password"
     },
     "lang": {
       "title": "Language",
@@ -780,7 +781,8 @@
       "cancel": "Cancel",
       "enabled": "2FA enabled successfully",
       "disabled": "2FA disabled",
-      "error": "Incorrect code"
+      "error": "Incorrect code",
+      "disable_password": "Your current password"
     },
     "lang": {
       "title": "Language",

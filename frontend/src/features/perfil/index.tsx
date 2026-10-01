@@ -92,9 +92,12 @@ export function Perfil() {
     onError: () => { setTotpError(t('perfil.2fa.error')); setTotpToken('') },
   })
 
+  const [disablePass, setDisablePass] = useState('')
+  const [disableCode, setDisableCode] = useState('')
   const totpDisableMutation = useMutation({
-    mutationFn: () => apiFetch('/auth/totp', { method: 'DELETE', body: JSON.stringify({}) }),
-    onSuccess: () => { toast.success(t('perfil.2fa.disabled')); setHas2FA(false) },
+    // Desactivar el 2FA pide la contraseña y un código vigente: con una sesión robada sola no alcanza.
+    mutationFn: () => apiFetch('/auth/totp', { method: 'DELETE', body: JSON.stringify({ password: disablePass, code: disableCode }) }),
+    onSuccess: () => { toast.success(t('perfil.2fa.disabled')); setHas2FA(false); setDisablePass(''); setDisableCode('') },
     onError: (e: Error) => toast.error(e.message),
   })
 
@@ -207,17 +210,23 @@ export function Perfil() {
                   </Button>
                 )}
                 {has2FA && (
+                  <div className='space-y-2'>
+                    <Input type='password' value={disablePass} onChange={(e) => setDisablePass(e.target.value)}
+                      placeholder={t('perfil.2fa.disable_password')} autoComplete='current-password' />
+                    <Input inputMode='numeric' maxLength={6} value={disableCode} onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, ''))}
+                      placeholder={t('perfil.2fa.code_label')} autoComplete='one-time-code' />
                   <Button
                     variant='outline'
                     size='sm'
                     className='text-destructive hover:text-destructive'
                     onClick={() => { if (confirm(t('perfil.2fa.disable_confirm'))) totpDisableMutation.mutate() }}
-                    disabled={totpDisableMutation.isPending}
+                    disabled={totpDisableMutation.isPending || !disablePass || disableCode.length !== 6}
                   >
                     {totpDisableMutation.isPending && <Loader2 className='mr-2 h-3.5 w-3.5 animate-spin' />}
                     <ShieldOff className='mr-2 size-4' />
                     {t('perfil.2fa.disable')}
                   </Button>
+                  </div>
                 )}
               </div>
             </>

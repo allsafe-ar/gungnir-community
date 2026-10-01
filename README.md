@@ -232,7 +232,7 @@ Security is a first-class feature here - the same hardening baseline as the comm
 - **Role-based access control** - `admin` / `auditor` / `pentester` with fine-grained route guards
 - **Audit log** - all create/update/delete/import actions logged with user, IP, and timestamp
 - **100% parameterized SQL** - no string-built queries, no injection vectors (OWASP Top 10 2021)
-- **Fail-fast startup** - the backend refuses to boot with a missing or default `JWT_SECRET`
+- **Fail-fast startup** - the backend refuses to boot with a missing, example or shorter than 32 characters `JWT_SECRET`
 - **CORS** locked to the configured origin (no wildcard)
 
 ---

@@ -29,10 +29,28 @@ if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const PORT       = process.env.PORT       || 3006;
-const JWT_SECRET = process.env.JWT_SECRET || "gungnir_jwt_CHANGE_IN_PROD";
+const JWT_SECRET = process.env.JWT_SECRET || "";
 
-if (!process.env.JWT_SECRET || JWT_SECRET === "gungnir_jwt_CHANGE_IN_PROD") {
-  console.error("[GUNGNIR] FATAL: JWT_SECRET no configurado. Configuralo en .env");
+// 🔴 El secreto que firma las sesiones. Se rechaza vacío, corto (menos de 32) o igual a un
+// valor de ejemplo conocido: quien copia el .env.example sin cambiarlo arrancaba con un
+// secreto público, y cualquiera podía firmarse una sesión de administrador.
+const SECRETOS_DE_EJEMPLO = [
+  "CHANGE_IN_PRODUCTION",
+  "change_this_to_a_random_string_min_32_chars",
+  "gjallar_jwt_secret_CHANGE_IN_PROD",
+  "gjallar_jwt_secret_CHANGE_THIS_IN_PRODUCTION",
+  "gungnir_jwt_CHANGE_IN_PROD",
+  "cambiar_esto_por_un_secreto_de_al_menos_32_caracteres_random",
+];
+function motivoSecretoInseguro(s) {
+  if (!s) return "no está configurado";
+  if (s.length < 32) return "tiene menos de 32 caracteres";
+  if (SECRETOS_DE_EJEMPLO.includes(s) || /change[_-]?(this|me|in[_-]?prod)|cambiar[_-]?esto/i.test(s))
+    return "es un valor de ejemplo";
+  return null;
+}
+if (motivoSecretoInseguro(JWT_SECRET)) {
+  console.error(`[GUNGNIR] FATAL: JWT_SECRET ${motivoSecretoInseguro(JWT_SECRET)}. Generá uno con: openssl rand -hex 32`);
   process.exit(1);
 }
 
@@ -93,8 +111,11 @@ const generateTotpSecret = totpCanonico.generarSecreto;
 // ── App ───────────────────────────────────────────────────────────────────────
 const app = express();
 
-// Trust the first proxy (Nginx) so express-rate-limit reads the correct client IP.
-app.set('trust proxy', 1);
+// Proxies de confianza para X-Forwarded-For: "loopback" (el nginx de install.sh) salvo que
+// TRUST_PROXY diga otra cosa. Con "1" fijo y el puerto publicado directo (docker-compose), el
+// cliente elegía con la cabecera la IP del limitador y de la auditoría.
+const TRUST_PROXY = process.env.TRUST_PROXY || "loopback";
+app.set('trust proxy', TRUST_PROXY === "false" ? false : /^\d+$/.test(TRUST_PROXY) ? Number(TRUST_PROXY) : TRUST_PROXY);
 
 const limiter = rateLimit({ windowMs: 15*60*1000, max: 200, standardHeaders: true, legacyHeaders: false });
 app.use(limiter);
@@ -116,6 +137,10 @@ app.use(cors({
 app.use(express.json({ limit: "2mb" }));
 
 // ── Auth middleware ───────────────────────────────────────────────────────────
+// Roles que modifican un engagement (hallazgos, evidencias, alcance, objetivos, fases, logs).
+// El lector es de solo lectura: con auth() a secas creaba y borraba igual que los demás.
+const ESCRIBEN = ["admin", "auditor", "pentester"];
+
 function auth(roles = []) {
   return async (req, res, next) => {
     const h = req.headers.authorization;
@@ -1110,7 +1135,7 @@ app.patch("/api/engagements/:id/title", auth(["admin","auditor"]), async (req, r
 });
 
 // Cambiar fase activa
-app.put("/api/engagements/:id/phase", auth(), async (req, res) => {
+app.put("/api/engagements/:id/phase", auth(ESCRIBEN), async (req, res) => {
   const { phase } = req.body;
   if (!PHASES_ORDER.includes(phase)) return res.status(400).json({ error: "Fase inválida" });
   const eng = await qRow("SELECT id FROM engagements WHERE id=?", [req.params.id]);
@@ -1130,7 +1155,7 @@ app.put("/api/engagements/:id/phase", auth(), async (req, res) => {
 });
 
 // PUT /api/engagements/:id/phases/:phase/status — marcar fase como completed/in_progress/not_started
-app.put("/api/engagements/:id/phases/:phase/status", auth(), async (req, res) => {
+app.put("/api/engagements/:id/phases/:phase/status", auth(ESCRIBEN), async (req, res) => {
   const { status } = req.body;
   if (!['not_started','in_progress','completed'].includes(status)) return res.status(400).json({ error: "Status inválido" });
   if (!PHASES_ORDER.includes(req.params.phase)) return res.status(400).json({ error: "Fase inválida" });
@@ -1241,7 +1266,7 @@ app.get("/api/engagements/:id/scope", auth(), async (req, res) => {
   res.json(rows.map(parseScopeItem));
 });
 
-app.post("/api/engagements/:id/scope", auth(), async (req, res) => {
+app.post("/api/engagements/:id/scope", auth(ESCRIBEN), async (req, res) => {
   const { type, value, in_scope, notes, os_type, ports, pwned } = req.body;
   if (!value) return res.status(400).json({ error: "value es requerido" });
   const sid = uuidv4();
@@ -1253,7 +1278,7 @@ app.post("/api/engagements/:id/scope", auth(), async (req, res) => {
   res.status(201).json(parseScopeItem(await qRow("SELECT * FROM scope_items WHERE id=?", [sid])));
 });
 
-app.patch("/api/engagements/:id/scope/:sid", auth(), async (req, res) => {
+app.patch("/api/engagements/:id/scope/:sid", auth(ESCRIBEN), async (req, res) => {
   const item = await qRow("SELECT id FROM scope_items WHERE id=? AND engagement_id=?", [req.params.sid, req.params.id]);
   if (!item) return res.status(404).json({ error: "No encontrado" });
   const { os_type, pwned, ports, vuln_summary } = req.body;
@@ -1270,13 +1295,13 @@ app.patch("/api/engagements/:id/scope/:sid", auth(), async (req, res) => {
   res.json(parseScopeItem(await qRow("SELECT * FROM scope_items WHERE id=?", [req.params.sid])));
 });
 
-app.delete("/api/engagements/:id/scope/:sid", auth(), async (req, res) => {
+app.delete("/api/engagements/:id/scope/:sid", auth(ESCRIBEN), async (req, res) => {
   await qRun("DELETE FROM scope_items WHERE id=? AND engagement_id=?", [req.params.sid, req.params.id]);
   res.json({ ok: true });
 });
 
 // ── Sync Scope from phase logs ────────────────────────────────────────────────
-app.post("/api/engagements/:id/scope/sync-from-phases", auth(), async (req, res) => {
+app.post("/api/engagements/:id/scope/sync-from-phases", auth(ESCRIBEN), async (req, res) => {
   const eid = req.params.id;
   try {
     const [logs, existingScope] = await Promise.all([
@@ -1370,7 +1395,7 @@ app.get("/api/engagements/:id/targets", auth(), async (req, res) => {
   res.json(await qRows("SELECT * FROM engagement_targets WHERE engagement_id=? ORDER BY created_at", [req.params.id]));
 });
 
-app.post("/api/engagements/:id/targets", auth(), async (req, res) => {
+app.post("/api/engagements/:id/targets", auth(ESCRIBEN), async (req, res) => {
   const { ip_address, fqdn, url_address, os_type, notes, owned, jumped_from_id } = req.body;
   if (!ip_address && !fqdn && !url_address) return res.status(400).json({ error: "Se requiere ip_address, fqdn o url_address" });
   const tid = uuidv4();
@@ -1381,7 +1406,7 @@ app.post("/api/engagements/:id/targets", auth(), async (req, res) => {
   res.status(201).json(await qRow("SELECT * FROM engagement_targets WHERE id=?", [tid]));
 });
 
-app.put("/api/engagements/:id/targets/:tid", auth(), async (req, res) => {
+app.put("/api/engagements/:id/targets/:tid", auth(ESCRIBEN), async (req, res) => {
   const { ip_address, fqdn, url_address, os_type, owned, jumped_from_id, notes } = req.body;
   await qRun(
     `UPDATE engagement_targets SET
@@ -1395,34 +1420,34 @@ app.put("/api/engagements/:id/targets/:tid", auth(), async (req, res) => {
   res.json(await qRow("SELECT * FROM engagement_targets WHERE id=?", [req.params.tid]));
 });
 
-app.patch("/api/engagements/:id/targets/:tid/owned", auth(), async (req, res) => {
+app.patch("/api/engagements/:id/targets/:tid/owned", auth(ESCRIBEN), async (req, res) => {
   const { owned } = req.body;
   await qRun("UPDATE engagement_targets SET owned=? WHERE id=? AND engagement_id=?",
     [owned?1:0, req.params.tid, req.params.id]);
   res.json({ ok: true, owned: !!owned });
 });
 
-app.patch("/api/engagements/:id/targets/:tid/position", auth(), async (req, res) => {
+app.patch("/api/engagements/:id/targets/:tid/position", auth(ESCRIBEN), async (req, res) => {
   const { x, y } = req.body;
   await qRun("UPDATE engagement_targets SET x_position=?, y_position=? WHERE id=? AND engagement_id=?",
     [x, y, req.params.tid, req.params.id]);
   res.json({ ok: true });
 });
 
-app.patch("/api/engagements/:id/targets/:tid/pivot", auth(), async (req, res) => {
+app.patch("/api/engagements/:id/targets/:tid/pivot", auth(ESCRIBEN), async (req, res) => {
   const { jumped_from_id } = req.body;
   await qRun("UPDATE engagement_targets SET jumped_from_id=? WHERE id=? AND engagement_id=?",
     [jumped_from_id || null, req.params.tid, req.params.id]);
   res.json({ ok: true });
 });
 
-app.delete("/api/engagements/:id/targets/:tid", auth(), async (req, res) => {
+app.delete("/api/engagements/:id/targets/:tid", auth(ESCRIBEN), async (req, res) => {
   await qRun("DELETE FROM engagement_targets WHERE id=? AND engagement_id=?", [req.params.tid, req.params.id]);
   res.json({ ok: true });
 });
 
 // Importar scope items como targets del Attack Map
-app.post("/api/engagements/:id/targets/import-scope", auth(), async (req, res) => {
+app.post("/api/engagements/:id/targets/import-scope", auth(ESCRIBEN), async (req, res) => {
   const eid = req.params.id;
   const scopeItems = await qRows(
     "SELECT * FROM scope_items WHERE engagement_id=? AND in_scope=1",
@@ -1537,7 +1562,7 @@ app.post("/api/engagements/:id/targets/import-scope", auth(), async (req, res) =
 });
 
 // ── Sync Attack Map from engagement phase logs ────────────────────────────────
-app.post("/api/engagements/:id/attack-map/sync-from-phases", auth(), async (req, res) => {
+app.post("/api/engagements/:id/attack-map/sync-from-phases", auth(ESCRIBEN), async (req, res) => {
   const eid = req.params.id;
   try {
     const [scanLogs, exploitLogs, postExploitLogs, targets, scopeItems] = await Promise.all([
@@ -1780,7 +1805,7 @@ app.get("/api/engagements/:id/phases/:phase/logs", auth(), async (req, res) => {
   res.json(logs);
 });
 
-app.post("/api/engagements/:id/phases/:phase/logs", auth(), async (req, res) => {
+app.post("/api/engagements/:id/phases/:phase/logs", auth(ESCRIBEN), async (req, res) => {
   const { target, tool, command, notes } = req.body;
   if (!command && !notes) return res.status(400).json({ error: "command o notes requerido" });
   const lid = uuidv4();
@@ -1796,7 +1821,7 @@ app.post("/api/engagements/:id/phases/:phase/logs", auth(), async (req, res) => 
   res.status(201).json(await qRow("SELECT * FROM operation_logs WHERE id=?", [lid]));
 });
 
-app.delete("/api/engagements/:id/phases/:phase/logs/:lid", auth(), async (req, res) => {
+app.delete("/api/engagements/:id/phases/:phase/logs/:lid", auth(ESCRIBEN), async (req, res) => {
   await qRun("DELETE FROM operation_logs WHERE id=? AND engagement_id=?", [req.params.lid, req.params.id]);
   res.json({ ok: true });
 });
@@ -1818,7 +1843,7 @@ app.get("/api/engagements/:id/findings/:fid", auth(), async (req, res) => {
   res.json(f);
 });
 
-app.post("/api/engagements/:id/findings", auth(), async (req, res) => {
+app.post("/api/engagements/:id/findings", auth(ESCRIBEN), async (req, res) => {
   const {
     title, description, steps_to_reproduce, affected_asset,
     cvss_vector_31, cvss_score_31, cvss_vector_40, cvss_score_40,
@@ -1849,7 +1874,7 @@ app.post("/api/engagements/:id/findings", auth(), async (req, res) => {
   res.status(201).json(await qRow("SELECT * FROM findings WHERE id=?", [fid]));
 });
 
-app.put("/api/engagements/:id/findings/:fid", auth(), async (req, res) => {
+app.put("/api/engagements/:id/findings/:fid", auth(ESCRIBEN), async (req, res) => {
   const f = await qRow("SELECT * FROM findings WHERE id=? AND engagement_id=?", [req.params.fid, req.params.id]);
   if (!f) return res.status(404).json({ error: "No encontrado" });
   const b = req.body;
@@ -1909,7 +1934,7 @@ const EVIDENCE_ALLOWED_EXTS = new Set([
   ".mp4",".webm",
 ]);
 
-app.post("/api/engagements/:id/evidences", auth(), upload.single("file"), async (req, res) => {
+app.post("/api/engagements/:id/evidences", auth(ESCRIBEN), upload.single("file"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No se recibió archivo" });
   // Validate file type to prevent executable/script uploads
   const ext = path.extname(req.file.originalname).toLowerCase();
@@ -1929,7 +1954,7 @@ app.post("/api/engagements/:id/evidences", auth(), upload.single("file"), async 
   res.status(201).json(await qRow("SELECT * FROM evidences WHERE id=?", [eid]));
 });
 
-app.delete("/api/engagements/:id/evidences/:eid", auth(), async (req, res) => {
+app.delete("/api/engagements/:id/evidences/:eid", auth(ESCRIBEN), async (req, res) => {
   const ev = await qRow("SELECT filename FROM evidences WHERE id=? AND engagement_id=?", [req.params.eid, req.params.id]);
   if (!ev) return res.status(404).json({ error: "No encontrado" });
   try { fs.unlinkSync(path.join(UPLOADS_DIR, ev.filename)); } catch {}
@@ -1941,8 +1966,8 @@ app.delete("/api/engagements/:id/evidences/:eid", auth(), async (req, res) => {
 // (necesario para <img src=> en browser, que no puede enviar headers custom)
 app.get("/api/uploads/:filename", async (req, res) => {
   try {
-    // Validate filename is a UUID (multer-generated) — prevents path traversal
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(req.params.filename)) {
+    // Solo nombres generados por el servidor (hex de 32 de multer o UUID): evita path traversal.
+    if (!/^(?:[0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.test(req.params.filename)) {
       return res.status(400).json({ error: "Nombre de archivo inválido" });
     }
     const h = req.headers.authorization;
@@ -2055,11 +2080,18 @@ app.post("/api/auth/totp/verify", auth(), async (req, res) => {
   res.json({ ok: true });
 });
 
+// 🔴 Desactivar el 2FA exige la contraseña y un código vigente. Antes la contraseña era
+// opcional: con una sesión robada alcanzaba un DELETE con el cuerpo vacío.
 app.delete("/api/auth/totp", auth(), async (req, res) => {
-  const { password } = req.body;
+  const { password, code } = req.body || {};
+  if (!password || typeof password !== "string" || !code)
+    return res.status(400).json({ error: "Contraseña y código 2FA requeridos" });
   const user = await qRow("SELECT * FROM users WHERE id=?", [req.user.id]);
-  if (password && !await bcrypt.compare(password, user.password_hash)) {
+  if (!user || !await bcrypt.compare(password, user.password_hash)) {
     return res.status(400).json({ error: "Contraseña incorrecta" });
+  }
+  if (user.totp_secret && !verifyTotp(user.totp_secret, String(code))) {
+    return res.status(400).json({ error: "Código incorrecto" });
   }
   await qRun("UPDATE users SET totp_secret=NULL, totp_enabled=0, token_version=token_version+1 WHERE id=?", [req.user.id]);
   auditLog(req.user.id, req.user.username, "totp_disabled", "users", req.user.id, "2FA desactivado", req.ip);
@@ -2094,24 +2126,28 @@ app.get("/api/auditoria", auth(["admin","auditor"]), async (req, res) => {
 });
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
-app.get("/api/settings", auth(), async (req, res) => {
+// 🔴 Solo las claves del informe (report_*): la tabla settings guarda también las API keys de
+// Shodan, VirusTotal y Censys (recon_key_*), y esta ruta las devolvía completas a cualquier
+// rol, incluido el lector. Las claves de recon tienen su ruta propia, solo admin y enmascaradas.
+const SETTINGS_PUBLICOS = ["report_org_name", "report_org_email", "report_org_website", "report_disclaimer"];
+async function settingsPublicos() {
   const rows = await qRows("SELECT `key`, `value` FROM settings");
   const obj = {};
-  for (const r of rows) obj[r.key] = r.value;
-  res.json(obj);
+  for (const r of rows) if (SETTINGS_PUBLICOS.includes(r.key)) obj[r.key] = r.value;
+  return obj;
+}
+
+app.get("/api/settings", auth(), async (req, res) => {
+  res.json(await settingsPublicos());
 });
 
 app.put("/api/settings", auth(["admin"]), async (req, res) => {
-  const allowed = ["report_org_name","report_org_email","report_org_website","report_disclaimer"];
-  for (const [k, v] of Object.entries(req.body)) {
-    if (!allowed.includes(k)) continue;
+  for (const [k, v] of Object.entries(req.body || {})) {
+    if (!SETTINGS_PUBLICOS.includes(k)) continue;
     await qRun("INSERT INTO settings (`key`,`value`) VALUES (?,?) ON DUPLICATE KEY UPDATE `value`=?", [k, v, v]);
   }
   auditLog(req.user.id, req.user.username, "update_settings", "settings", null, null, req.ip);
-  const rows2 = await qRows("SELECT `key`, `value` FROM settings");
-  const obj = {};
-  for (const r of rows2) obj[r.key] = r.value;
-  res.json(obj);
+  res.json(await settingsPublicos());
 });
 
 // ── FINDING TEMPLATES ─────────────────────────────────────────────────────────
@@ -2615,7 +2651,7 @@ app.get("/api/engagements/:id/phases", auth(), async (req, res) => {
   res.json(result);
 });
 
-app.put("/api/engagements/:id/phases", auth(), async (req, res) => {
+app.put("/api/engagements/:id/phases", auth(ESCRIBEN), async (req, res) => {
   const phases = req.body;
   for (const phase of VALID_PHASES) {
     const pd = phases[phase];
@@ -2952,11 +2988,13 @@ const DIST = fs.existsSync(path.join(__dirname, "public"))
   ? path.join(__dirname, "public")
   : path.join(__dirname, "..", "frontend", "dist");
 // ── Scripts custom ───────────────────────────────────────────────────────────
+// mysql2 ya entrega parseadas las columnas JSON: JSON.parse sobre un array fallaba.
+const jsonOLista = v => (!v ? [] : typeof v === "string" ? JSON.parse(v) : v);
 const parseScriptRow = r => ({
   ...r,
-  mitre_ids:     r.mitre_ids     ? JSON.parse(r.mitre_ids)     : [],
-  related_tools: r.related_tools ? JSON.parse(r.related_tools) : [],
-  tags:          r.tags          ? JSON.parse(r.tags)          : [],
+  mitre_ids:     jsonOLista(r.mitre_ids),
+  related_tools: jsonOLista(r.related_tools),
+  tags:          jsonOLista(r.tags),
 });
 
 app.get("/api/scripts", auth(), async (req, res) => {
@@ -2975,7 +3013,7 @@ app.post("/api/scripts", auth(["admin"]), async (req, res) => {
      JSON.stringify(mitre_ids||[]), JSON.stringify(related_tools||[]), JSON.stringify(tags||[]),
      notes?.trim()||null, severity||'info', script_type||'detection', req.user.id]
   );
-  await logAudit(req.user.id, req.user.username, 'create', 'script', id, `Script: ${name}`, req.ip);
+  await auditLog(req.user.id, req.user.username, 'create', 'script', id, `Script: ${name}`, req.ip);
   const row = await qRow("SELECT s.*, u.full_name AS author_name FROM scripts s LEFT JOIN users u ON u.id=s.created_by WHERE s.id=?", [id]);
   res.status(201).json(parseScriptRow(row));
 });
@@ -2999,7 +3037,7 @@ app.delete("/api/scripts/:id", auth(["admin"]), async (req, res) => {
   const s = await qRow("SELECT * FROM scripts WHERE id=?", [req.params.id]);
   if (!s) return res.status(404).json({ error: "No encontrado" });
   await qRun("DELETE FROM scripts WHERE id=?", [req.params.id]);
-  await logAudit(req.user.id, req.user.username, 'delete', 'script', req.params.id, `Script: ${s.name}`, req.ip);
+  await auditLog(req.user.id, req.user.username, 'delete', 'script', req.params.id, `Script: ${s.name}`, req.ip);
   res.json({ ok: true });
 });
 
@@ -3020,7 +3058,7 @@ app.post("/api/arsenal/tools", auth(["admin"]), async (req, res) => {
     "INSERT INTO arsenal_tools (id,key_name,label,description,arsenal_cat,kali,created_by) VALUES (?,?,?,?,?,?,?)",
     [id, key_name.trim(), label.trim(), description?.trim()||null, arsenal_cat||'util', kali||'no', req.user.id]
   );
-  await logAudit(req.user.id, req.user.username, 'create', 'arsenal_tool', id, `Herramienta: ${label}`, req.ip);
+  await auditLog(req.user.id, req.user.username, 'create', 'arsenal_tool', id, `Herramienta: ${label}`, req.ip);
   const tool = await qRow("SELECT * FROM arsenal_tools WHERE id=?", [id]);
   res.status(201).json(tool);
 });
@@ -3030,7 +3068,7 @@ app.delete("/api/arsenal/tools/:id", auth(["admin"]), async (req, res) => {
   if (!tool) return res.status(404).json({ error: "No encontrado" });
   await qRun("DELETE FROM arsenal_commands WHERE tool_key=?", [tool.key_name]);
   await qRun("DELETE FROM arsenal_tools WHERE id=?", [req.params.id]);
-  await logAudit(req.user.id, req.user.username, 'delete', 'arsenal_tool', req.params.id, `Herramienta: ${tool.label}`, req.ip);
+  await auditLog(req.user.id, req.user.username, 'delete', 'arsenal_tool', req.params.id, `Herramienta: ${tool.label}`, req.ip);
   res.json({ ok: true });
 });
 
@@ -3050,7 +3088,7 @@ app.post("/api/arsenal/commands", auth(["admin"]), async (req, res) => {
     [id, tool_key.trim(), phase||'general', category?.trim()||'General', title.trim(), command.trim(),
      description?.trim()||null, JSON.stringify(tags||[]), notes?.trim()||null, mitre_id?.trim()||null, req.user.id]
   );
-  await logAudit(req.user.id, req.user.username, 'create', 'arsenal_command', id, `Comando: ${title}`, req.ip);
+  await auditLog(req.user.id, req.user.username, 'create', 'arsenal_command', id, `Comando: ${title}`, req.ip);
   const cmd = await qRow("SELECT c.*, u.full_name AS author_name FROM arsenal_commands c LEFT JOIN users u ON u.id=c.created_by WHERE c.id=?", [id]);
   res.status(201).json({ ...cmd, tags: cmd.tags ? JSON.parse(cmd.tags) : [] });
 });
@@ -3072,7 +3110,7 @@ app.delete("/api/arsenal/commands/:id", auth(["admin"]), async (req, res) => {
   const cmd = await qRow("SELECT * FROM arsenal_commands WHERE id=?", [req.params.id]);
   if (!cmd) return res.status(404).json({ error: "No encontrado" });
   await qRun("DELETE FROM arsenal_commands WHERE id=?", [req.params.id]);
-  await logAudit(req.user.id, req.user.username, 'delete', 'arsenal_command', req.params.id, `Comando: ${cmd.title}`, req.ip);
+  await auditLog(req.user.id, req.user.username, 'delete', 'arsenal_command', req.params.id, `Comando: ${cmd.title}`, req.ip);
   res.json({ ok: true });
 });
 
@@ -3095,7 +3133,7 @@ app.put("/api/arsenal/cmd-overrides/:id", auth(["admin"]), async (req, res) => {
      notes?.trim()||null, mitre_id?.trim()||null, req.user.id]
   );
   const row = await qRow("SELECT * FROM cmd_overrides WHERE item_id=?", [req.params.id]);
-  await logAudit(req.user.id, req.user.username, 'update', 'cmd_override', req.params.id, `Override cmd: ${req.params.id}`, req.ip);
+  await auditLog(req.user.id, req.user.username, 'update', 'cmd_override', req.params.id, `Override cmd: ${req.params.id}`, req.ip);
   res.json({ ...row, tags: row.tags ? JSON.parse(row.tags) : [] });
 });
 
@@ -3105,7 +3143,7 @@ app.delete("/api/arsenal/cmd-overrides/:id", auth(["admin"]), async (req, res) =
      ON DUPLICATE KEY UPDATE hidden=1,updated_by=VALUES(updated_by),updated_at=NOW()`,
     [req.params.id, req.user.id]
   );
-  await logAudit(req.user.id, req.user.username, 'delete', 'cmd_override', req.params.id, `Ocultar cmd built-in: ${req.params.id}`, req.ip);
+  await auditLog(req.user.id, req.user.username, 'delete', 'cmd_override', req.params.id, `Ocultar cmd built-in: ${req.params.id}`, req.ip);
   res.json({ ok: true });
 });
 
@@ -3136,7 +3174,7 @@ app.put("/api/scripts/overrides/:id", auth(["admin"]), async (req, res) => {
      notes?.trim()||null, severity||'info', script_type||'detection', req.user.id]
   );
   const row = await qRow("SELECT * FROM script_overrides WHERE item_id=?", [req.params.id]);
-  await logAudit(req.user.id, req.user.username, 'update', 'script_override', req.params.id, `Override script: ${req.params.id}`, req.ip);
+  await auditLog(req.user.id, req.user.username, 'update', 'script_override', req.params.id, `Override script: ${req.params.id}`, req.ip);
   res.json({
     ...row,
     mitre_ids:     row.mitre_ids     ? JSON.parse(row.mitre_ids)     : [],
@@ -3151,7 +3189,7 @@ app.delete("/api/scripts/overrides/:id", auth(["admin"]), async (req, res) => {
      ON DUPLICATE KEY UPDATE hidden=1,updated_by=VALUES(updated_by),updated_at=NOW()`,
     [req.params.id, req.user.id]
   );
-  await logAudit(req.user.id, req.user.username, 'delete', 'script_override', req.params.id, `Ocultar script built-in: ${req.params.id}`, req.ip);
+  await auditLog(req.user.id, req.user.username, 'delete', 'script_override', req.params.id, `Ocultar script built-in: ${req.params.id}`, req.ip);
   res.json({ ok: true });
 });
 

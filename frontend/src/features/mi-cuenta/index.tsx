@@ -130,9 +130,12 @@ export function MiCuenta() {
     onError: () => { setTotpError(t('mi_cuenta.2fa.error')); setTotpToken('') },
   })
 
+  const [disablePass, setDisablePass] = useState('')
+  const [disableCode, setDisableCode] = useState('')
   const totpDisableMutation = useMutation({
-    mutationFn: () => apiFetch('/auth/totp', { method: 'DELETE', body: JSON.stringify({}) }),
-    onSuccess: () => { toast.success(t('mi_cuenta.2fa.disabled')); setHas2FA(false) },
+    // Desactivar el 2FA pide la contraseña y un código vigente: con una sesión robada sola no alcanza.
+    mutationFn: () => apiFetch('/auth/totp', { method: 'DELETE', body: JSON.stringify({ password: disablePass, code: disableCode }) }),
+    onSuccess: () => { toast.success(t('mi_cuenta.2fa.disabled')); setHas2FA(false); setDisablePass(''); setDisableCode('') },
     onError: (e: Error) => toast.error(e.message),
   })
 
@@ -222,13 +225,19 @@ export function MiCuenta() {
                     </Button>
                   )}
                   {has2FA && (
+                    <div className='w-full space-y-2'>
+                      <Input type='password' value={disablePass} onChange={(e) => setDisablePass(e.target.value)}
+                        placeholder={t('mi_cuenta.2fa.disable_password')} autoComplete='current-password' />
+                      <Input inputMode='numeric' maxLength={6} value={disableCode} onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, ''))}
+                        placeholder={t('mi_cuenta.2fa.code_label')} autoComplete='one-time-code' />
                     <Button variant='outline' size='sm' className='w-full text-destructive hover:text-destructive'
                       onClick={() => { if (confirm(t('mi_cuenta.2fa.disable_confirm'))) totpDisableMutation.mutate() }}
-                      disabled={totpDisableMutation.isPending}>
+                      disabled={totpDisableMutation.isPending || !disablePass || disableCode.length !== 6}>
                       {totpDisableMutation.isPending && <Loader2 className='mr-2 h-3.5 w-3.5 animate-spin' />}
                       <ShieldOff className='mr-2 size-4' />
                       {t('mi_cuenta.2fa.disable')}
                     </Button>
+                    </div>
                   )}
                 </>
               ) : (
