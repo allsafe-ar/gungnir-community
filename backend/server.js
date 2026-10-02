@@ -226,6 +226,7 @@ async function initDB() {
 
   // Migración: columnas para integración CRM
   try { await qRun("ALTER TABLE users ADD COLUMN theme VARCHAR(10) NOT NULL DEFAULT 'system'"); } catch(_) {}
+  try { await qRun("ALTER TABLE users ADD COLUMN totp_ultimo_paso BIGINT NULL"); } catch(_) {}
   try { await qRun("ALTER TABLE users ADD COLUMN must_change_password TINYINT(1) NOT NULL DEFAULT 0"); } catch(_) {}
   try { await qRun("ALTER TABLE clients ADD COLUMN crm_id VARCHAR(36) NULL"); } catch(_) {}
   try { await qRun("ALTER TABLE clients ADD COLUMN crm_synced_at DATETIME NULL"); } catch(_) {}
@@ -915,9 +916,12 @@ app.post("/api/auth/login", async (req, res) => {
     return res.status(401).json({ error: "Credenciales incorrectas" });
   }
 
+  let r2fa = null;
   if (user.totp_enabled) {
     if (!totp_token) return res.status(200).json({ requires_totp: true });
-    if (!verifyTotp(user.totp_secret, totp_token)) {
+    // Un solo uso: se rechaza un codigo cuyo paso de 30 s ya se consumio (pasoMinimo = ultimo + 1).
+    r2fa = totpCanonico.verificarPaso(user.totp_secret, totp_token, { pasoMinimo: (user.totp_ultimo_paso || 0) + 1 });
+    if (!r2fa.ok) {
       // Count TOTP failure toward lockout to prevent brute-force after password is known
       const attempts = user.failed_attempts + 1;
       const locked = attempts >= 5 ? new Date(Date.now() + 15*60*1000).toISOString().slice(0,19).replace("T"," ") : null;
@@ -927,6 +931,7 @@ app.post("/api/auth/login", async (req, res) => {
   }
 
   await qRun("UPDATE users SET failed_attempts=0, locked_until=NULL, last_login=NOW() WHERE id=?", [user.id]);
+  if (r2fa) await qRun("UPDATE users SET totp_ultimo_paso=? WHERE id=?", [r2fa.paso, user.id]);
   const loginAction = user.totp_enabled ? "login_2fa" : "login";
   const loginDetail = user.totp_enabled ? `Login 2FA desde ${req.ip}` : `Login desde ${req.ip}`;
   auditLog(user.id, user.username, loginAction, "users", user.id, loginDetail, req.ip);
