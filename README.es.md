@@ -94,6 +94,12 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 | i18n: Español + Inglés | ✅ | ✅ |
 | Audit log | ✅ | ✅ |
 | Mapa de Ataque (canvas de topología de red interactivo) | ✅ | ✅ |
+| Remediación / reprueba (retest) del hallazgo: fecha límite, diff de severidad, aceptación de riesgo | ✅ | ✅ |
+| Registro de tiempo por fase y operador | ✅ | ✅ |
+| Cobertura de metodología (checklist WSTG v4.2 + PTES, % de cobertura) | ✅ | ✅ |
+| Export de capa MITRE ATT&CK Navigator (interoperable con Gjallarhorn) | ✅ | ✅ |
+| Anotaciones sobre evidencia (markup de capturas) | ✅ | ✅ |
+| Avisos de hallazgos por correo / webhook | ✅ | ✅ |
 | **Team Engagements** - membresía por engagement + visibilidad restringida por default | ❌ | ✅ |
 | **Team Engagements** - asignación de fases + feed de actividad por engagement | ❌ | ✅ |
 | **Colaboración en tiempo real** - presencia en vivo + auto-sync (WebSocket) | ❌ | ✅ |
@@ -103,6 +109,10 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 | Sync CRM AllSafe | ❌ | ✅ |
 | Dashboard de Operaciones (métricas ejecutivas, gráficos) | ❌ | ✅ |
 | Branding PDF personalizado + logo de organización | ❌ | ✅ |
+| **Puente Purple** (compara las técnicas del engagement con la capa de detección del SOC) | ❌ | ✅ |
+| **Portal de cliente** de solo lectura (enlace con token, vista saneada) | ❌ | ✅ |
+| **Bóveda de credenciales** capturadas, cifrada AES-256-GCM | ❌ | ✅ |
+| **KB de hallazgos recurrentes** por cliente | ❌ | ✅ |
 | **Multi-tenant / SaaS** (instancias aisladas por cliente, drill-down del staff) | ❌ | ✅ |
 | **Licencias** (serial, plan, tope de usuarios, vencimiento, solo-lectura al vencer) | ❌ | ✅ |
 | Research Papers (editor estructurado + integración Exploit-DB) | ✅ | ✅ |

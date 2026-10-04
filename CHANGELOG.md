@@ -3,6 +3,21 @@
 All notable changes to Gungnir Community are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/); versioning follows [SemVer](https://semver.org/).
 
+## [1.3.0] - 2026-10-04 (flujo del pentest al día con Pro)
+
+Baja a la edición Community el flujo del pentest que se construyó en la segunda vuelta de Pro.
+
+### Added
+- **Ciclo de remediación y reprueba (retest)** del hallazgo: fecha límite, reprueba passed/failed/partial, diff de severidad inicial↔retest, aceptación de riesgo con motivo, y resumen de remediación del engagement.
+- **Registro de tiempo** por fase y operador, con resumen por fase y por operador.
+- **Cobertura de metodología**: checklist OWASP WSTG v4.2 y PTES por engagement, con estado por ítem y % de cobertura.
+- **Export de capa MITRE ATT&CK Navigator** de las técnicas del engagement, interoperable con Gjallarhorn.
+- **Anotaciones sobre evidencia**: markup de capturas (rectángulos, flechas, trazo) que se guarda como evidencia nueva.
+- **Avisos de hallazgos** por correo y/o webhook al superar un piso de severidad, configurables en Configuración. Webhook con validación SSRF. Requiere `nodemailer` y, para el correo, las variables SMTP_* del `.env`.
+
+### Changed
+- `/api/health` ahora reporta la versión real desde `package.json`.
+
 ## [1.2.1] - 2026-09-22
 
 ### Security

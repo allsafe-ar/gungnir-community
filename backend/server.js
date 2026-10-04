@@ -963,7 +963,8 @@ async function ensurePhases(engagementId) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // ── Health ────────────────────────────────────────────────────────────────────
-app.get("/api/health", (_, res) => res.json({ ok: true, system: "Gungnir", version: "0.1.0" }));
+const APP_VERSION = require("./package.json").version;
+app.get("/api/health", (_, res) => res.json({ ok: true, system: "Gungnir", version: APP_VERSION }));
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 app.post("/api/auth/login", async (req, res) => {

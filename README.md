@@ -95,6 +95,12 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | Audit log | ✅ | ✅ |
 | Attack Map (interactive network topology canvas) | ✅ | ✅ |
 | Research Papers (structured editor + Exploit-DB integration) | ✅ | ✅ |
+| Remediation / retest tracking (due date, severity diff, risk acceptance) | ✅ | ✅ |
+| Time tracking per phase and operator | ✅ | ✅ |
+| Methodology coverage (WSTG v4.2 + PTES checklist, coverage %) | ✅ | ✅ |
+| MITRE ATT&CK Navigator layer export (interoperable with Gjallarhorn) | ✅ | ✅ |
+| Evidence annotations (screenshot markup) | ✅ | ✅ |
+| Finding alerts by email / webhook | ✅ | ✅ |
 | **Team Engagements** - membership per engagement + restricted-by-default visibility | ❌ | ✅ |
 | **Team Engagements** - phase assignment + per-engagement activity feed | ❌ | ✅ |
 | **Real-time collaboration** - live presence + auto-sync (WebSocket) | ❌ | ✅ |
@@ -104,6 +110,10 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | AllSafe CRM sync | ❌ | ✅ |
 | Operations dashboard (exec metrics, charts) | ❌ | ✅ |
 | Custom PDF branding + org logo | ❌ | ✅ |
+| **Purple bridge** (compare engagement techniques against the SOC detection layer) | ❌ | ✅ |
+| **Client portal** read-only (tokenized link, sanitized view) | ❌ | ✅ |
+| **Credential vault** for captured creds, AES-256-GCM encrypted | ❌ | ✅ |
+| **Recurring-findings KB** per client | ❌ | ✅ |
 | **Multi-tenant / SaaS hosting** (isolated per-client instances, staff drill-down) | ❌ | ✅ |
 | **Licensing** (serial, plan, user limit, expiry, read-only on expiry) | ❌ | ✅ |
 
