@@ -4,7 +4,8 @@
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { Upload, X, FileText, Image, File, Trash2, Loader2, Paperclip, Download } from 'lucide-react'
+import { Upload, X, FileText, Image, File, Trash2, Loader2, Paperclip, Download, PenLine } from 'lucide-react'
+import { AnnotateDialog } from './annotate-dialog'
 import { useTranslation } from 'react-i18next'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
@@ -107,6 +108,7 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
   const [evidences, setEvidences] = useState<Evidence[]>([])
   const [loading, setLoading]     = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [annotate, setAnnotate]   = useState<{ url: string; phase: string } | null>(null)
 
   // Upload form state
   const [pendingFile, setPendingFile] = useState<File | null>(null)
@@ -336,6 +338,15 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
                             </p>
                           </div>
                           <div className='flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0'>
+                            {ev.file_type?.startsWith('image/') && (
+                              <button
+                                onClick={() => setAnnotate({ url: `${API_BASE}/uploads/${ev.filename}?token=${localStorage.getItem('gungnir_token')}`, phase: ev.phase_type || 'general' })}
+                                className='rounded p-1 text-muted-foreground hover:text-foreground transition'
+                                title={t('evidence.annotate')}
+                              >
+                                <PenLine className='h-3.5 w-3.5' />
+                              </button>
+                            )}
                             <button
                               onClick={() => handleDownload(ev)}
                               className='rounded p-1 text-muted-foreground hover:text-foreground transition'
@@ -361,6 +372,16 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
           )}
         </div>
       </SheetContent>
+      {annotate && (
+        <AnnotateDialog
+          open={!!annotate}
+          onOpenChange={v => { if (!v) setAnnotate(null) }}
+          srcUrl={annotate.url}
+          engagementId={engagementId}
+          phase={annotate.phase}
+          onSaved={load}
+        />
+      )}
     </Sheet>
   )
 }

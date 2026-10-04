@@ -4,8 +4,11 @@ import {
   CheckCircle2, Circle, Clock,
   ArrowLeft, Terminal, Upload, Crosshair,
   ShieldAlert, Target, Settings, Pencil, Check, X, Download, Paperclip, Map,
+  Timer, ListChecks,
 } from 'lucide-react'
 import { AttackMap } from '@/features/attack-map/components/AttackMap'
+import { TimeSheet } from './time-sheet'
+import { MethodologySheet } from './methodology-sheet'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -107,6 +110,8 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
   const [evidenceOpen, setEvidenceOpen]   = useState(false)
   // Técnicas sheet
   const [tecnicasOpen, setTecnicasOpen]   = useState(false)
+  const [timeOpen, setTimeOpen]           = useState(false)
+  const [methodologyOpen, setMethodologyOpen] = useState(false)
 
   const [evidenceCounts, setEvidenceCounts] = useState<Record<string, number>>({})
   const [attackMapOpen, setAttackMapOpen] = useState(false)
@@ -348,6 +353,14 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
             {t('eng.techniques')}
           </Button>
           <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
+            onClick={() => setTimeOpen(true)}>
+            <Timer className='mr-1.5 size-3' />{t('eng.time_tracking')}
+          </Button>
+          <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
+            onClick={() => setMethodologyOpen(true)}>
+            <ListChecks className='mr-1.5 size-3' />{t('eng.methodology')}
+          </Button>
+          <Button size='sm' variant='ghost' className='w-full text-xs h-8 text-muted-foreground'
             onClick={() => setAttackMapOpen(true)}>
             <Map className='mr-1.5 size-3' />Attack Map
           </Button>
@@ -531,6 +544,17 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
         onOpenChange={setTecnicasOpen}
         engagementId={engagementId}
         currentPhaseType={activePhase}
+      />
+      <TimeSheet
+        open={timeOpen}
+        onOpenChange={setTimeOpen}
+        engagementId={engagementId}
+        currentPhase={activePhase}
+      />
+      <MethodologySheet
+        open={methodologyOpen}
+        onOpenChange={setMethodologyOpen}
+        engagementId={engagementId}
       />
     </div>
   )

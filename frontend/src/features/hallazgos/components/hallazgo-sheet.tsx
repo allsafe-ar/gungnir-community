@@ -49,6 +49,18 @@ interface HallazgoData {
   exploitability: string
   cvss_vector_31: string
   cvss_score_31: number
+  remediation_due_date: string
+}
+
+// Estado de la reprueba de un hallazgo (ortogonal al status del reporte).
+interface RetestInfo {
+  initial_severity: string | null
+  retest_status: string
+  retest_severity: string | null
+  retest_notes: string | null
+  retested_at: string | null
+  risk_accepted_reason: string | null
+  risk_accepted_at: string | null
 }
 
 function empty(defaultPhase = 'scanning'): HallazgoData {
@@ -73,6 +85,7 @@ function empty(defaultPhase = 'scanning'): HallazgoData {
     exploitability: 'theoretical',
     cvss_vector_31: vectorToString(v),
     cvss_score_31: 9.8,
+    remediation_due_date: '',
   }
 }
 
@@ -119,6 +132,10 @@ export function HallazgoSheet({
   const [templateOpen, setTemplateOpen] = useState(false)
   const [cveId, setCveId] = useState('')
   const [cveLoading, setCveLoading] = useState(false)
+  const [retest, setRetest] = useState<RetestInfo | null>(null)
+  const [retestNotes, setRetestNotes] = useState('')
+  const [riskReason, setRiskReason] = useState('')
+  const [retesting, setRetesting] = useState(false)
 
   const PHASES = [
     { value: 'planning',          label: t('phase.planning') },
@@ -185,6 +202,16 @@ export function HallazgoSheet({
             exploitability:       String(f.exploitability ?? 'theoretical'),
             cvss_vector_31:       String(f.cvss_vector_31 ?? vectorToString(DEFAULT_VECTOR)),
             cvss_score_31:        Number(f.cvss_score_31 ?? 0),
+            remediation_due_date: String(f.remediation_due_date ?? '').slice(0, 10),
+          })
+          setRetest({
+            initial_severity:     f.initial_severity ? String(f.initial_severity) : null,
+            retest_status:        String(f.retest_status ?? 'not_retested'),
+            retest_severity:      f.retest_severity ? String(f.retest_severity) : null,
+            retest_notes:         f.retest_notes ? String(f.retest_notes) : null,
+            retested_at:          f.retested_at ? String(f.retested_at) : null,
+            risk_accepted_reason: f.risk_accepted_reason ? String(f.risk_accepted_reason) : null,
+            risk_accepted_at:     f.risk_accepted_at ? String(f.risk_accepted_at) : null,
           })
           const parsed = stringToVector(String(f.cvss_vector_31 ?? ''))
           if (parsed) setCvssVec(parsed)
@@ -329,6 +356,61 @@ export function HallazgoSheet({
       toast.error(t('common.error'))
     } finally {
       setDeleting(false)
+    }
+  }
+
+  // Relee el hallazgo para refrescar status y datos de reprueba tras una acción.
+  const recargar = async () => {
+    if (!hallazgoId) return
+    try {
+      const f = await apiFetch<Record<string, unknown>>(`/engagements/${engagementId}/findings/${hallazgoId}`)
+      setForm(p => ({ ...p, status: String(f.status ?? p.status), severity: String(f.severity ?? p.severity) }))
+      setRetest({
+        initial_severity:     f.initial_severity ? String(f.initial_severity) : null,
+        retest_status:        String(f.retest_status ?? 'not_retested'),
+        retest_severity:      f.retest_severity ? String(f.retest_severity) : null,
+        retest_notes:         f.retest_notes ? String(f.retest_notes) : null,
+        retested_at:          f.retested_at ? String(f.retested_at) : null,
+        risk_accepted_reason: f.risk_accepted_reason ? String(f.risk_accepted_reason) : null,
+        risk_accepted_at:     f.risk_accepted_at ? String(f.risk_accepted_at) : null,
+      })
+    } catch { /* noop */ }
+  }
+
+  const handleRetest = async (result: 'passed' | 'failed' | 'partial') => {
+    if (!hallazgoId) return
+    setRetesting(true)
+    try {
+      await apiFetch(`/engagements/${engagementId}/findings/${hallazgoId}/retest`, {
+        method: 'POST', body: JSON.stringify({ result, notes: retestNotes || undefined }),
+      })
+      setRetestNotes('')
+      await recargar()
+      onSaved?.()
+      toast.success(t('finding.retest_done'))
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : t('finding.retest_error'))
+    } finally {
+      setRetesting(false)
+    }
+  }
+
+  const handleAcceptRisk = async () => {
+    if (!hallazgoId) return
+    if (!riskReason.trim()) { toast.error(t('finding.risk_reason_required')); return }
+    setRetesting(true)
+    try {
+      await apiFetch(`/engagements/${engagementId}/findings/${hallazgoId}/accept-risk`, {
+        method: 'POST', body: JSON.stringify({ reason: riskReason }),
+      })
+      setRiskReason('')
+      await recargar()
+      onSaved?.()
+      toast.success(t('finding.risk_accepted_done'))
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : t('finding.save_error'))
+    } finally {
+      setRetesting(false)
     }
   }
 
@@ -604,6 +686,75 @@ export function HallazgoSheet({
             <div className='space-y-4'>
               <MdField label={t('finding.label_recommendation')} value={form.recommendation} onChange={set('recommendation')} rows={6}
                 placeholder={'• Implementar prepared statements / ORM en todas las consultas\n• Validar y sanitizar inputs del lado del servidor\n• Aplicar principio de menor privilegio en cuentas de BD'} />
+
+              <div className='space-y-1.5'>
+                <Label>{t('finding.label_due_date')}</Label>
+                <Input type='date' value={form.remediation_due_date} onChange={set('remediation_due_date')} className='w-48' />
+                <p className='text-[11px] text-muted-foreground'>{t('finding.due_date_hint')}</p>
+              </div>
+
+              {isEdit && (
+                <>
+                  <Separator />
+                  <div className='space-y-3'>
+                    <div className='flex items-center gap-2'>
+                      <Label className='text-sm font-semibold'>{t('finding.retest_title')}</Label>
+                      {retest && retest.retest_status !== 'not_retested' && (
+                        <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-bold',
+                          retest.retest_status === 'passed' ? 'bg-green-500/10 text-green-600 border-green-500/30'
+                          : retest.retest_status === 'failed' ? 'bg-red-500/10 text-red-500 border-red-500/30'
+                          : 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30')}>
+                          {t(`finding.retest_${retest.retest_status}`)}
+                        </span>
+                      )}
+                    </div>
+
+                    {retest && retest.retest_status !== 'not_retested' && (
+                      <div className='rounded-md border border-border bg-muted/20 p-3 space-y-1.5 text-xs'>
+                        {retest.initial_severity && retest.initial_severity !== (retest.retest_severity ?? form.severity) && (
+                          <p className='flex items-center gap-1.5'>
+                            <span className='text-muted-foreground'>{t('finding.retest_diff')}</span>
+                            <span className='font-semibold'>{SEVERITIES.find(s => s.value === retest.initial_severity)?.label ?? retest.initial_severity}</span>
+                            <span className='text-muted-foreground'>→</span>
+                            <span className='font-semibold'>{SEVERITIES.find(s => s.value === (retest.retest_severity ?? form.severity))?.label ?? (retest.retest_severity ?? form.severity)}</span>
+                          </p>
+                        )}
+                        {retest.retested_at && <p className='text-muted-foreground'>{t('finding.retest_at')} {new Date(retest.retested_at).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>}
+                        {retest.retest_notes && <p className='text-foreground/80 whitespace-pre-wrap'>{retest.retest_notes}</p>}
+                      </div>
+                    )}
+
+                    <Textarea value={retestNotes} onChange={e => setRetestNotes(e.target.value)} rows={2}
+                      placeholder={t('finding.retest_notes_placeholder')} />
+                    <div className='flex flex-wrap gap-2'>
+                      <Button size='sm' variant='outline' disabled={retesting} onClick={() => handleRetest('passed')}
+                        className='border-green-500/30 text-green-600 hover:bg-green-500/10'>{t('finding.retest_mark_passed')}</Button>
+                      <Button size='sm' variant='outline' disabled={retesting} onClick={() => handleRetest('partial')}
+                        className='border-yellow-500/30 text-yellow-600 hover:bg-yellow-500/10'>{t('finding.retest_mark_partial')}</Button>
+                      <Button size='sm' variant='outline' disabled={retesting} onClick={() => handleRetest('failed')}
+                        className='border-red-500/30 text-red-500 hover:bg-red-500/10'>{t('finding.retest_mark_failed')}</Button>
+                    </div>
+                  </div>
+
+                  <Separator />
+                  <div className='space-y-2'>
+                    <Label className='text-sm font-semibold'>{t('finding.risk_title')}</Label>
+                    {retest?.risk_accepted_at ? (
+                      <div className='rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs space-y-1'>
+                        <p className='font-semibold text-amber-600 dark:text-amber-400'>{t('finding.risk_accepted_on')} {new Date(retest.risk_accepted_at).toLocaleDateString('es-AR')}</p>
+                        {retest.risk_accepted_reason && <p className='text-foreground/80 whitespace-pre-wrap'>{retest.risk_accepted_reason}</p>}
+                      </div>
+                    ) : (
+                      <>
+                        <Textarea value={riskReason} onChange={e => setRiskReason(e.target.value)} rows={2}
+                          placeholder={t('finding.risk_reason_placeholder')} />
+                        <Button size='sm' variant='outline' disabled={retesting} onClick={handleAcceptRisk}
+                          className='border-amber-500/30 text-amber-600 hover:bg-amber-500/10'>{t('finding.risk_accept_btn')}</Button>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

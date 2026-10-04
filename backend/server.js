@@ -23,6 +23,9 @@ const https    = require("https");
 
 // ── Integration modules ───────────────────────────────────────────────────────
 const reconInt   = require("./integrations/recon");
+const correo         = require("./correo");
+const notificaciones = require("./notificaciones");
+const { CATALOGOS: METODOLOGIAS } = require("./data/metodologias");
 
 const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
@@ -182,6 +185,30 @@ function auth(roles = []) {
 }
 
 const upload = multer({ dest: UPLOADS_DIR, limits: { fileSize: 50*1024*1024 } });
+
+// ── Notificaciones de hallazgos (correo/webhook) ──────────────────────────────
+// Config SMTP desde el entorno (Community es instalación simple); si no está, no se manda correo.
+function leerConfigSMTP() {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER) return { sistema: "Gungnir" };
+  return {
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT || 465,
+    secure: String(process.env.SMTP_SECURE ?? "true") !== "false",
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    sistema: "Gungnir",
+  };
+}
+// `staffOnly` no aplica en Community (instalación simple, sin multi-tenant): el admin ya está
+// filtrado por auth(["admin"]) en las rutas de config.
+notificaciones.montar(app, { auth, staffOnly: () => true, qRow, qRun, auditLog });
+const _notificador = notificaciones.crear({
+  qRow, correo, leerConfigSMTP,
+  rutaLogo: __dirname + "/assets/allsafe-mail.png",
+  urlBase: process.env.APP_URL || "",
+});
+const notificarHallazgo = _notificador.avisarHallazgo;
 
 // ── DB Init ───────────────────────────────────────────────────────────────────
 async function initDB() {
@@ -713,6 +740,48 @@ async function initDB() {
   try { await qRun(`ALTER TABLE scope_items ADD COLUMN vuln_summary TEXT NULL DEFAULT NULL`); } catch(_) {}
   // ── Migración: engagement_targets — agregar 'parrot' al ENUM os_type ─────
   try { await qRun(`ALTER TABLE engagement_targets MODIFY os_type ENUM('windows','windowsserver','linux','ubuntu','debian','kali','parrot','arch','fedora','redhat','macos','router','server','firewall','switch','printer','nas','iot','camera','android','ios','freebsd','other') NOT NULL DEFAULT 'other'`); } catch(_) {}
+
+  // ── Migración: findings — ciclo de remediación y reprueba (retest) ───────
+  try { await qRun(`ALTER TABLE findings ADD COLUMN remediation_due_date DATE NULL DEFAULT NULL`); } catch(_) {}
+  try { await qRun(`ALTER TABLE findings ADD COLUMN initial_severity ENUM('critical','high','medium','low','info') NULL DEFAULT NULL`); } catch(_) {}
+  try { await qRun(`ALTER TABLE findings ADD COLUMN retest_status ENUM('not_retested','passed','failed','partial') NOT NULL DEFAULT 'not_retested'`); } catch(_) {}
+  try { await qRun(`ALTER TABLE findings ADD COLUMN retest_severity ENUM('critical','high','medium','low','info') NULL DEFAULT NULL`); } catch(_) {}
+  try { await qRun(`ALTER TABLE findings ADD COLUMN retest_notes LONGTEXT NULL DEFAULT NULL`); } catch(_) {}
+  try { await qRun(`ALTER TABLE findings ADD COLUMN retested_at DATETIME NULL DEFAULT NULL`); } catch(_) {}
+  try { await qRun(`ALTER TABLE findings ADD COLUMN retested_by VARCHAR(36) NULL DEFAULT NULL`); } catch(_) {}
+  try { await qRun(`ALTER TABLE findings ADD COLUMN risk_accepted_reason TEXT NULL DEFAULT NULL`); } catch(_) {}
+  try { await qRun(`ALTER TABLE findings ADD COLUMN risk_accepted_by VARCHAR(36) NULL DEFAULT NULL`); } catch(_) {}
+  try { await qRun(`ALTER TABLE findings ADD COLUMN risk_accepted_at DATETIME NULL DEFAULT NULL`); } catch(_) {}
+  try { await qRun(`UPDATE findings SET initial_severity=severity WHERE initial_severity IS NULL`); } catch(_) {}
+
+  // ── Registro de tiempo por fase y operador ───────────────────────────────
+  await qRun(`CREATE TABLE IF NOT EXISTS time_entries (
+    id VARCHAR(36) PRIMARY KEY,
+    engagement_id VARCHAR(36) NOT NULL,
+    phase_type VARCHAR(50) NULL,
+    custom_phase_id VARCHAR(36) NULL,
+    user_id VARCHAR(36),
+    minutes INT NOT NULL DEFAULT 0,
+    note VARCHAR(500) NULL,
+    worked_on DATE NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_te_eng (engagement_id),
+    FOREIGN KEY (engagement_id) REFERENCES engagements(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
+  // ── Cobertura de metodología (checklist WSTG / PTES) por engagement ──────
+  await qRun(`CREATE TABLE IF NOT EXISTS methodology_checks (
+    id VARCHAR(36) PRIMARY KEY,
+    engagement_id VARCHAR(36) NOT NULL,
+    framework VARCHAR(20) NOT NULL,
+    item_key VARCHAR(80) NOT NULL,
+    status ENUM('pending','tested','not_applicable') NOT NULL DEFAULT 'pending',
+    note VARCHAR(1000) NULL,
+    updated_by VARCHAR(36),
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_mc (engagement_id, framework, item_key),
+    FOREIGN KEY (engagement_id) REFERENCES engagements(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
   // ── Fases - notas y comandos por fase del engagement ─────────────────────
   await qRun(`CREATE TABLE IF NOT EXISTS engagement_phases (
@@ -1895,20 +1964,26 @@ app.post("/api/engagements/:id/findings", auth(ESCRIBEN), async (req, res) => {
   await qRun(
     `INSERT INTO findings (id,engagement_id,phase_type,title,description,steps_to_reproduce,
       affected_asset,cvss_vector_31,cvss_score_31,cvss_vector_40,cvss_score_40,
-      severity,business_risk,exploitability,cwe_id,cwe_name,owasp_category,owasp_year,
+      severity,initial_severity,business_risk,exploitability,cwe_id,cwe_name,owasp_category,owasp_year,
       mitre_tactic,mitre_technique_id,mitre_technique_name,
       recommendation,executive_summary,references_list,status,created_by)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     [fid, req.params.id, phase_type||null, title, description||null, steps_to_reproduce||null,
      affected_asset||null, cvss_vector_31||null, cvss_score_31||null, cvss_vector_40||null, cvss_score_40||null,
-     severity||'medium', business_risk||'medium', exploitability||'theoretical',
+     severity||'medium', severity||'medium', business_risk||'medium', exploitability||'theoretical',
      cwe_id||null, cwe_name||null, owasp_category||null, owasp_year||null,
      mitre_tactic||null, mitre_technique_id||null, mitre_technique_name||null,
      recommendation||null, executive_summary||null,
      references_list?JSON.stringify(references_list):null,
      status||'open', req.user.id]
   );
-  res.status(201).json(await qRow("SELECT * FROM findings WHERE id=?", [fid]));
+  const creado = await qRow("SELECT * FROM findings WHERE id=?", [fid]);
+  // Aviso best-effort (correo/webhook) para hallazgos de severidad relevante. No corta el alta.
+  try {
+    const eng = await qRow("SELECT name FROM engagements WHERE id=?", [req.params.id]).catch(() => null);
+    notificarHallazgo(creado, eng).catch(() => {});
+  } catch { /* un aviso perdido no rompe la carga */ }
+  res.status(201).json(creado);
 });
 
 app.put("/api/engagements/:id/findings/:fid", auth(ESCRIBEN), async (req, res) => {
@@ -1922,7 +1997,8 @@ app.put("/api/engagements/:id/findings/:fid", auth(ESCRIBEN), async (req, res) =
       cvss_vector_31=?,cvss_score_31=?,cvss_vector_40=?,cvss_score_40=?,
       severity=?,business_risk=?,exploitability=?,cwe_id=?,cwe_name=?,
       owasp_category=?,owasp_year=?,mitre_tactic=?,mitre_technique_id=?,mitre_technique_name=?,
-      recommendation=?,executive_summary=?,references_list=?,phase_type=?,status=?
+      recommendation=?,executive_summary=?,references_list=?,phase_type=?,status=?,
+      remediation_due_date=?
      WHERE id=?`,
     [v('title'), vn('description'), vn('steps_to_reproduce'), vn('affected_asset'),
      vn('cvss_vector_31'), vn('cvss_score_31'), vn('cvss_vector_40'), vn('cvss_score_40'),
@@ -1931,9 +2007,69 @@ app.put("/api/engagements/:id/findings/:fid", auth(ESCRIBEN), async (req, res) =
      vn('mitre_tactic'), vn('mitre_technique_id'), vn('mitre_technique_name'),
      vn('recommendation'), vn('executive_summary'),
      b.references_list !== undefined ? (b.references_list ? JSON.stringify(b.references_list) : null) : f.references_list,
-     vn('phase_type'), v('status','open'), req.params.fid]
+     vn('phase_type'), v('status','open'), vn('remediation_due_date'), req.params.fid]
   );
   res.json(await qRow("SELECT * FROM findings WHERE id=?", [req.params.fid]));
+});
+
+// ── Reprueba (retest) + aceptación de riesgo + resumen de remediación ──────────
+app.post("/api/engagements/:id/findings/:fid/retest", auth(ESCRIBEN), async (req, res) => {
+  const f = await qRow("SELECT * FROM findings WHERE id=? AND engagement_id=?", [req.params.fid, req.params.id]);
+  if (!f) return res.status(404).json({ error: "No encontrado" });
+  const { result, retest_severity, notes } = req.body || {};
+  if (!["passed","failed","partial"].includes(result))
+    return res.status(400).json({ error: "result debe ser passed, failed o partial" });
+  const nuevoStatus = result === "passed" ? "fixed" : result === "failed" ? "open" : "in_remediation";
+  const sevValida = ["critical","high","medium","low","info"];
+  const sevRetest = result === "passed" ? "info"
+    : (retest_severity && sevValida.includes(retest_severity) ? retest_severity : f.severity);
+  await qRun(
+    `UPDATE findings SET retest_status=?, retest_severity=?, retest_notes=?,
+      retested_at=NOW(), retested_by=?, status=? WHERE id=?`,
+    [result, sevRetest, notes || null, req.user.id, nuevoStatus, req.params.fid]
+  );
+  auditLog(req.user.id, req.user.username, "finding_retest", "engagements", req.params.id, `${String(f.title).slice(0,60)} → ${result}`, req.ip);
+  res.json(await qRow("SELECT * FROM findings WHERE id=?", [req.params.fid]));
+});
+
+app.post("/api/engagements/:id/findings/:fid/accept-risk", auth(ESCRIBEN), async (req, res) => {
+  const f = await qRow("SELECT * FROM findings WHERE id=? AND engagement_id=?", [req.params.fid, req.params.id]);
+  if (!f) return res.status(404).json({ error: "No encontrado" });
+  const motivo = (req.body && req.body.reason || "").trim();
+  if (!motivo) return res.status(400).json({ error: "El motivo de la aceptación de riesgo es requerido" });
+  await qRun(
+    `UPDATE findings SET status='accepted', risk_accepted_reason=?, risk_accepted_by=?, risk_accepted_at=NOW() WHERE id=?`,
+    [motivo, req.user.id, req.params.fid]
+  );
+  auditLog(req.user.id, req.user.username, "finding_risk_accepted", "engagements", req.params.id, String(f.title).slice(0,80), req.ip);
+  res.json(await qRow("SELECT * FROM findings WHERE id=?", [req.params.fid]));
+});
+
+app.get("/api/engagements/:id/remediation-summary", auth(), async (req, res) => {
+  const rows = await qRows(
+    `SELECT id,title,severity,initial_severity,retest_status,retest_severity,
+      status,remediation_due_date,retested_at,risk_accepted_at
+     FROM findings WHERE engagement_id=?`,
+    [req.params.id]
+  );
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const resumen = {
+    total: rows.length,
+    por_retest: { not_retested: 0, passed: 0, failed: 0, partial: 0 },
+    por_status: { open: 0, in_remediation: 0, fixed: 0, accepted: 0 },
+    vencidos: 0,
+    diffs: [],
+  };
+  for (const r of rows) {
+    resumen.por_retest[r.retest_status] = (resumen.por_retest[r.retest_status] || 0) + 1;
+    resumen.por_status[r.status] = (resumen.por_status[r.status] || 0) + 1;
+    if (r.remediation_due_date && new Date(r.remediation_due_date) < hoy
+        && !["fixed","accepted"].includes(r.status)) resumen.vencidos++;
+    if (r.retest_status !== "not_retested" && r.initial_severity && r.initial_severity !== (r.retest_severity || r.severity)) {
+      resumen.diffs.push({ id: r.id, title: r.title, de: r.initial_severity, a: r.retest_severity || r.severity });
+    }
+  }
+  res.json(resumen);
 });
 
 app.delete("/api/engagements/:id/findings/:fid", auth(["admin","auditor"]), async (req, res) => {
@@ -3055,6 +3191,127 @@ app.post("/api/engagements/:id/techniques", auth(["admin","auditor","pentester"]
 app.delete("/api/engagements/:id/techniques/:techId", auth(["admin","auditor","pentester"]), async (req, res) => {
   await qRun("DELETE FROM engagement_techniques WHERE id=? AND engagement_id=?", [req.params.techId, req.params.id]);
   res.json({ ok: true });
+});
+
+// ── Export de técnicas como capa ATT&CK Navigator (interoperable con Gjallarhorn) ──
+const _COLOR_FASE = {
+  planning: "#8b5cf6", recon: "#3b82f6", scanning: "#06b6d4",
+  exploitation: "#e8192c", post_exploitation: "#f97316", reporting: "#22c55e",
+};
+app.get("/api/engagements/:id/attack-navigator.json", auth(), async (req, res) => {
+  const eng = await qRow("SELECT name FROM engagements WHERE id=?", [req.params.id]);
+  if (!eng) return res.status(404).json({ error: "Engagement no encontrado" });
+  const tecs = await qRows(
+    "SELECT mitre_id, name, tactic, phase_type, notes FROM engagement_techniques WHERE engagement_id=? AND mitre_id IS NOT NULL AND mitre_id<>''",
+    [req.params.id]
+  );
+  const vistas = new Map();
+  for (const t of tecs) { const k = String(t.mitre_id).toUpperCase().trim(); if (!vistas.has(k)) vistas.set(k, t); }
+  const techniques = [...vistas.entries()].map(([id, t]) => ({
+    techniqueID: id,
+    color: _COLOR_FASE[t.phase_type] || "#e8192c",
+    comment: [t.name, t.tactic, t.notes].filter(Boolean).join(" — ").slice(0, 500),
+    enabled: true,
+  }));
+  const layer = {
+    name: `Gungnir — ${eng.name}`.slice(0, 120),
+    versions: { attack: "14", navigator: "4.9", layer: "4.5" },
+    domain: "enterprise-attack",
+    description: `Técnicas ATT&CK ejercidas en el engagement (Gungnir)`,
+    techniques,
+    gradient: { colors: ["#ffffff", "#e8192c"], minValue: 0, maxValue: 100 },
+    legendItems: [], showTacticRowBackground: false, hideDisabled: false,
+  };
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="attack-navigator-${req.params.id}.json"`);
+  res.send(JSON.stringify(layer, null, 2));
+});
+
+// ── Registro de tiempo por fase y operador ────────────────────────────────────
+app.get("/api/engagements/:id/time", auth(), async (req, res) => {
+  const rows = await qRows(
+    `SELECT te.*, COALESCE(u.full_name, u.username) AS user_name, cp.name AS custom_phase_name
+       FROM time_entries te
+       LEFT JOIN users u ON u.id = te.user_id
+       LEFT JOIN custom_phases cp ON cp.id = te.custom_phase_id
+      WHERE te.engagement_id = ?
+      ORDER BY te.worked_on DESC, te.created_at DESC`,
+    [req.params.id]
+  );
+  const resumen = { total_minutes: 0, por_fase: {}, por_operador: {} };
+  for (const r of rows) {
+    resumen.total_minutes += r.minutes || 0;
+    const fase = r.custom_phase_name || r.phase_type || "sin_fase";
+    resumen.por_fase[fase] = (resumen.por_fase[fase] || 0) + (r.minutes || 0);
+    const quien = r.user_name || "—";
+    resumen.por_operador[quien] = (resumen.por_operador[quien] || 0) + (r.minutes || 0);
+  }
+  res.json({ entries: rows, resumen });
+});
+
+app.post("/api/engagements/:id/time", auth(ESCRIBEN), async (req, res) => {
+  const b = req.body || {};
+  let minutes = Number.isFinite(+b.minutes) ? Math.round(+b.minutes) : null;
+  if (minutes == null && Number.isFinite(+b.hours)) minutes = Math.round(+b.hours * 60);
+  if (!minutes || minutes <= 0) return res.status(400).json({ error: "Cargá los minutos u horas trabajadas" });
+  if (minutes > 24 * 60) return res.status(400).json({ error: "Una entrada no puede superar las 24 horas" });
+  const id = uuidv4();
+  await qRun(
+    `INSERT INTO time_entries (id, engagement_id, phase_type, custom_phase_id, user_id, minutes, note, worked_on)
+     VALUES (?,?,?,?,?,?,?,?)`,
+    [id, req.params.id, b.phase_type || null, b.custom_phase_id || null, req.user.id, minutes,
+     (b.note || "").toString().slice(0, 500) || null,
+     b.worked_on ? String(b.worked_on).slice(0, 10) : new Date(Date.now() - 3 * 3600 * 1000).toISOString().slice(0, 10)]
+  );
+  res.status(201).json(await qRow("SELECT * FROM time_entries WHERE id=?", [id]));
+});
+
+app.delete("/api/engagements/:id/time/:entryId", auth(ESCRIBEN), async (req, res) => {
+  const e = await qRow("SELECT user_id FROM time_entries WHERE id=? AND engagement_id=?", [req.params.entryId, req.params.id]);
+  if (!e) return res.status(404).json({ error: "No encontrado" });
+  if (!["admin", "auditor"].includes(req.user.role) && e.user_id !== req.user.id)
+    return res.status(403).json({ error: "Sólo podés borrar tus propias entradas" });
+  await qRun("DELETE FROM time_entries WHERE id=? AND engagement_id=?", [req.params.entryId, req.params.id]);
+  res.json({ ok: true });
+});
+
+// ── Cobertura de metodología (checklist WSTG / PTES) ──────────────────────────
+const _MET_ESTADOS = ["pending", "tested", "not_applicable"];
+app.get("/api/engagements/:id/methodology", auth(), async (req, res) => {
+  const framework = String(req.query.framework || "owasp_wstg");
+  const catalogo = METODOLOGIAS[framework];
+  if (!catalogo) return res.status(400).json({ error: "Framework no soportado" });
+  const guardados = await qRows(
+    "SELECT item_key, status, note FROM methodology_checks WHERE engagement_id=? AND framework=?",
+    [req.params.id, framework]
+  );
+  const porClave = new Map(guardados.map((g) => [g.item_key, g]));
+  const items = catalogo.map((it) => {
+    const g = porClave.get(it.key);
+    return { ...it, status: g?.status || "pending", note: g?.note || "" };
+  });
+  const resumen = { total: items.length, tested: 0, not_applicable: 0, pending: 0 };
+  for (const it of items) resumen[it.status] = (resumen[it.status] || 0) + 1;
+  const aplicables = resumen.total - resumen.not_applicable;
+  resumen.coverage_pct = aplicables > 0 ? Math.round((resumen.tested / aplicables) * 100) : 0;
+  res.json({ framework, items, resumen });
+});
+
+app.put("/api/engagements/:id/methodology/:itemKey", auth(ESCRIBEN), async (req, res) => {
+  const framework = String((req.body && req.body.framework) || "owasp_wstg");
+  const catalogo = METODOLOGIAS[framework];
+  if (!catalogo) return res.status(400).json({ error: "Framework no soportado" });
+  if (!catalogo.some((it) => it.key === req.params.itemKey))
+    return res.status(400).json({ error: "El ítem no pertenece al framework" });
+  const status = _MET_ESTADOS.includes(req.body?.status) ? req.body.status : "pending";
+  const note = (req.body?.note || "").toString().slice(0, 1000) || null;
+  await qRun(
+    `INSERT INTO methodology_checks (id, engagement_id, framework, item_key, status, note, updated_by)
+     VALUES (UUID(),?,?,?,?,?,?)
+     ON DUPLICATE KEY UPDATE status=VALUES(status), note=VALUES(note), updated_by=VALUES(updated_by)`,
+    [req.params.id, framework, req.params.itemKey, status, note, req.user.id]
+  );
+  res.json({ ok: true, item_key: req.params.itemKey, status, note });
 });
 
 // ── STATIC (producción) ───────────────────────────────────────────────────────

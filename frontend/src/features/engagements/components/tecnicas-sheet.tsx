@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react'
-import { Search, Plus, Trash2, ExternalLink, Crosshair, ChevronDown, ChevronRight } from 'lucide-react'
+import { Search, Plus, Trash2, ExternalLink, Crosshair, ChevronDown, ChevronRight, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
@@ -145,6 +145,26 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
     } catch { toast.error(t('common.error')) }
   }
 
+  // Export de la capa ATT&CK Navigator (archivo adjunto, fuera de apiFetch).
+  const exportarNavigator = async () => {
+    try {
+      const token = localStorage.getItem('gungnir_token')
+      const res = await fetch(`/api/engagements/${engagementId}/attack-navigator.json`, {
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      })
+      if (!res.ok) throw new Error()
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `attack-navigator-${engagementId}.json`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch { toast.error(t('techniques.error_export')) }
+  }
+
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -155,9 +175,18 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
             <Crosshair className='size-4 text-primary' />
             {t('techniques.title')}
           </SheetTitle>
-          <Button variant='ghost' size='icon' className='size-7' onClick={() => onOpenChange(false)}>
-            ✕
-          </Button>
+          <div className='flex items-center gap-1'>
+            {techniques.length > 0 && (
+              <Button variant='ghost' size='sm' className='h-7 gap-1.5 text-xs' onClick={exportarNavigator}
+                title={t('techniques.export_navigator_hint')}>
+                <Download className='size-3.5' />
+                {t('techniques.export_navigator')}
+              </Button>
+            )}
+            <Button variant='ghost' size='icon' className='size-7' onClick={() => onOpenChange(false)}>
+              ✕
+            </Button>
+          </div>
         </SheetHeader>
 
         {/* Tabs */}
