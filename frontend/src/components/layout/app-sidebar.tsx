@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/sidebar'
 import { AppTitle } from './app-title'
 import { sidebarData } from './data/sidebar-data'
-import { NavGroup } from './nav-group'
+import { GruposMenu } from './grupos-menu'
 import { NavUser } from './nav-user'
 import { APP_VERSION } from '@/lib/version'
 
@@ -18,10 +18,8 @@ export function AppSidebar() {
       <SidebarHeader>
         <AppTitle />
       </SidebarHeader>
-      <SidebarContent>
-        {sidebarData.navGroups.map((props) => (
-          <NavGroup key={props.title} {...props} />
-        ))}
+      <SidebarContent className='gap-1'>
+        <GruposMenu grupos={sidebarData.navGroups} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={sidebarData.user} />

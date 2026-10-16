@@ -17,6 +17,8 @@ import {
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
+// Frentes del menú: el 1 en el acento intenso, el 2 en el apagado; los grupos sin frente son
+// generales. Ver grupos-menu.tsx.
 export const sidebarData: SidebarData = {
   user: { name: '', email: '', avatar: '' },
   teams: [],
@@ -30,13 +32,23 @@ export const sidebarData: SidebarData = {
     },
     {
       title: 'nav.operations',
+      frente: 1,
       items: [
         { title: 'nav.clients',     url: '/clientes',    icon: Building2 },
         { title: 'nav.engagements', url: '/engagements', icon: ClipboardList },
       ],
     },
     {
+      title: 'nav.integrations',
+      frente: 1,
+      items: [
+        { title: 'nav.api_keys', url: '/integraciones/api-keys', icon: Key },
+        { title: 'nav.recon',    url: '/recon',                   icon: Globe },
+      ],
+    },
+    {
       title: 'nav.tools',
+      frente: 2,
       items: [
         { title: 'nav.techniques', url: '/tecnicas',   icon: Crosshair },
         { title: 'nav.arsenal',    url: '/comandos',   icon: Terminal },
@@ -47,13 +59,6 @@ export const sidebarData: SidebarData = {
         { title: 'nav.writeups',   url: '/writeups',   icon: PenSquare },
         { title: 'nav.notes',      url: '/notas',      icon: StickyNote },
         { title: 'nav.papers',     url: '/papers',     icon: GraduationCap },
-      ],
-    },
-    {
-      title: 'nav.integrations',
-      items: [
-        { title: 'nav.api_keys', url: '/integraciones/api-keys', icon: Key },
-        { title: 'nav.recon',    url: '/recon',                   icon: Globe },
       ],
     },
   ],
