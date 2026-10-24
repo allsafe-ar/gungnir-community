@@ -3,6 +3,21 @@
 All notable changes to Gungnir Community are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/); versioning follows [SemVer](https://semver.org/).
 
+## [1.3.2] - 2026-10-24
+
+### Security
+- **Node.js 24 LTS.** The Docker image moves from `node:20-alpine` to `node:24-alpine` and the install script sets up Node.js 24. Node.js 20 reached end of life and did not get the October 2026 security fixes (among them a remote code execution in the Brotli decoder). `engines` now asks for 24.22.1 or later.
+- **MySQL 8.4 LTS** in `docker-compose.yml` (was 8.0, end of life). An existing data volume is upgraded in place on first start.
+- Dependencies back to **0 known vulnerabilities** (backend and frontend, including development tooling): `nodemailer` 9 → 10, `body-parser`, `proxy-addr`, `dompurify`, `follow-redirects`, `fflate`, `zod`, `vite`, `seroval` and build/test tooling within their declared ranges.
+
+### Changed
+- README (EN/ES): requirements section, stack versions (Node.js 24, React 19, MySQL 8.4) and version badge brought up to date.
+
+## [1.3.1] - 2026-10-16
+
+### Changed
+- Menu ordered by area, with two tones of the system colour and dividers.
+
 ## [1.3.0] - 2026-10-04 (flujo del pentest al día con Pro)
 
 Baja a la edición Community el flujo del pentest que se construyó en la segunda vuelta de Pro.

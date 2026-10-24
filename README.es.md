@@ -9,11 +9,11 @@
 
   *Powered by [AllSafe Security Solutions](https://www.allsafe.com.ar)*
 
-  ![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=node.js&logoColor=white)
-  ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
-  ![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat-square&logo=mysql&logoColor=white)
+  ![Node.js](https://img.shields.io/badge/Node.js-24_LTS-339933?style=flat-square&logo=node.js&logoColor=white)
+  ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
+  ![MySQL](https://img.shields.io/badge/MySQL-8.4_LTS-4479A1?style=flat-square&logo=mysql&logoColor=white)
   ![License](https://img.shields.io/badge/License-AGPL--3.0-blue?style=flat-square)
-  ![Version](https://img.shields.io/badge/Version-1.2.0-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/Version-1.3.2-blue?style=flat-square)
 
   [![Sitio web](https://img.shields.io/badge/Sitio_web-allsafe.com.ar%2Fgungnir--community-ff3131?style=for-the-badge&labelColor=1e324d)](https://allsafe.com.ar/gungnir-community/)
 </div>
@@ -45,7 +45,7 @@ El listado completo está en [`community-engagements/`](community-engagements/) 
 
 ---
 
-## ¿Qué es Gungnir Community?
+## Qué es Gungnir Community?
 
 Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejecutar engagements profesionales:
 
@@ -65,7 +65,7 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 - **Auth** - JWT (12h), TOTP 2FA (RFC 6238), lockout de cuenta, control de acceso por rol
 - **Internacionalización** - Español (por defecto) e Inglés, configurable por usuario
 
-> ¿Buscás **Team Engagements** (colaboración multiusuario por engagement con visibilidad restringida por default, asignación de fases, feed de actividad y **presencia/sync en tiempo real por WebSocket**), **feeds de scanners Nessus/OpenVAS en vivo**, **sincronización con CRM AllSafe**, el **dashboard de Operaciones ejecutivo**, **writeups guardados y compartibles** o el **hosting SaaS multi-tenant con licenciamiento por cliente**? Esas funcionalidades están disponibles en [Gungnir Pro](https://www.allsafe.com.ar).
+> Buscás **Team Engagements** (colaboración multiusuario por engagement con visibilidad restringida por default, asignación de fases, feed de actividad y **presencia/sync en tiempo real por WebSocket**), **feeds de scanners Nessus/OpenVAS en vivo**, **sincronización con CRM AllSafe**, el **dashboard de Operaciones ejecutivo**, **writeups guardados y compartibles** o el **hosting SaaS multi-tenant con licenciamiento por cliente**? Esas funcionalidades están disponibles en [Gungnir Pro](https://www.allsafe.com.ar).
 
 ---
 
@@ -251,18 +251,29 @@ La seguridad es una característica de primer nivel - la misma base de hardening
 
 | Capa | Tecnología |
 |------|-----------|
-| Backend | Node.js + Express (single-file, arranque rápido) |
-| Frontend | React 18 + Vite + TanStack Router |
+| Backend | Node.js 24 LTS + Express (single-file, arranque rápido) |
+| Frontend | React 19 + Vite + TanStack Router |
 | UI | shadcn/ui + Tailwind CSS v4 |
 | State | Zustand (auth) + TanStack Query (server state) |
 | Gráficos | Recharts |
-| Base de datos | MariaDB / MySQL 8.0+ |
+| Base de datos | MySQL 8.4 LTS (8.0+) / MariaDB 10.11+ |
 | Auth | JWT + bcryptjs + TOTP puro JS (RFC 6238) |
 | PDF | jsPDF + html2canvas |
 | File upload | multer (evidencias, XML de scanners, logos) |
 | i18n | react-i18next |
 
 ---
+
+## Requisitos
+
+| Componente | Versión |
+|---|---|
+| Node.js | **24 LTS, 24.22.1 o posterior**. Esa versión trae los parches de seguridad de octubre de 2026. Node.js 20 está fuera de soporte y ya no recibe parches, por eso no se admite |
+| MySQL | 8.4 LTS recomendada (funciona desde 8.0). También MariaDB 10.11 o posterior |
+| Docker (opción B) | Docker Engine 24 o posterior con Compose v2. Las imágenes son `node:24-alpine` y `mysql:8.4` |
+| Sistema operativo (opción A) | Ubuntu 22.04 / 24.04 o Debian 12, con las actualizaciones de seguridad al día |
+
+Cada versión se revisa con `npm audit` en backend y frontend y sale con **0 vulnerabilidades conocidas** en sus dependencias. Mantené Node.js en el último parche de la 24 y reconstruí la imagen de Docker (`docker compose build --pull`) cuando salga uno nuevo.
 
 ## Instalación
 
@@ -396,7 +407,7 @@ Si modificás y desplegás Gungnir Community como servicio, debés publicar tus 
 
 ## Seguridad
 
-¿Encontraste una vulnerabilidad? Por favor reportala de forma privada - ver [SECURITY.md](SECURITY.md).
+Encontraste una vulnerabilidad? Por favor reportala de forma privada - ver [SECURITY.md](SECURITY.md).
 
 ---
 
