@@ -150,14 +150,14 @@ function SectionCard({
         onClick={() => setOpen(v => !v)}
         className='w-full flex items-center gap-2.5 px-4 py-2.5 bg-card/50 hover:bg-card/80 transition text-left'
       >
-        <span className='font-mono text-[9px] font-bold min-w-[18px]' style={{ color: accent }}>{num}</span>
+        <span className='font-mono text-xs font-bold min-w-[18px]' style={{ color: accent }}>{num}</span>
         <div className='h-3 w-0.5 rounded-full shrink-0' style={{ background: accent + '80' }} />
         <span className={cn('text-xs font-semibold flex-1', hasContent ? 'text-foreground' : 'text-muted-foreground')}>
           {title}
         </span>
-        {hint && !open && <span className='text-[9px] text-muted-foreground hidden lg:block truncate max-w-[200px]'>- {hint}</span>}
+        {hint && !open && <span className='text-xs text-muted-foreground hidden lg:block truncate max-w-[200px]'>- {hint}</span>}
         {hasContent && !open && (
-          <span className='text-[9px] rounded px-1.5 py-0.5 shrink-0'
+          <span className='text-xs rounded px-1.5 py-0.5 shrink-0'
             style={{ background: accent + '18', color: accent, border: `0.3px solid ${accent}40` }}>
             {value.trim().split('\n').length}L
           </span>
@@ -168,7 +168,7 @@ function SectionCard({
       </button>
       {open && (
         <div className='p-3 bg-background/50'>
-          {hint && <p className='text-[10px] text-muted-foreground mb-2'>- {hint}</p>}
+          {hint && <p className='text-xs text-muted-foreground mb-2'>- {hint}</p>}
           <Textarea
             rows={rows}
             value={value}
@@ -176,7 +176,7 @@ function SectionCard({
             placeholder={placeholder}
             className={cn(
               'bg-background border-border text-foreground placeholder:text-muted-foreground text-xs focus:border-input resize-y',
-              mono && 'font-mono text-[11px]'
+              mono && 'font-mono text-xs'
             )}
             style={{ borderColor: open ? accent + '40' : undefined }}
           />
@@ -192,7 +192,7 @@ function SavedList({ papers, onLoad, onDelete, currentId }: {
   onDelete: (id: string) => void; currentId: string | null
 }) {
   if (!papers.length)
-    return <p className='text-[11px] text-muted-foreground text-center py-4'>No hay papers guardados</p>
+    return <p className='text-xs text-muted-foreground text-center py-4'>No hay papers guardados</p>
   return (
     <div className='space-y-0.5'>
       {papers.map(p => {
@@ -204,16 +204,16 @@ function SavedList({ papers, onLoad, onDelete, currentId }: {
           )}>
             <div className='h-1.5 w-1.5 rounded-full shrink-0' style={{ background: tmpl?.accent ?? '#94a3b8' }} />
             <button onClick={() => onLoad(p.id)} className='flex-1 min-w-0 text-left'>
-              <p className={cn('text-[11px] truncate', currentId === p.id ? 'text-foreground' : 'text-foreground')}>
+              <p className={cn('text-xs truncate', currentId === p.id ? 'text-foreground' : 'text-foreground')}>
                 {p.title || '(sin título)'}
               </p>
-              <p className='text-[9px] text-muted-foreground truncate mt-0.5'>
+              <p className='text-xs text-muted-foreground truncate mt-0.5'>
                 {tmpl?.label ?? p.template}
                 {p.cve_id ? ` · ${p.cve_id}` : ''}
                 {p.cvss_score != null ? ` · CVSS ${Number(p.cvss_score).toFixed(1)}` : ''}
               </p>
             </button>
-            <span className={cn('text-[9px] rounded px-1.5 py-0.5 shrink-0', STATUS_CLS[p.status] ?? STATUS_CLS.draft)}>
+            <span className={cn('text-xs rounded px-1.5 py-0.5 shrink-0', STATUS_CLS[p.status] ?? STATUS_CLS.draft)}>
               {STATUS_LABEL[p.status] ?? p.status}
             </span>
             <button onClick={() => onDelete(p.id)}
@@ -378,7 +378,7 @@ function ExploitDBPanel() {
           href='https://www.exploit-db.com/papers'
           target='_blank'
           rel='noopener noreferrer'
-          className='flex items-center gap-1 text-[10px] px-2 py-1 rounded border transition'
+          className='flex items-center gap-1 text-xs px-2 py-1 rounded border transition'
           style={{ borderColor: EDB_GREEN + '40', color: EDB_GREEN + 'cc' }}
         >
           <ExternalLink className='h-3 w-3' />
@@ -412,7 +412,7 @@ function ExploitDBPanel() {
           <Star className='h-3 w-3' />
           Guardados
           {savedList.length > 0 && (
-            <span className='ml-1 bg-accent text-foreground rounded px-1.5 text-[9px]'>{savedList.length}</span>
+            <span className='ml-1 bg-accent text-foreground rounded px-1.5 text-xs'>{savedList.length}</span>
           )}
         </button>
       </div>
@@ -453,11 +453,11 @@ function ExploitDBPanel() {
           {results.length > 0 && (
             <div className='space-y-2'>
               <div className='flex items-center justify-between'>
-                <p className='text-[10px] text-muted-foreground uppercase tracking-widest font-bold'>
+                <p className='text-xs text-muted-foreground uppercase tracking-widest font-bold'>
                   Resultados
                 </p>
                 {total != null && (
-                  <span className='text-[10px] text-muted-foreground'>
+                  <span className='text-xs text-muted-foreground'>
                     {results.length} de {total} papers
                   </span>
                 )}
@@ -472,7 +472,7 @@ function ExploitDBPanel() {
                     className='rounded-xl border border-border bg-card/30 p-3.5 flex gap-3 hover:border-border transition'>
                     {/* EDB ID badge */}
                     <div className='shrink-0 flex flex-col items-center'>
-                      <span className='font-mono text-[9px] font-bold rounded px-1.5 py-0.5'
+                      <span className='font-mono text-xs font-bold rounded px-1.5 py-0.5'
                         style={{ background: EDB_GREEN + '18', color: EDB_GREEN, border: `0.3px solid ${EDB_GREEN}40` }}>
                         #{r.edb_id}
                       </span>
@@ -480,7 +480,7 @@ function ExploitDBPanel() {
                     {/* Info */}
                     <div className='flex-1 min-w-0'>
                       <p className='text-xs font-semibold text-foreground leading-snug'>{r.title || '(sin título)'}</p>
-                      <p className='text-[10px] text-muted-foreground mt-0.5'>
+                      <p className='text-xs text-muted-foreground mt-0.5'>
                         {r.author && <span>{r.author}</span>}
                         {r.author && r.date && <span className='mx-1'>·</span>}
                         {r.date && <span>{r.date}</span>}
@@ -493,7 +493,7 @@ function ExploitDBPanel() {
                         variant='outline'
                         onClick={() => handleDownload(r)}
                         disabled={isDownloading}
-                        className='h-7 px-2 text-[10px] border-border text-muted-foreground hover:text-foreground hover:border-input gap-1'
+                        className='h-7 px-2 text-xs border-border text-muted-foreground hover:text-foreground hover:border-input gap-1'
                       >
                         {isDownloading
                           ? <Loader2 className='h-3 w-3 animate-spin' />
@@ -504,7 +504,7 @@ function ExploitDBPanel() {
                         href={`https://www.exploit-db.com/papers/${r.edb_id}`}
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='inline-flex items-center gap-1 h-7 px-2 text-[10px] rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-input transition-colors font-medium'
+                        className='inline-flex items-center gap-1 h-7 px-2 text-xs rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-input transition-colors font-medium'
                         title='Ver en Exploit-DB'
                       >
                         <ExternalLink className='h-3 w-3' />
@@ -515,7 +515,7 @@ function ExploitDBPanel() {
                         onClick={() => handleSave(r)}
                         disabled={isSaving || isSaved}
                         className={cn(
-                          'h-7 px-2 text-[10px] gap-1 font-medium',
+                          'h-7 px-2 text-xs gap-1 font-medium',
                           isSaved
                             ? 'bg-muted text-muted-foreground cursor-default'
                             : 'text-white'
@@ -565,7 +565,7 @@ function ExploitDBPanel() {
 
           {savedList.length > 0 && (
             <>
-              <p className='text-[10px] text-muted-foreground uppercase tracking-widest font-bold'>
+              <p className='text-xs text-muted-foreground uppercase tracking-widest font-bold'>
                 Biblioteca - {savedList.length} paper{savedList.length !== 1 ? 's' : ''}
               </p>
               {savedList.map(item => {
@@ -576,7 +576,7 @@ function ExploitDBPanel() {
                     className='rounded-xl border border-border bg-card/30 p-3.5 flex gap-3 hover:border-border transition group'>
                     {/* EDB ID */}
                     <div className='shrink-0'>
-                      <span className='font-mono text-[9px] font-bold rounded px-1.5 py-0.5'
+                      <span className='font-mono text-xs font-bold rounded px-1.5 py-0.5'
                         style={{ background: EDB_GREEN + '18', color: EDB_GREEN, border: `0.3px solid ${EDB_GREEN}40` }}>
                         #{item.edb_id}
                       </span>
@@ -584,7 +584,7 @@ function ExploitDBPanel() {
                     {/* Info */}
                     <div className='flex-1 min-w-0'>
                       <p className='text-xs font-semibold text-foreground leading-snug'>{item.title || '(sin título)'}</p>
-                      <p className='text-[10px] text-muted-foreground mt-0.5'>
+                      <p className='text-xs text-muted-foreground mt-0.5'>
                         {item.author && <span>{item.author}</span>}
                         {item.author && item.edb_date && <span className='mx-1'>·</span>}
                         {item.edb_date && <span>{item.edb_date}</span>}
@@ -599,7 +599,7 @@ function ExploitDBPanel() {
                         variant='outline'
                         onClick={() => handleDownloadSaved(item)}
                         disabled={isDownloading}
-                        className='h-7 px-2 text-[10px] border-border text-muted-foreground hover:text-foreground hover:border-input gap-1'
+                        className='h-7 px-2 text-xs border-border text-muted-foreground hover:text-foreground hover:border-input gap-1'
                       >
                         {isDownloading
                           ? <Loader2 className='h-3 w-3 animate-spin' />
@@ -610,7 +610,7 @@ function ExploitDBPanel() {
                         href={`https://www.exploit-db.com/papers/${item.edb_id}`}
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='flex items-center gap-1 h-7 px-2 rounded border border-border text-muted-foreground hover:text-foreground hover:border-input text-[10px] transition'
+                        className='flex items-center gap-1 h-7 px-2 rounded border border-border text-muted-foreground hover:text-foreground hover:border-input text-xs transition'
                       >
                         <ExternalLink className='h-3 w-3' />
                         EDB
@@ -637,7 +637,7 @@ function ExploitDBPanel() {
       {/* Footer note */}
       <div className='flex items-start gap-2 rounded-lg bg-card/30 border border-border/50 p-3'>
         <Shield className='h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0' />
-        <p className='text-[11px] text-muted-foreground leading-relaxed'>
+        <p className='text-xs text-muted-foreground leading-relaxed'>
           Exploit-DB es un repositorio público de seguridad mantenido por Offensive Security.
           Los papers guardados se almacenan localmente en Gungnir para referencia rápida.
           Respetá los términos de uso y la autoría de los papers que descargues.
@@ -741,7 +741,7 @@ export function Papers() {
             <GraduationCap className='h-4 w-4' style={{ color: accent }} />
             <h1 className='font-semibold text-sm text-foreground'>Research Papers</h1>
           </div>
-          <p className='text-[11px] text-muted-foreground'>
+          <p className='text-xs text-muted-foreground'>
             Documenta investigación de seguridad para conferencias y publicación
           </p>
         </div>
@@ -750,7 +750,7 @@ export function Papers() {
         <div className='p-3 border-b border-border space-y-3 overflow-y-auto max-h-72'>
           {TEMPLATE_GROUPS.map(g => (
             <div key={g.group}>
-              <p className='text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5'>{g.group}</p>
+              <p className='text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1.5'>{g.group}</p>
               <div className='grid grid-cols-2 gap-1.5'>
                 {g.items.map(t => {
                   const active = data.template === t.id
@@ -766,7 +766,7 @@ export function Papers() {
                     >
                       <div className='flex items-center gap-1.5 mb-0.5'>
                         <div className='h-2 w-2 rounded-full shrink-0' style={{ background: active ? t.accent : '#3f3f46' }} />
-                        <p className={cn('text-[10px] font-semibold leading-tight truncate', active ? 'text-foreground' : 'text-muted-foreground')}>
+                        <p className={cn('text-xs font-semibold leading-tight truncate', active ? 'text-foreground' : 'text-muted-foreground')}>
                           {t.label}
                         </p>
                       </div>
@@ -795,7 +795,7 @@ export function Papers() {
             <FolderOpen className='h-3.5 w-3.5 text-amber-500/70 shrink-0' />
             Papers guardados
             {papers.length > 0 && (
-              <span className='ml-auto text-[10px] bg-accent text-foreground rounded px-1.5 py-0.5'>{papers.length}</span>
+              <span className='ml-auto text-xs bg-accent text-foreground rounded px-1.5 py-0.5'>{papers.length}</span>
             )}
           </button>
         </div>
@@ -810,7 +810,7 @@ export function Papers() {
         <div className='flex-1 overflow-y-auto p-3 space-y-2.5'>
 
           <div>
-            <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Título *</Label>
+            <Label className='text-xs text-muted-foreground uppercase tracking-widest'>Título *</Label>
             <Input
               ref={titleRef}
               className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8 focus:border-input'
@@ -821,11 +821,11 @@ export function Papers() {
           </div>
 
           <div>
-            <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Categoría</Label>
+            <Label className='text-xs text-muted-foreground uppercase tracking-widest'>Categoría</Label>
             <div className='mt-1 flex flex-wrap gap-1'>
               {CATEGORY_OPTIONS.map(c => (
                 <button key={c.id} onClick={() => setVal('category', c.id)}
-                  className={cn('rounded px-2 py-0.5 text-[9px] font-medium border transition-all',
+                  className={cn('rounded px-2 py-0.5 text-xs font-medium border transition-all',
                     data.category === c.id
                       ? 'border-input bg-accent text-foreground'
                       : 'border-border text-muted-foreground hover:border-border hover:text-muted-foreground'
@@ -837,7 +837,7 @@ export function Papers() {
           </div>
 
           <div>
-            <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Autor(es)</Label>
+            <Label className='text-xs text-muted-foreground uppercase tracking-widest'>Autor(es)</Label>
             <Input className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8'
               placeholder='Nombre / @handle / afiliación'
               value={data.authors ?? ''} onChange={setField('authors')} />
@@ -845,12 +845,12 @@ export function Papers() {
 
           <div className='grid grid-cols-2 gap-2'>
             <div>
-              <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Fecha</Label>
+              <Label className='text-xs text-muted-foreground uppercase tracking-widest'>Fecha</Label>
               <Input className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8'
                 value={data.date ?? ''} onChange={setField('date')} />
             </div>
             <div>
-              <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>CVE / ID</Label>
+              <Label className='text-xs text-muted-foreground uppercase tracking-widest'>CVE / ID</Label>
               <Input className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8 font-mono'
                 placeholder='CVE-2024-...' value={data.cve_id ?? ''} onChange={setField('cve_id')} />
             </div>
@@ -858,7 +858,7 @@ export function Papers() {
 
           <div className='grid grid-cols-2 gap-2'>
             <div>
-              <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>CVSS Score</Label>
+              <Label className='text-xs text-muted-foreground uppercase tracking-widest'>CVSS Score</Label>
               <Input type='number' step='0.1' min='0' max='10'
                 className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8 font-mono'
                 placeholder='9.8'
@@ -866,7 +866,7 @@ export function Papers() {
                 onChange={e => setVal('cvss_score', e.target.value ? parseFloat(e.target.value) : undefined)} />
             </div>
             <div>
-              <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Estado</Label>
+              <Label className='text-xs text-muted-foreground uppercase tracking-widest'>Estado</Label>
               <select
                 value={data.status ?? 'draft'}
                 onChange={e => setVal('status', e.target.value)}
@@ -877,20 +877,20 @@ export function Papers() {
           </div>
 
           <div>
-            <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>CVSS Vector</Label>
+            <Label className='text-xs text-muted-foreground uppercase tracking-widest'>CVSS Vector</Label>
             <Input className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8 font-mono'
               placeholder='CVSS:3.1/AV:N/AC:L/PR:N/UI:N/...'
               value={data.cvss_vector ?? ''} onChange={setField('cvss_vector')} />
           </div>
 
           <div>
-            <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Advisory URL</Label>
+            <Label className='text-xs text-muted-foreground uppercase tracking-widest'>Advisory URL</Label>
             <Input className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8'
               placeholder='https://...' value={data.advisory_url ?? ''} onChange={setField('advisory_url')} />
           </div>
 
           <div>
-            <Label className='text-[9px] text-muted-foreground uppercase tracking-widest'>Tags</Label>
+            <Label className='text-xs text-muted-foreground uppercase tracking-widest'>Tags</Label>
             <Input className='mt-1 bg-card/60 border-border text-foreground placeholder:text-muted-foreground text-xs h-8'
               placeholder='RCE, SMB, Windows, CVE, ...'
               value={data.tags ?? ''} onChange={setField('tags')} />
@@ -900,7 +900,7 @@ export function Papers() {
         {/* Bottom actions */}
         <div className='border-t border-border p-3 space-y-2'>
           {currentId && (
-            <div className='flex items-center gap-1.5 text-[10px] text-amber-700/80 dark:text-amber-400/80 bg-amber-500/10 rounded px-2 py-1 border border-amber-500/20'>
+            <div className='flex items-center gap-1.5 text-xs text-amber-700/80 dark:text-amber-400/80 bg-amber-500/10 rounded px-2 py-1 border border-amber-500/20'>
               <FolderOpen className='h-3 w-3 shrink-0' />
               <span className='truncate'>Editando: {papers.find(p => p.id === currentId)?.title || 'Paper guardado'}</span>
             </div>
@@ -948,7 +948,7 @@ export function Papers() {
             <GraduationCap className='h-3.5 w-3.5' />
             Editor
             {filledSecs > 0 && (
-              <span className='ml-1 text-[9px] rounded px-1'
+              <span className='ml-1 text-xs rounded px-1'
                 style={{ background: accent + '20', color: accent }}>
                 {filledSecs}/16
               </span>
@@ -992,7 +992,7 @@ export function Papers() {
                 {filledSecs > 0 && (
                   <div className='text-right shrink-0'>
                     <p className='text-xs font-semibold' style={{ color: accent }}>{filledSecs}</p>
-                    <p className='text-[9px] text-muted-foreground'>secciones</p>
+                    <p className='text-xs text-muted-foreground'>secciones</p>
                   </div>
                 )}
               </div>
@@ -1049,7 +1049,7 @@ export function Papers() {
               {/* Note */}
               <div className='flex items-start gap-2 rounded-lg bg-card/30 border border-border/50 p-3'>
                 <Shield className='h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0' />
-                <p className='text-[11px] text-muted-foreground leading-relaxed'>
+                <p className='text-xs text-muted-foreground leading-relaxed'>
                   Seguí un proceso de responsible disclosure antes de publicar investigaciones de vulnerabilidades. Black Hat indica que el contenido generado por LLM no puede ser el cuerpo principal de una submission - usá esta herramienta para estructurar y formatear, pero la investigación debe ser tuya.
                 </p>
               </div>

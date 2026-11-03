@@ -320,7 +320,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
                   <span className='text-xs font-medium'>{phaseLabel[phaseKey] ?? phaseKey}</span>
                 </div>
                 {phaseData && (phaseData.logs_count > 0 || phaseData.findings_count > 0 || (evidenceCounts[phaseKey] ?? 0) > 0) && (
-                  <div className='ml-5 mt-0.5 flex gap-2 text-[10px] text-muted-foreground'>
+                  <div className='ml-5 mt-0.5 flex gap-2 text-xs text-muted-foreground'>
                     {phaseData.logs_count > 0 && <span>{phaseData.logs_count} log{phaseData.logs_count !== 1 ? 's' : ''}</span>}
                     {phaseData.findings_count > 0 && <span>{phaseData.findings_count} hall.</span>}
                     {(evidenceCounts[phaseKey] ?? 0) > 0 && <span className='text-primary/70'>{evidenceCounts[phaseKey]} ev.</span>}
@@ -424,7 +424,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
                   <Paperclip className='mr-1.5 size-3' />
                   {t('eng.evidence')}
                   {(evidenceCounts[activePhase] ?? 0) > 0 && (
-                    <span className='ml-1.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 leading-none'>
+                    <span className='ml-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold px-1.5 py-0.5 leading-none'>
                       {evidenceCounts[activePhase]}
                     </span>
                   )}
@@ -444,7 +444,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
                   <div key={log.id} className='rounded-md border border-border bg-muted/30 px-3 py-2'>
                     <div className='flex items-center gap-2 text-xs text-muted-foreground mb-1'>
                       <span className='font-mono'>{new Date(log.logged_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</span>
-                      {log.tool && <Badge variant='outline' className='text-[10px] px-1 py-0 h-4'>{log.tool}</Badge>}
+                      {log.tool && <Badge variant='outline' className='text-xs px-1 py-0 h-4'>{log.tool}</Badge>}
                       {log.target && <span className='font-mono'>{log.target}</span>}
                     </div>
                     {log.command && <p className='font-mono text-xs text-foreground/80 break-all'>{log.command}</p>}
@@ -466,7 +466,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
                     className='w-full flex items-center gap-3 rounded-md border border-border px-3 py-2 hover:bg-accent transition-colors text-left'
                     onClick={() => { setHallazgoId(f.id); setHallazgoOpen(true) }}
                   >
-                    <span className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold ${SEV_COLOR[f.severity]}`}>
+                    <span className={`shrink-0 rounded border px-1.5 py-0.5 text-xs font-bold ${SEV_COLOR[f.severity]}`}>
                       {sevLabel[f.severity] ?? f.severity}
                     </span>
                     <span className='text-sm flex-1 truncate'>{f.title}</span>

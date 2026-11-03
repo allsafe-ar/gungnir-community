@@ -355,13 +355,13 @@ export function Biblioteca() {
           <div className='space-y-2'>
             <div className='flex flex-wrap gap-1'>
               <button onClick={() => setCatFilter('all')}
-                className={cn('rounded px-2 py-0.5 text-[10px] font-medium border transition-colors',
+                className={cn('rounded px-2 py-0.5 text-xs font-medium border transition-colors',
                   catFilter === 'all' ? 'bg-primary/10 text-primary border-primary/30' : 'border-border text-muted-foreground hover:border-primary/30')}>
                 Todas
               </button>
               {CATEGORIES.map(c => (
                 <button key={c} onClick={() => setCatFilter(c)}
-                  className={cn('rounded px-2 py-0.5 text-[10px] font-medium border transition-colors',
+                  className={cn('rounded px-2 py-0.5 text-xs font-medium border transition-colors',
                     catFilter === c ? 'bg-primary/10 text-primary border-primary/30' : 'border-border text-muted-foreground hover:border-primary/30')}>
                   {c}
                 </button>
@@ -369,13 +369,13 @@ export function Biblioteca() {
             </div>
             <div className='flex gap-1'>
               <button onClick={() => setSevFilter('all')}
-                className={cn('rounded px-2 py-0.5 text-[10px] font-medium border transition-colors',
+                className={cn('rounded px-2 py-0.5 text-xs font-medium border transition-colors',
                   sevFilter === 'all' ? 'bg-primary/10 text-primary border-primary/30' : 'border-border text-muted-foreground hover:border-primary/30')}>
                 Todas
               </button>
               {SEVERITIES.map(s => (
                 <button key={s} onClick={() => setSevFilter(s)}
-                  className={cn('rounded px-2 py-0.5 text-[10px] font-bold border transition-colors',
+                  className={cn('rounded px-2 py-0.5 text-xs font-bold border transition-colors',
                     sevFilter === s ? SEV_COLOR[s] : 'border-border text-muted-foreground hover:border-primary/30')}>
                   {SEV_LABEL[s]}
                 </button>
@@ -401,13 +401,13 @@ export function Biblioteca() {
                     : 'border-transparent hover:bg-sidebar-accent/50'
                 )}>
                 <div className='flex items-start justify-between gap-2'>
-                  <span className={cn('shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold', SEV_COLOR[t.severity])}>
+                  <span className={cn('shrink-0 rounded border px-1.5 py-0.5 text-xs font-bold', SEV_COLOR[t.severity])}>
                     {SEV_LABEL[t.severity]}
                   </span>
-                  <span className='text-[10px] text-muted-foreground shrink-0'>{t.cvss_score.toFixed(1)}</span>
+                  <span className='text-xs text-muted-foreground shrink-0'>{t.cvss_score.toFixed(1)}</span>
                 </div>
                 <p className='text-xs font-medium mt-1.5 leading-tight'>{t.title}</p>
-                <p className='text-[10px] text-muted-foreground mt-0.5'>{t.category} · {t.cwe_id}</p>
+                <p className='text-xs text-muted-foreground mt-0.5'>{t.category} · {t.cwe_id}</p>
               </button>
             ))
           )}
@@ -456,7 +456,7 @@ export function Biblioteca() {
             {/* Tags */}
             <div className='flex flex-wrap gap-1.5'>
               {selected.tags.map(tag => (
-                <span key={tag} className='text-[10px] bg-muted border border-border rounded px-2 py-0.5 text-muted-foreground'>
+                <span key={tag} className='text-xs bg-muted border border-border rounded px-2 py-0.5 text-muted-foreground'>
                   {tag}
                 </span>
               ))}

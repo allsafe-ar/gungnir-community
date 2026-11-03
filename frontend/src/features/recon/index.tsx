@@ -80,7 +80,7 @@ function CopyBtn({ text }: { text: string }) {
 
 function Tag({ children, color = '#6b7280' }: { children: React.ReactNode; color?: string }) {
   return (
-    <span className='inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold border' style={{ color, borderColor: `${color}40`, background: `${color}15` }}>
+    <span className='inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold border' style={{ color, borderColor: `${color}40`, background: `${color}15` }}>
       {children}
     </span>
   )
@@ -107,7 +107,7 @@ function Kv({ label, value }: { label: string; value?: string | number | null })
   if (!value && value !== 0) return null
   return (
     <div className='flex items-baseline gap-2'>
-      <span className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0'>{label}</span>
+      <span className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0'>{label}</span>
       <span className='text-sm font-mono flex items-center gap-1.5'>{String(value)} <CopyBtn text={String(value)} /></span>
     </div>
   )
@@ -138,7 +138,7 @@ function ShodanIPCard({ data }: { data: ShodanResult }) {
             { label: 'Hostnames', value: data.hostnames?.length ?? 0, color: '#f59e0b' },
           ].map(k => (
             <div key={k.label} className='rounded border bg-muted/30 px-3 py-2'>
-              <div className='text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5'>{k.label}</div>
+              <div className='text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-0.5'>{k.label}</div>
               <div className='text-xl font-black tabular-nums' style={{ color: k.color }}>{k.value}</div>
             </div>
           ))}
@@ -159,7 +159,7 @@ function ShodanIPCard({ data }: { data: ShodanResult }) {
         {/* Ports */}
         {(data.ports || []).length > 0 && (
           <div>
-            <div className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5'>Puertos</div>
+            <div className='text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5'>Puertos</div>
             <div className='flex flex-wrap gap-1.5'>
               {data.ports!.map(p => <Tag key={p} color='#3b82f6'>{p}</Tag>)}
             </div>
@@ -169,7 +169,7 @@ function ShodanIPCard({ data }: { data: ShodanResult }) {
         {/* CVEs */}
         {(data.vulns || []).length > 0 && (
           <div>
-            <div className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5'>CVEs detectados</div>
+            <div className='text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5'>CVEs detectados</div>
             <div className='flex flex-wrap gap-1.5'>
               {data.vulns!.map(v => (
                 <a key={v} href={`https://nvd.nist.gov/vuln/detail/${v}`} target='_blank' rel='noreferrer'>
@@ -183,7 +183,7 @@ function ShodanIPCard({ data }: { data: ShodanResult }) {
         {/* Tags */}
         {(data.tags || []).length > 0 && (
           <div>
-            <div className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5'>Tags</div>
+            <div className='text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5'>Tags</div>
             <div className='flex flex-wrap gap-1.5'>
               {data.tags!.map(tag => <Tag key={tag}>{tag}</Tag>)}
             </div>
@@ -193,7 +193,7 @@ function ShodanIPCard({ data }: { data: ShodanResult }) {
         {/* Hostnames */}
         {(data.hostnames || []).length > 0 && (
           <div>
-            <div className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5'>Hostnames</div>
+            <div className='text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5'>Hostnames</div>
             <div className='flex flex-wrap gap-1.5'>
               {data.hostnames!.map(h => <Tag key={h} color='#f59e0b'>{h}</Tag>)}
             </div>
@@ -203,7 +203,7 @@ function ShodanIPCard({ data }: { data: ShodanResult }) {
         {/* Services */}
         {(data.services || []).length > 0 && (
           <div>
-            <div className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5'>Servicios ({data.services!.length})</div>
+            <div className='text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5'>Servicios ({data.services!.length})</div>
             <div className='space-y-1.5 max-h-64 overflow-y-auto pr-1'>
               {data.services!.map((svc, i) => (
                 <div key={i} className='rounded border bg-muted/20 px-2.5 py-1.5 text-xs flex items-start gap-3'>
@@ -267,18 +267,18 @@ function DomainResultView({ result }: { result: DomainQueryResult }) {
             <Kv label='Expira' value={result.rdap.expires ? fmtDate(result.rdap.expires) : undefined} />
             {result.rdap.age_days != null && (
               <div className='flex items-baseline gap-2'>
-                <span className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0'>Antigüedad</span>
+                <span className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0'>Antigüedad</span>
                 <span className='text-sm'>
                   <span className={cn('font-semibold', result.rdap.age_days < 30 ? 'text-red-700 dark:text-red-400' : result.rdap.age_days < 180 ? 'text-amber-700 dark:text-amber-400' : 'text-green-700 dark:text-green-400')}>
                     {result.rdap.age_days} días
                   </span>
-                  {result.rdap.age_days < 30 && <span className='ml-2 text-[10px] text-red-700 dark:text-red-400'>⚠ Dominio reciente</span>}
+                  {result.rdap.age_days < 30 && <span className='ml-2 text-xs text-red-700 dark:text-red-400'>⚠ Dominio reciente</span>}
                 </span>
               </div>
             )}
             {(result.rdap.status || []).length > 0 && (
               <div className='flex items-baseline gap-2'>
-                <span className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0'>Estado</span>
+                <span className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0'>Estado</span>
                 <div className='flex flex-wrap gap-1'>
                   {result.rdap.status!.map(s => <Tag key={s}>{s}</Tag>)}
                 </div>
@@ -286,7 +286,7 @@ function DomainResultView({ result }: { result: DomainQueryResult }) {
             )}
             {(result.rdap.nameservers || []).length > 0 && (
               <div className='flex items-baseline gap-2'>
-                <span className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0'>Nameservers</span>
+                <span className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-24 shrink-0'>Nameservers</span>
                 <div className='flex flex-wrap gap-1'>
                   {result.rdap.nameservers!.map(ns => <Tag key={ns} color='#8b5cf6'>{ns}</Tag>)}
                 </div>
@@ -304,19 +304,19 @@ function DomainResultView({ result }: { result: DomainQueryResult }) {
           <div className='space-y-2'>
             {(result.dns.a || []).length > 0 && (
               <div className='flex items-start gap-2'>
-                <span className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground w-10 shrink-0 mt-0.5'>A</span>
+                <span className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-10 shrink-0 mt-0.5'>A</span>
                 <div className='flex flex-wrap gap-1.5'>{result.dns.a!.map(ip => <Tag key={ip} color='#22c55e'>{ip}</Tag>)}</div>
               </div>
             )}
             {(result.dns.aaaa || []).length > 0 && (
               <div className='flex items-start gap-2'>
-                <span className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground w-10 shrink-0 mt-0.5'>AAAA</span>
+                <span className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-10 shrink-0 mt-0.5'>AAAA</span>
                 <div className='flex flex-wrap gap-1.5'>{result.dns.aaaa!.map(ip => <Tag key={ip} color='#22c55e'>{ip}</Tag>)}</div>
               </div>
             )}
             {(result.dns.mx || []).length > 0 && (
               <div className='flex items-start gap-2'>
-                <span className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground w-10 shrink-0 mt-0.5'>MX</span>
+                <span className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-10 shrink-0 mt-0.5'>MX</span>
                 <div className='flex flex-wrap gap-1.5'>
                   {result.dns.mx!.map(m => <Tag key={m.exchange} color='#3b82f6'>{m.priority} {m.exchange}</Tag>)}
                 </div>
@@ -324,13 +324,13 @@ function DomainResultView({ result }: { result: DomainQueryResult }) {
             )}
             {(result.dns.ns || []).length > 0 && (
               <div className='flex items-start gap-2'>
-                <span className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground w-10 shrink-0 mt-0.5'>NS</span>
+                <span className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-10 shrink-0 mt-0.5'>NS</span>
                 <div className='flex flex-wrap gap-1.5'>{result.dns.ns!.map(ns => <Tag key={ns} color='#8b5cf6'>{ns}</Tag>)}</div>
               </div>
             )}
             {(result.dns.txt || []).length > 0 && (
               <div className='flex items-start gap-2'>
-                <span className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground w-10 shrink-0 mt-0.5'>TXT</span>
+                <span className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-10 shrink-0 mt-0.5'>TXT</span>
                 <div className='space-y-0.5 flex-1'>
                   {result.dns.txt!.map((txt, i) => (
                     <div key={i} className='text-xs font-mono bg-muted/30 rounded px-2 py-0.5 break-all'>{txt}</div>
@@ -340,7 +340,7 @@ function DomainResultView({ result }: { result: DomainQueryResult }) {
             )}
             {(result.dns.cname || []).length > 0 && (
               <div className='flex items-start gap-2'>
-                <span className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground w-10 shrink-0 mt-0.5'>CNAME</span>
+                <span className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-10 shrink-0 mt-0.5'>CNAME</span>
                 <div className='flex flex-wrap gap-1.5'>{result.dns.cname!.map(c => <Tag key={c} color='#f59e0b'>{c}</Tag>)}</div>
               </div>
             )}

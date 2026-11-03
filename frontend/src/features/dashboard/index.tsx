@@ -351,16 +351,16 @@ export function Dashboard() {
                     <div className='min-w-0'>
                       <div className='flex items-center gap-1.5 flex-wrap'>
                         {log.tool && (
-                          <span className='rounded bg-muted px-1.5 py-0.5 font-mono text-[10px]'>{log.tool}</span>
+                          <span className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{log.tool}</span>
                         )}
                         {log.target && (
-                          <span className='text-muted-foreground font-mono text-[10px] truncate max-w-[120px]'>{log.target}</span>
+                          <span className='text-muted-foreground font-mono text-xs truncate max-w-[120px]'>{log.target}</span>
                         )}
                       </div>
                       {log.command && (
-                        <p className='mt-0.5 font-mono text-[10px] text-muted-foreground/70 truncate'>{log.command}</p>
+                        <p className='mt-0.5 font-mono text-xs text-muted-foreground/70 truncate'>{log.command}</p>
                       )}
-                      <p className='mt-0.5 text-[10px] text-muted-foreground/50'>
+                      <p className='mt-0.5 text-xs text-muted-foreground/50'>
                         {log.engagement_title} · {new Date(log.logged_at).toLocaleDateString('es-AR')}
                       </p>
                     </div>

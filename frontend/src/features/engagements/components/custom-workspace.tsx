@@ -124,7 +124,7 @@ function DropZone({ onFile }: { onFile: (f: File) => void }) {
     >
       <Upload className='h-6 w-6 text-muted-foreground' />
       <p className='text-xs text-muted-foreground'>Arrastrá un archivo o hacé click</p>
-      <p className='text-[10px] text-muted-foreground'>PDF, DOCX, XLSX, imágenes · máx 100 MB</p>
+      <p className='text-xs text-muted-foreground'>PDF, DOCX, XLSX, imágenes · máx 100 MB</p>
       <input ref={ref} type='file' className='hidden' onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f) }} />
     </div>
   )
@@ -154,14 +154,14 @@ function BlockEditor({
           <div className='flex items-center justify-between px-3 py-1.5 bg-card border-b border-border'>
             <div className='flex items-center gap-2'>
               {block.type === 'text' ? (
-                <span className='flex items-center gap-1 text-[10px] text-muted-foreground font-medium'>
+                <span className='flex items-center gap-1 text-xs text-muted-foreground font-medium'>
                   <Type className='h-3 w-3' /> Texto
                 </span>
               ) : (
                 <div className='relative'>
                   <button
                     onClick={() => setLangMenu(langMenu === block.id ? null : block.id)}
-                    className={cn('flex items-center gap-1 text-[10px] font-mono font-bold', LANG_COLOR[block.language ?? 'bash'])}
+                    className={cn('flex items-center gap-1 text-xs font-mono font-bold', LANG_COLOR[block.language ?? 'bash'])}
                   >
                     <Code2 className='h-3 w-3' />
                     {LANG_LABEL[block.language ?? 'bash']}
@@ -246,12 +246,12 @@ function BlockViewer({ blocks }: { blocks: Block[] }) {
           ) : (
             <div className='relative rounded-lg border border-border overflow-hidden'>
               <div className='flex items-center justify-between px-3 py-1 bg-card border-b border-border'>
-                <span className={cn('text-[10px] font-mono font-bold', LANG_COLOR[block.language ?? 'bash'])}>
+                <span className={cn('text-xs font-mono font-bold', LANG_COLOR[block.language ?? 'bash'])}>
                   {LANG_LABEL[block.language ?? 'bash']}
                 </span>
                 <button
                   onClick={() => { navigator.clipboard.writeText(block.content); toast.success('Copiado') }}
-                  className='flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition'>
+                  className='flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition'>
                   <Copy className='h-2.5 w-2.5' /> copiar
                 </button>
               </div>
@@ -507,7 +507,7 @@ function PhaseDetail({
             )}>
             {t.icon}{t.label}
             {t.count != null && t.count > 0 && (
-              <span className='ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px]'>{t.count}</span>
+              <span className='ml-1 rounded-full bg-muted px-1.5 py-0.5 text-xs'>{t.count}</span>
             )}
           </button>
         ))}
@@ -583,8 +583,8 @@ function PhaseDetail({
                     <div className='flex-1 min-w-0'>
                       <p className='text-xs font-medium text-foreground truncate'>{doc.original_name}</p>
                       <div className='flex items-center gap-2 mt-0.5'>
-                        <span className='text-[10px] text-muted-foreground'>{fmtSize(doc.file_size)}</span>
-                        {doc.caption && <span className='text-[10px] text-muted-foreground truncate'>· {doc.caption}</span>}
+                        <span className='text-xs text-muted-foreground'>{fmtSize(doc.file_size)}</span>
+                        {doc.caption && <span className='text-xs text-muted-foreground truncate'>· {doc.caption}</span>}
                       </div>
                     </div>
                     <div className='flex items-center gap-1 shrink-0'>
@@ -609,7 +609,7 @@ function PhaseDetail({
           <div className='space-y-5'>
             {/* Block editor */}
             <div className='rounded-lg border border-border bg-background/40 p-4 space-y-3'>
-              <p className='text-[10px] text-muted-foreground uppercase tracking-widest font-semibold'>Nueva entrada</p>
+              <p className='text-xs text-muted-foreground uppercase tracking-widest font-semibold'>Nueva entrada</p>
 
               <BlockEditor blocks={blocks} onChange={setBlocks} />
 
@@ -638,7 +638,7 @@ function PhaseDetail({
                   <Image className='h-3 w-3' /> Imagen
                   <input type='file' accept='image/*' className='hidden' onChange={e => { const f = e.target.files?.[0]; if (f) addImageFile(f) }} />
                 </label>
-                <span className='text-[10px] text-muted-foreground'>o pegá una captura con Ctrl+V</span>
+                <span className='text-xs text-muted-foreground'>o pegá una captura con Ctrl+V</span>
               </div>
             </div>
 
@@ -686,8 +686,8 @@ function PhaseDetail({
                       {/* Footer */}
                       <div className='flex items-center justify-between px-4 py-2 bg-background/40 border-t border-border'>
                         <div className='flex items-center gap-2'>
-                          {u.author_name && <span className='text-[10px] text-muted-foreground'>{u.author_name}</span>}
-                          <span className='text-[10px] text-muted-foreground'>
+                          {u.author_name && <span className='text-xs text-muted-foreground'>{u.author_name}</span>}
+                          <span className='text-xs text-muted-foreground'>
                             {new Date(u.created_at).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
                           </span>
                         </div>
@@ -853,9 +853,9 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
               </button>
             </div>
           )}
-          <p className='text-[10px] text-muted-foreground mt-0.5 truncate'>{engagement.client_name}</p>
+          <p className='text-xs text-muted-foreground mt-0.5 truncate'>{engagement.client_name}</p>
           <div className='mt-2'>
-            <span className='rounded bg-blue-500/10 border border-blue-500/40 px-1.5 py-0.5 text-[10px] text-blue-700 dark:text-blue-300'>
+            <span className='rounded bg-blue-500/10 border border-blue-500/40 px-1.5 py-0.5 text-xs text-blue-700 dark:text-blue-300'>
               {TYPE_LABELS[engagement.type] ?? engagement.type}
             </span>
           </div>
@@ -884,7 +884,7 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
                         <span className='text-xs text-foreground flex-1 truncate'>{phase.name}</span>
                       </div>
                       {(phase.docs_count || phase.updates_count) ? (
-                        <div className='ml-5 mt-0.5 flex gap-2 text-[10px] text-muted-foreground'>
+                        <div className='ml-5 mt-0.5 flex gap-2 text-xs text-muted-foreground'>
                           {phase.docs_count ? <span>{phase.docs_count} doc{phase.docs_count !== 1 ? 's' : ''}</span> : null}
                           {phase.updates_count ? <span>{phase.updates_count} entrada{phase.updates_count !== 1 ? 's' : ''}</span> : null}
                         </div>
@@ -918,11 +918,11 @@ export function CustomWorkspace({ engagementId }: { engagementId: string }) {
                 className='w-full bg-muted rounded px-2 py-1 text-xs text-muted-foreground border border-border outline-none' />
               <div className='flex gap-1'>
                 <button onClick={createPhase} disabled={savingNew || !newName.trim()}
-                  className='flex-1 rounded bg-blue-700 hover:bg-blue-600 disabled:opacity-50 px-2 py-1 text-[10px] text-white font-medium transition'>
+                  className='flex-1 rounded bg-blue-700 hover:bg-blue-600 disabled:opacity-50 px-2 py-1 text-xs text-white font-medium transition'>
                   {savingNew ? '...' : 'Crear'}
                 </button>
                 <button onClick={() => setAdding(false)}
-                  className='rounded px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground transition'>
+                  className='rounded px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition'>
                   Cancelar
                 </button>
               </div>

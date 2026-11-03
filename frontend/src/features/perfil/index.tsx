@@ -193,7 +193,7 @@ export function Perfil() {
               <Shield className='size-4' />
               {t('perfil.2fa.title')}
             </CardTitle>
-            <Badge variant={has2FA ? 'default' : 'secondary'} className='text-[10px]'>
+            <Badge variant={has2FA ? 'default' : 'secondary'} className='text-xs'>
               {has2FA ? t('perfil.2fa.active') : t('perfil.2fa.inactive')}
             </Badge>
           </div>

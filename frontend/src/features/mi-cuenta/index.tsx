@@ -216,7 +216,7 @@ export function MiCuenta() {
                   <Shield className='size-4' />
                   {t('mi_cuenta.2fa.title')}
                 </CardTitle>
-                <Badge variant={has2FA ? 'default' : 'secondary'} className='text-[10px]'>
+                <Badge variant={has2FA ? 'default' : 'secondary'} className='text-xs'>
                   {has2FA ? t('mi_cuenta.2fa.active') : t('mi_cuenta.2fa.inactive')}
                 </Badge>
               </div>
@@ -261,7 +261,7 @@ export function MiCuenta() {
                     <img src={qrUrl!} alt='QR Code 2FA' width={160} height={160}
                       className='rounded-lg border p-2 bg-white' />
                   </div>
-                  <p className='text-center text-[10px] text-muted-foreground font-mono break-all'>{totpData.secret}</p>
+                  <p className='text-center text-xs text-muted-foreground font-mono break-all'>{totpData.secret}</p>
                   <div className='space-y-1.5'>
                     <Label className='text-xs'>{t('mi_cuenta.2fa.code_label')}</Label>
                     <Input placeholder='000000' maxLength={6} inputMode='numeric' autoComplete='one-time-code'
@@ -380,7 +380,7 @@ export function MiCuenta() {
                   <Upload className='size-3.5' />
                   {t('mi_cuenta.branding.upload')}
                 </Button>
-                <p className='text-[10px] text-muted-foreground mt-1.5'>{t('mi_cuenta.branding.upload_hint')}</p>
+                <p className='text-xs text-muted-foreground mt-1.5'>{t('mi_cuenta.branding.upload_hint')}</p>
                 <input
                   ref={logoInputRef}
                   type='file'

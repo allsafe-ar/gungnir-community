@@ -100,7 +100,7 @@ export function MethodologySheet({ open, onOpenChange, engagementId }: {
             )}
           </div>
           {resumen && (
-            <p className='text-[11px] text-muted-foreground'>
+            <p className='text-xs text-muted-foreground'>
               {t('methodology.summary', { tested: resumen.tested, total: resumen.total, na: resumen.not_applicable })}
             </p>
           )}
@@ -117,7 +117,7 @@ export function MethodologySheet({ open, onOpenChange, engagementId }: {
                   className='w-full flex items-center gap-2 px-3 py-2 bg-muted/30 hover:bg-muted/50 transition-colors text-left'>
                   {isCollapsed ? <ChevronRight className='size-3.5 text-muted-foreground' /> : <ChevronDown className='size-3.5 text-muted-foreground' />}
                   <span className='text-xs font-semibold'>{cat}</span>
-                  <span className='ml-auto text-[10px] text-muted-foreground tabular-nums'>{done}/{list.length}</span>
+                  <span className='ml-auto text-xs text-muted-foreground tabular-nums'>{done}/{list.length}</span>
                 </button>
                 {!isCollapsed && (
                   <div className='divide-y divide-border/50'>
@@ -127,7 +127,7 @@ export function MethodologySheet({ open, onOpenChange, engagementId }: {
                           canWrite ? 'hover:bg-accent cursor-pointer' : 'cursor-default',
                           it.status === 'not_applicable' && 'opacity-50')}>
                         <span className={cn('mt-0.5 size-2.5 rounded-full shrink-0', DOT[it.status])} />
-                        <span className='shrink-0 font-mono text-[10px] text-primary font-semibold mt-0.5'>{it.key}</span>
+                        <span className='shrink-0 font-mono text-xs text-primary font-semibold mt-0.5'>{it.key}</span>
                         <span className={cn('text-xs flex-1', it.status === 'tested' && 'text-foreground', it.status !== 'tested' && 'text-muted-foreground')}>
                           {it.name}
                         </span>
@@ -139,7 +139,7 @@ export function MethodologySheet({ open, onOpenChange, engagementId }: {
             )
           })}
           {canWrite && !loading && items.length > 0 && (
-            <p className='text-[11px] text-muted-foreground text-center pt-1'>{t('methodology.cycle_hint')}</p>
+            <p className='text-xs text-muted-foreground text-center pt-1'>{t('methodology.cycle_hint')}</p>
           )}
         </div>
       </SheetContent>

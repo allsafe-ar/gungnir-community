@@ -1327,23 +1327,23 @@ function ScriptCard({ script, onEdit, onDelete }: ScriptCardProps) {
         <FileCode2 className='h-4 w-4 text-muted-foreground mt-0.5 shrink-0' />
         <div className='flex-1 min-w-0'>
           <div className='flex items-center gap-2 flex-wrap'>
-            {script.isCustom && <span className='text-[9px] font-bold text-red-500 bg-red-500/10 border border-red-500/20 px-1 py-0.5 rounded'>CUSTOM</span>}
-            {script.isModified && <span className='text-[9px] font-bold text-yellow-600 bg-yellow-600/10 border border-yellow-600/20 px-1 py-0.5 rounded'>EDIT</span>}
+            {script.isCustom && <span className='text-xs font-bold text-red-500 bg-red-500/10 border border-red-500/20 px-1 py-0.5 rounded'>CUSTOM</span>}
+            {script.isModified && <span className='text-xs font-bold text-yellow-600 bg-yellow-600/10 border border-yellow-600/20 px-1 py-0.5 rounded'>EDIT</span>}
             <span className='font-semibold text-sm text-foreground'>{script.name}</span>
           </div>
           <p className='mt-1 text-xs text-muted-foreground leading-relaxed'>{script.description}</p>
 
           {/* Badges row */}
           <div className='mt-2 flex flex-wrap items-center gap-1.5'>
-            <span className='text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded'>{PLATFORM_LABEL[script.platform]}</span>
-            <span className='text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono'>{LANG_LABEL[script.language]}</span>
-            <span className={cn('text-[10px] border px-1.5 py-0.5 rounded', sev.cls)}>{sev.label}</span>
-            <span className='text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded'>{TYPE_LABEL[script.script_type]}</span>
+            <span className='text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded'>{PLATFORM_LABEL[script.platform]}</span>
+            <span className='text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono'>{LANG_LABEL[script.language]}</span>
+            <span className={cn('text-xs border px-1.5 py-0.5 rounded', sev.cls)}>{sev.label}</span>
+            <span className='text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded'>{TYPE_LABEL[script.script_type]}</span>
 
             {/* MITRE links */}
             {script.mitre_ids.map(id => (
               <Link key={id} to='/tecnicas' search={{ mitre: id }}
-                className='flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-red-400 transition'>
+                className='flex items-center gap-0.5 text-xs text-muted-foreground hover:text-red-400 transition'>
                 <ExternalLink className='h-2.5 w-2.5' />{id}
               </Link>
             ))}
@@ -1353,7 +1353,7 @@ function ScriptCard({ script, onEdit, onDelete }: ScriptCardProps) {
           {script.related_tools.length > 0 && (
             <div className='mt-1.5 flex flex-wrap gap-1'>
               {script.related_tools.map(t => (
-                <span key={t} className='text-[9px] text-muted-foreground border border-border px-1.5 py-0.5 rounded-full'>
+                <span key={t} className='text-xs text-muted-foreground border border-border px-1.5 py-0.5 rounded-full'>
                   🔧 {t}
                 </span>
               ))}
@@ -1362,7 +1362,7 @@ function ScriptCard({ script, onEdit, onDelete }: ScriptCardProps) {
 
           {/* Notes */}
           {script.notes && (
-            <p className='mt-1.5 text-[10px] text-muted-foreground italic flex items-center gap-1'>
+            <p className='mt-1.5 text-xs text-muted-foreground italic flex items-center gap-1'>
               <Info className='h-3 w-3 shrink-0' /> {script.notes}
             </p>
           )}
@@ -1392,7 +1392,7 @@ function ScriptCard({ script, onEdit, onDelete }: ScriptCardProps) {
       {/* Script content (expandable) */}
       {expanded && (
         <div className='border-t border-border relative'>
-          <pre className='overflow-x-auto px-4 py-3 text-[11px] font-mono text-foreground leading-relaxed max-h-96 overflow-y-auto bg-background/60 whitespace-pre'>
+          <pre className='overflow-x-auto px-4 py-3 text-xs font-mono text-foreground leading-relaxed max-h-96 overflow-y-auto bg-background/60 whitespace-pre'>
             {script.content}
           </pre>
           <div className='absolute top-2 right-2'>
@@ -1443,62 +1443,62 @@ function ScriptForm({ initial, onSave, onCancel, saving }: ScriptFormProps) {
       </div>
       <div className='grid grid-cols-2 gap-2'>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Nombre *</label>
+          <label className='text-xs text-muted-foreground uppercase'>Nombre *</label>
           <Input value={name} onChange={e => setName(e.target.value)} placeholder='Ej: EternalBlue Check' className='h-7 text-xs bg-background border-border' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Categoría</label>
+          <label className='text-xs text-muted-foreground uppercase'>Categoría</label>
           <select value={cat} onChange={e => setCat(e.target.value)} className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Tipo</label>
+          <label className='text-xs text-muted-foreground uppercase'>Tipo</label>
           <select value={stype} onChange={e => setStype(e.target.value as ScriptType)} className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             {Object.entries(TYPE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Plataforma</label>
+          <label className='text-xs text-muted-foreground uppercase'>Plataforma</label>
           <select value={platform} onChange={e => setPlatform(e.target.value as Platform)} className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             {Object.entries(PLATFORM_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Lenguaje</label>
+          <label className='text-xs text-muted-foreground uppercase'>Lenguaje</label>
           <select value={lang} onChange={e => setLang(e.target.value as Lang)} className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             {Object.entries(LANG_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Severidad</label>
+          <label className='text-xs text-muted-foreground uppercase'>Severidad</label>
           <select value={severity} onChange={e => setSeverity(e.target.value as Severity)} className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             {Object.entries(SEVERITY_META).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
         </div>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Descripción</label>
+          <label className='text-xs text-muted-foreground uppercase'>Descripción</label>
           <Textarea value={desc} onChange={e => setDesc(e.target.value)} rows={2} className='text-xs bg-background border-border resize-none' />
         </div>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Contenido del script *</label>
+          <label className='text-xs text-muted-foreground uppercase'>Contenido del script *</label>
           <Textarea value={content} onChange={e => setContent(e.target.value)} rows={10}
             className='text-xs font-mono bg-background border-border resize-y' placeholder='#!/bin/bash&#10;...' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>MITRE IDs (comas)</label>
+          <label className='text-xs text-muted-foreground uppercase'>MITRE IDs (comas)</label>
           <Input value={mitres} onChange={e => setMitres(e.target.value)} placeholder='T1190, T1210' className='h-7 text-xs font-mono bg-background border-border' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Arsenal tools (comas)</label>
+          <label className='text-xs text-muted-foreground uppercase'>Arsenal tools (comas)</label>
           <Input value={tools} onChange={e => setTools(e.target.value)} placeholder='nmap, metasploit' className='h-7 text-xs bg-background border-border' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Tags</label>
+          <label className='text-xs text-muted-foreground uppercase'>Tags</label>
           <Input value={tags} onChange={e => setTags(e.target.value)} placeholder='smb, windows, cve' className='h-7 text-xs bg-background border-border' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Notas</label>
+          <label className='text-xs text-muted-foreground uppercase'>Notas</label>
           <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder='Requisitos, advertencias...' className='h-7 text-xs bg-background border-border' />
         </div>
       </div>
@@ -1655,10 +1655,10 @@ export function Scripts() {
         {/* Filters */}
         <div className='border-b border-border px-3 py-2 space-y-2'>
           <div className='flex flex-wrap gap-1'>
-            <button onClick={() => setFPlatform('')} className={cn('rounded px-2 py-0.5 text-[10px] transition', filterPlatform === '' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground')}>Todas</button>
+            <button onClick={() => setFPlatform('')} className={cn('rounded px-2 py-0.5 text-xs transition', filterPlatform === '' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground')}>Todas</button>
             {(['linux', 'windows', 'cross'] as Platform[]).map(p => (
               <button key={p} onClick={() => setFPlatform(p === filterPlatform ? '' : p)}
-                className={cn('rounded border px-2 py-0.5 text-[10px] transition', filterPlatform === p ? 'border-red-800 text-red-700 dark:text-red-400 bg-red-500/15' : 'border-transparent text-muted-foreground hover:text-foreground')}>
+                className={cn('rounded border px-2 py-0.5 text-xs transition', filterPlatform === p ? 'border-red-800 text-red-700 dark:text-red-400 bg-red-500/15' : 'border-transparent text-muted-foreground hover:text-foreground')}>
                 {p === 'linux' ? '🐧' : p === 'windows' ? '🪟' : '🔄'} {p}
               </button>
             ))}
@@ -1666,7 +1666,7 @@ export function Scripts() {
           <div className='flex flex-wrap gap-1'>
             {(['bash', 'powershell', 'python'] as Lang[]).map(l => (
               <button key={l} onClick={() => setFLang(l === filterLang ? '' : l)}
-                className={cn('rounded px-1.5 py-0.5 text-[10px] font-mono transition', filterLang === l ? 'bg-red-500/15 text-red-700 dark:text-red-400' : 'text-muted-foreground hover:text-foreground')}>
+                className={cn('rounded px-1.5 py-0.5 text-xs font-mono transition', filterLang === l ? 'bg-red-500/15 text-red-700 dark:text-red-400' : 'text-muted-foreground hover:text-foreground')}>
                 {l}
               </button>
             ))}
@@ -1679,7 +1679,7 @@ export function Scripts() {
             className={cn('flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs mx-1 transition mb-1',
               filterCat === '' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-card hover:text-foreground')}>
             <span className='flex-1 text-left font-medium'>Todos los scripts</span>
-            <span className='rounded bg-accent px-1.5 py-0.5 text-[10px] text-muted-foreground'>{sidebarList.length}</span>
+            <span className='rounded bg-accent px-1.5 py-0.5 text-xs text-muted-foreground'>{sidebarList.length}</span>
           </button>
           {CATEGORIES.map(cat => {
             const count = sidebarList.filter(s => s.category === cat).length
@@ -1687,7 +1687,7 @@ export function Scripts() {
             return (
               <div key={cat}>
                 <button onClick={() => { setFCat(cat === filterCat ? '' : cat); toggleCat(cat) }}
-                  className={cn('flex w-full items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide transition',
+                  className={cn('flex w-full items-center gap-1.5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition',
                     filterCat === cat ? 'text-red-700 dark:text-red-400' : 'text-muted-foreground hover:text-foreground')}>
                   {expandedCats.has(cat) ? <ChevronDown className='h-3 w-3 shrink-0' /> : <ChevronRight className='h-3 w-3 shrink-0' />}
                   <span className='flex-1 text-left truncate'>{cat}</span>
@@ -1723,7 +1723,7 @@ export function Scripts() {
               </p>
             </div>
             <div className='ml-auto flex items-center gap-2'>
-              <div className='flex items-center gap-1 text-[10px] text-muted-foreground'>
+              <div className='flex items-center gap-1 text-xs text-muted-foreground'>
                 <Shield className='h-3 w-3' /> Solo usar con autorización explícita
               </div>
             </div>

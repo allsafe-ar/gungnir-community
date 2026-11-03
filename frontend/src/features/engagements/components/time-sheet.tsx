@@ -122,7 +122,7 @@ export function TimeSheet({ open, onOpenChange, engagementId, currentPhase }: {
           {resumen && Object.keys(resumen.por_fase).length > 0 && (
             <div className='grid grid-cols-2 gap-3'>
               <div className='rounded-md border border-border bg-card p-3'>
-                <p className='text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5'>{t('time.by_phase')}</p>
+                <p className='text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5'>{t('time.by_phase')}</p>
                 {Object.entries(resumen.por_fase).map(([k, v]) => (
                   <div key={k} className='flex justify-between text-xs py-0.5'>
                     <span className='text-muted-foreground'>{PHASES.includes(k) ? t(`phase.${k}`) : k}</span>
@@ -131,7 +131,7 @@ export function TimeSheet({ open, onOpenChange, engagementId, currentPhase }: {
                 ))}
               </div>
               <div className='rounded-md border border-border bg-card p-3'>
-                <p className='text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5'>{t('time.by_operator')}</p>
+                <p className='text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5'>{t('time.by_operator')}</p>
                 {Object.entries(resumen.por_operador).map(([k, v]) => (
                   <div key={k} className='flex justify-between text-xs py-0.5'>
                     <span className='text-muted-foreground truncate max-w-28'>{k}</span>
@@ -150,7 +150,7 @@ export function TimeSheet({ open, onOpenChange, engagementId, currentPhase }: {
                 <span className='font-mono font-semibold tabular-nums'>{fmtDur(e.minutes)}</span>
                 <span className='text-muted-foreground'>{e.custom_phase_name || (e.phase_type ? t(`phase.${e.phase_type}`) : '—')}</span>
                 {e.note && <span className='truncate flex-1 text-foreground/70'>{e.note}</span>}
-                <span className='ml-auto text-[10px] text-muted-foreground shrink-0'>{e.user_name} · {e.worked_on?.slice(0, 10)}</span>
+                <span className='ml-auto text-xs text-muted-foreground shrink-0'>{e.user_name} · {e.worked_on?.slice(0, 10)}</span>
                 {(canWrite && (auth.user?.id === e.user_id || auth.user?.role === 'admin' || auth.user?.role === 'auditor')) && (
                   <button onClick={() => del(e.id)} className='opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive shrink-0'>
                     <Trash2 className='size-3' />

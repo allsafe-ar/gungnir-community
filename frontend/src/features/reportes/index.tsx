@@ -106,7 +106,7 @@ function FindingPreview({ findings }: { findings: FindingDetail[] }) {
         {findings.map((f, i) => (
           <div key={f.id} className='flex items-center gap-3 px-3 py-2 text-xs'>
             <span className='font-mono text-muted-foreground w-8 shrink-0'>F{String(i + 1).padStart(2, '0')}</span>
-            <span className={cn('font-semibold uppercase text-[10px] w-14 shrink-0', SEV_COLOR[f.severity])}>
+            <span className={cn('font-semibold uppercase text-xs w-14 shrink-0', SEV_COLOR[f.severity])}>
               {f.severity}
             </span>
             <span className='flex-1 truncate text-foreground'>{f.title}</span>
@@ -114,9 +114,9 @@ function FindingPreview({ findings }: { findings: FindingDetail[] }) {
               <span className='text-muted-foreground shrink-0'>{Number(f.cvss_score_31).toFixed(1)}</span>
             )}
             {f.status === 'open' ? (
-              <span className='text-red-500 text-[10px] shrink-0'>Abierto</span>
+              <span className='text-red-500 text-xs shrink-0'>Abierto</span>
             ) : (
-              <span className='text-green-600 text-[10px] shrink-0'>Cerrado</span>
+              <span className='text-green-600 text-xs shrink-0'>Cerrado</span>
             )}
           </div>
         ))}
@@ -257,13 +257,13 @@ export function Reportes() {
                       <p className={cn('text-xs font-medium truncate', active ? 'text-red-700 dark:text-red-300' : 'text-foreground')}>
                         {eng.title}
                       </p>
-                      <p className='text-[10px] text-muted-foreground mt-0.5 truncate'>{eng.client_name}</p>
+                      <p className='text-xs text-muted-foreground mt-0.5 truncate'>{eng.client_name}</p>
                     </div>
                     <div className='flex flex-col items-end gap-1 shrink-0'>
-                      <span className={cn('rounded px-1.5 py-0.5 text-[10px] font-medium', STATUS_COLOR[eng.status] ?? 'bg-accent text-muted-foreground')}>
+                      <span className={cn('rounded px-1.5 py-0.5 text-xs font-medium', STATUS_COLOR[eng.status] ?? 'bg-accent text-muted-foreground')}>
                         {STATUS_LABEL[eng.status] ?? eng.status}
                       </span>
-                      <span className='text-[10px] text-muted-foreground'>
+                      <span className='text-xs text-muted-foreground'>
                         {TYPE_LABEL[eng.type] ?? eng.type}
                       </span>
                     </div>
@@ -339,7 +339,7 @@ export function Reportes() {
                     <span
                       key={s.id}
                       className={cn(
-                        'rounded px-2 py-0.5 text-[10px] font-mono',
+                        'rounded px-2 py-0.5 text-xs font-mono',
                         s.in_scope
                           ? 'bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/40'
                           : 'bg-red-500/10 text-red-500/70 border border-red-500/40 line-through'
@@ -378,7 +378,7 @@ export function Reportes() {
                         {t.label}
                       </p>
                     </div>
-                    <p className='text-[10px] text-muted-foreground ml-4'>{t.sub}</p>
+                    <p className='text-xs text-muted-foreground ml-4'>{t.sub}</p>
                   </button>
                 ))}
               </div>
@@ -472,7 +472,7 @@ export function Reportes() {
             {/* Confidentiality note */}
             <div className='flex items-start gap-2 rounded-lg bg-card/30 border border-border/50 p-3'>
               <Shield className='h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0' />
-              <p className='text-[11px] text-muted-foreground leading-relaxed'>
+              <p className='text-xs text-muted-foreground leading-relaxed'>
                 El PDF se genera completamente en el cliente (no se envían datos a ningún servidor externo).
                 El informe incluye aviso de confidencialidad y está marcado como documento restringido.
               </p>

@@ -228,17 +228,17 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
                   <div className='flex-1 min-w-0'>
                     <div className='flex items-center gap-2 flex-wrap'>
                       {item.mitre_id && (
-                        <span className='font-mono text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20'>
+                        <span className='font-mono text-xs font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20'>
                           {item.mitre_id}
                         </span>
                       )}
                       <span className='text-xs font-semibold truncate'>{item.name}</span>
                     </div>
                     {item.tactic && (
-                      <p className='text-[10px] text-muted-foreground mt-0.5'>{item.tactic}</p>
+                      <p className='text-xs text-muted-foreground mt-0.5'>{item.tactic}</p>
                     )}
                     {item.tool && (
-                      <code className='text-[10px] font-mono text-muted-foreground mt-1 block'>{item.tool}</code>
+                      <code className='text-xs font-mono text-muted-foreground mt-1 block'>{item.tool}</code>
                     )}
                     {item.notes && (
                       <p className='text-xs text-muted-foreground mt-1 leading-relaxed'>{item.notes}</p>
@@ -284,7 +284,7 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
                           : <ChevronRight className='size-3 text-muted-foreground' />}
                         <span className='text-xs font-semibold text-muted-foreground uppercase tracking-wide'>{tactic}</span>
                       </div>
-                      <span className='text-[10px] text-muted-foreground'>{items.length}</span>
+                      <span className='text-xs text-muted-foreground'>{items.length}</span>
                     </button>
 
                     {expandedTactic === tactic && items.map(tech => {
@@ -294,15 +294,15 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
                           className='mx-3 mb-1 flex items-start justify-between gap-2 rounded border border-border bg-card px-3 py-2'>
                           <div className='flex-1 min-w-0'>
                             <div className='flex items-center gap-2'>
-                              <span className='font-mono text-[10px] font-bold text-primary shrink-0'>{tech.id}</span>
+                              <span className='font-mono text-xs font-bold text-primary shrink-0'>{tech.id}</span>
                               <span className='text-xs truncate'>{tech.name}</span>
                             </div>
                             {tech.phase && (
-                              <Badge variant='outline' className={cn('mt-0.5 text-[10px] px-1 py-0 h-4 border', PHASE_COLOR[tech.phase])}>
+                              <Badge variant='outline' className={cn('mt-0.5 text-xs px-1 py-0 h-4 border', PHASE_COLOR[tech.phase])}>
                                 {TACTIC_PHASE_LABEL[tech.phase] ?? tech.phase}
                               </Badge>
                             )}
-                            <p className='text-[10px] text-muted-foreground mt-1 leading-relaxed line-clamp-2'>{tech.description}</p>
+                            <p className='text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2'>{tech.description}</p>
                           </div>
                           <Button
                             size='icon'

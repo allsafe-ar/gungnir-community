@@ -104,7 +104,7 @@ function MdField({ label, value, onChange, rows = 4, placeholder }: {
       <div className='flex items-center justify-between'>
         <Label>{label}</Label>
         <button type='button' onClick={() => setPreview(p => !p)}
-          className='text-[11px] text-muted-foreground hover:text-foreground'>
+          className='text-xs text-muted-foreground hover:text-foreground'>
           {preview ? 'Editar' : 'Vista previa (Markdown)'}
         </button>
       </div>
@@ -633,7 +633,7 @@ export function HallazgoSheet({
                     <span className='ml-1.5'>{cveLoading ? t('finding.cve_searching') : t('finding.cve_search_btn')}</span>
                   </Button>
                 </div>
-                <p className='text-[10px] text-muted-foreground'>
+                <p className='text-xs text-muted-foreground'>
                   {t('finding.cve_hint')}
                 </p>
               </div>
@@ -690,7 +690,7 @@ export function HallazgoSheet({
               <div className='space-y-1.5'>
                 <Label>{t('finding.label_due_date')}</Label>
                 <Input type='date' value={form.remediation_due_date} onChange={set('remediation_due_date')} className='w-48' />
-                <p className='text-[11px] text-muted-foreground'>{t('finding.due_date_hint')}</p>
+                <p className='text-xs text-muted-foreground'>{t('finding.due_date_hint')}</p>
               </div>
 
               {isEdit && (
@@ -700,7 +700,7 @@ export function HallazgoSheet({
                     <div className='flex items-center gap-2'>
                       <Label className='text-sm font-semibold'>{t('finding.retest_title')}</Label>
                       {retest && retest.retest_status !== 'not_retested' && (
-                        <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-bold',
+                        <span className={cn('rounded border px-1.5 py-0.5 text-xs font-bold',
                           retest.retest_status === 'passed' ? 'bg-green-500/10 text-green-600 border-green-500/30'
                           : retest.retest_status === 'failed' ? 'bg-red-500/10 text-red-500 border-red-500/30'
                           : 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30')}>

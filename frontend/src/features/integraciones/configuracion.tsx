@@ -113,7 +113,7 @@ export function ScannersConfigPage() {
                   <span className='font-semibold text-sm'>{meta.label}</span>
                   <Badge
                     variant={isEnabled ? 'default' : 'secondary'}
-                    className={cn('text-[10px] ml-1', isEnabled && 'bg-green-500/15 text-green-500 border-green-500/30')}
+                    className={cn('text-xs ml-1', isEnabled && 'bg-green-500/15 text-green-500 border-green-500/30')}
                   >
                     {isEnabled ? t('integrations.config.enabled') : t('integrations.config.disabled')}
                   </Badge>

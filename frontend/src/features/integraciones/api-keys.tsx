@@ -94,7 +94,7 @@ export function IntegracionesApiKeysPage() {
           { label: t('integrations.apikeys.freeSources'), value: FREE_SOURCES.length, color: '#22c55e' },
         ].map(k => (
           <div key={k.label} className='relative rounded-lg border bg-card px-4 py-3 overflow-hidden'>
-            <div className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1'>{k.label}</div>
+            <div className='text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1'>{k.label}</div>
             <div className='text-2xl font-black tabular-nums' style={{ color: k.color }}>{k.value}</div>
             <div className='absolute bottom-0 left-0 right-0 h-0.5' style={{ background: k.color, opacity: 0.4 }} />
           </div>
@@ -107,7 +107,7 @@ export function IntegracionesApiKeysPage() {
           <div className='flex items-center gap-2 mb-4'>
             <Key className='h-3.5 w-3.5 text-muted-foreground' />
             <span className='text-xs font-semibold uppercase tracking-widest text-muted-foreground'>{t('integrations.apikeys.recon')}</span>
-            <span className='ml-auto text-[10px] text-muted-foreground'>{activeReconCount}/{RECON_SERVICES.length} {t('integrations.apikeys.configured')}</span>
+            <span className='ml-auto text-xs text-muted-foreground'>{activeReconCount}/{RECON_SERVICES.length} {t('integrations.apikeys.configured')}</span>
           </div>
 
           <div className='space-y-4'>
@@ -119,9 +119,9 @@ export function IntegracionesApiKeysPage() {
                     : <XCircle className='h-3.5 w-3.5 text-muted-foreground/30 shrink-0' />
                   }
                   <Label className='text-sm font-medium'>{svc.label}</Label>
-                  <a href={`https://${svc.url}`} target='_blank' rel='noreferrer' className='text-[10px] text-muted-foreground hover:underline ml-0.5'>{svc.url}</a>
+                  <a href={`https://${svc.url}`} target='_blank' rel='noreferrer' className='text-xs text-muted-foreground hover:underline ml-0.5'>{svc.url}</a>
                   <Badge variant={status[svc.key] ? 'default' : 'secondary'}
-                    className={cn('text-[10px] ml-auto shrink-0', status[svc.key] && 'bg-green-500/15 text-green-500 border-green-500/30')}
+                    className={cn('text-xs ml-auto shrink-0', status[svc.key] && 'bg-green-500/15 text-green-500 border-green-500/30')}
                   >
                     {status[svc.key] ? t('integrations.apikeys.configured') : t('integrations.apikeys.notConfigured')}
                   </Badge>
@@ -165,7 +165,7 @@ export function IntegracionesApiKeysPage() {
             <div className='flex items-center gap-2 mb-3'>
               <ScanLine className='h-3.5 w-3.5 text-muted-foreground' />
               <span className='text-xs font-semibold uppercase tracking-widest text-muted-foreground'>{t('integrations.apikeys.scanners')}</span>
-              <Badge variant='outline' className='ml-auto text-[10px] text-muted-foreground'>Pro</Badge>
+              <Badge variant='outline' className='ml-auto text-xs text-muted-foreground'>Pro</Badge>
             </div>
             <div className='space-y-2 text-sm text-muted-foreground'>
               <p>Live scanner feeds (Nessus, OpenVAS) are available in <strong>Gungnir Pro</strong>.</p>
@@ -178,14 +178,14 @@ export function IntegracionesApiKeysPage() {
             <div className='flex items-center gap-2 mb-3'>
               <Globe className='h-3.5 w-3.5 text-muted-foreground' />
               <span className='text-xs font-semibold uppercase tracking-widest text-muted-foreground'>{t('integrations.apikeys.freeSources')}</span>
-              <span className='ml-auto text-[10px] text-muted-foreground'>{FREE_SOURCES.length} activas</span>
+              <span className='ml-auto text-xs text-muted-foreground'>{FREE_SOURCES.length} activas</span>
             </div>
             <div className='space-y-1.5'>
               {FREE_SOURCES.map(s => (
                 <div key={s.label} className='flex items-center gap-2 py-0.5'>
                   <CheckCircle2 className='h-3 w-3 text-green-500 shrink-0' />
                   <span className='text-sm flex-1'>{s.label}</span>
-                  <span className='text-[10px] text-muted-foreground shrink-0'>{s.desc}</span>
+                  <span className='text-xs text-muted-foreground shrink-0'>{s.desc}</span>
                 </div>
               ))}
             </div>

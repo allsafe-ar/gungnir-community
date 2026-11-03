@@ -42,12 +42,12 @@ export function HelpPopover({ title, description, tips }: HelpPopoverProps) {
 
           {tips && tips.length > 0 && (
             <div className='space-y-1.5'>
-              <p className='text-[10px] font-bold uppercase tracking-widest text-muted-foreground'>Cómo usarlo</p>
+              <p className='text-xs font-bold uppercase tracking-widest text-muted-foreground'>Cómo usarlo</p>
               <ul className='space-y-1'>
                 {tips.map((tip, i) => (
                   <li key={i} className='flex items-start gap-2'>
                     <span className='mt-1 h-1 w-1 rounded-full bg-accent shrink-0' />
-                    <span className='text-[11px] text-muted-foreground leading-snug'>{tip}</span>
+                    <span className='text-xs text-muted-foreground leading-snug'>{tip}</span>
                   </li>
                 ))}
               </ul>

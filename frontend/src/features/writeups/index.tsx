@@ -86,7 +86,7 @@ const SEV_DOT: Record<string, string> = {
 function FieldGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className='space-y-3'>
-      <h3 className='text-[10px] font-semibold uppercase tracking-widest text-muted-foreground border-b border-border/60 pb-1'>
+      <h3 className='text-xs font-semibold uppercase tracking-widest text-muted-foreground border-b border-border/60 pb-1'>
         {title}
       </h3>
       {children}
@@ -222,7 +222,7 @@ export function Writeups() {
             <Crosshair className='h-4 w-4 text-red-500' />
             <h1 className='font-semibold text-sm text-foreground'>Writeup Generator</h1>
           </div>
-          <p className='text-[11px] text-muted-foreground'>
+          <p className='text-xs text-muted-foreground'>
             Writeups para plataformas de práctica
           </p>
         </div>
@@ -250,7 +250,7 @@ export function Writeups() {
                 <p className={cn('text-xs font-semibold leading-tight', platform === pl.id ? 'text-foreground' : 'text-muted-foreground')}>
                 {pl.label}
               </p>
-              <p className='text-[10px] text-muted-foreground mt-0.5'>{pl.sub}</p>
+              <p className='text-xs text-muted-foreground mt-0.5'>{pl.sub}</p>
             </button>
           ))}
         </div>
@@ -652,7 +652,7 @@ export function Writeups() {
           {/* Privacy note */}
           <div className='flex items-start gap-2 rounded-lg bg-card/30 border border-border/50 p-3'>
             <Shield className='h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0' />
-            <p className='text-[11px] text-muted-foreground leading-relaxed'>
+            <p className='text-xs text-muted-foreground leading-relaxed'>
               El PDF se genera completamente en el cliente. No se envía ningún dato al servidor.
               Los writeups son para uso personal / práctica — respetá las reglas de cada plataforma respecto a publicación de soluciones.
             </p>
@@ -673,7 +673,7 @@ function SectionCard({ title, hint, children }: { title: string; hint?: string; 
       <div className='border-b border-border px-4 py-3 flex items-center gap-2'>
         <div className='h-2.5 w-0.5 rounded-full bg-red-600' />
         <h3 className='text-xs font-semibold text-foreground'>{title}</h3>
-        {hint && <span className='text-[10px] text-muted-foreground'>— {hint}</span>}
+        {hint && <span className='text-xs text-muted-foreground'>— {hint}</span>}
       </div>
       <div className='p-4'>
         {children}

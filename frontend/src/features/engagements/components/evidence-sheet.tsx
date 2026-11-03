@@ -236,7 +236,7 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
                   {fileIcon(pendingFile.type)}
                   <div className='flex-1 min-w-0'>
                     <p className='text-xs font-medium text-foreground truncate'>{pendingFile.name}</p>
-                    <p className='text-[10px] text-muted-foreground'>{formatBytes(pendingFile.size)}</p>
+                    <p className='text-xs text-muted-foreground'>{formatBytes(pendingFile.size)}</p>
                   </div>
                   <button
                     onClick={() => setPendingFile(null)}
@@ -311,7 +311,7 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
             <div className='space-y-5'>
               {Object.entries(byPhase).map(([p, evs]) => (
                 <div key={p}>
-                  <p className='mb-2 text-[10px] uppercase tracking-wider text-muted-foreground font-semibold'>
+                  <p className='mb-2 text-xs uppercase tracking-wider text-muted-foreground font-semibold'>
                     {PHASE_LABELS[p] ?? p} · {evs.length}
                   </p>
                   <div className='space-y-2'>
@@ -330,9 +330,9 @@ export function EvidenceSheet({ open, onOpenChange, engagementId, currentPhase }
                           <div className='flex-1 min-w-0'>
                             <p className='text-xs font-medium text-foreground truncate'>{ev.original_name}</p>
                             {ev.caption && (
-                              <p className='text-[10px] text-muted-foreground mt-0.5 line-clamp-2'>{ev.caption}</p>
+                              <p className='text-xs text-muted-foreground mt-0.5 line-clamp-2'>{ev.caption}</p>
                             )}
-                            <p className='text-[10px] text-muted-foreground mt-1'>
+                            <p className='text-xs text-muted-foreground mt-1'>
                               {ev.file_size ? formatBytes(ev.file_size) : ''} ·{' '}
                               {new Date(ev.uploaded_at).toLocaleDateString('es-AR')}
                             </p>

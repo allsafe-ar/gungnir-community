@@ -198,7 +198,7 @@ export function Usuarios() {
 
                     {/* Rol — badge outline gris, sin colores por rol */}
                     <TableCell>
-                      <span className='rounded border border-border px-1.5 py-0.5 text-[11px] font-medium text-foreground/80'>
+                      <span className='rounded border border-border px-1.5 py-0.5 text-xs font-medium text-foreground/80'>
                         {ROLE_LABELS[user.role] ?? user.role}
                       </span>
                     </TableCell>
@@ -218,11 +218,11 @@ export function Usuarios() {
                     {/* Estado — verde / gris */}
                     <TableCell>
                       {user.is_active ? (
-                        <span className='inline-flex items-center rounded-full bg-green-500/20 px-2 py-0.5 text-[11px] font-semibold text-green-700 dark:text-green-400 ring-1 ring-green-500/30'>
+                        <span className='inline-flex items-center rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-semibold text-green-700 dark:text-green-400 ring-1 ring-green-500/30'>
                           {t('users.status_active')}
                         </span>
                       ) : (
-                        <span className='inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground'>
+                        <span className='inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground'>
                           {t('users.status_inactive')}
                         </span>
                       )}
@@ -343,7 +343,7 @@ export function Usuarios() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className='text-[10px] text-muted-foreground'>
+              <p className='text-xs text-muted-foreground'>
                 {t('users.role_hint')}
               </p>
             </div>

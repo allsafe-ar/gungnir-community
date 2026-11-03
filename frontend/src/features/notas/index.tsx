@@ -133,7 +133,7 @@ function MarkdownContent({ content }: { content: string }) {
           <div key={i} className='my-2 rounded-md border border-border overflow-hidden'>
             {block.lang && (
               <div className='px-3 py-1 bg-muted/60 border-b border-border flex items-center justify-between'>
-                <span className='text-[10px] font-mono text-muted-foreground uppercase tracking-wider'>{block.lang}</span>
+                <span className='text-xs font-mono text-muted-foreground uppercase tracking-wider'>{block.lang}</span>
               </div>
             )}
             <pre className='p-3 text-xs font-mono text-foreground bg-muted/30 overflow-x-auto whitespace-pre leading-relaxed'>
@@ -269,7 +269,7 @@ function SharePanel({ noteId }: { noteId: string }) {
           <Share2 className='size-3.5' />
           Compartir nota
           {shares.length > 0 && (
-            <Badge variant='secondary' className='text-[10px] h-4 px-1.5'>
+            <Badge variant='secondary' className='text-xs h-4 px-1.5'>
               {shares.length}
             </Badge>
           )}
@@ -288,12 +288,12 @@ function SharePanel({ noteId }: { noteId: string }) {
                   className='flex items-center justify-between rounded-md bg-muted/40 px-3 py-1.5'
                 >
                   <div className='flex items-center gap-2'>
-                    <div className='size-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-semibold text-primary'>
+                    <div className='size-5 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary'>
                       {u.full_name.charAt(0).toUpperCase()}
                     </div>
                     <div className='leading-tight'>
                       <p className='text-xs font-medium'>{u.full_name}</p>
-                      <p className='text-[10px] text-muted-foreground'>@{u.username}</p>
+                      <p className='text-xs text-muted-foreground'>@{u.username}</p>
                     </div>
                   </div>
                   <button
@@ -383,18 +383,18 @@ function NoteViewer({
             <h2 className='font-semibold text-base leading-snug pr-4'>{note.title}</h2>
             <div className='flex flex-wrap items-center gap-2 mt-1.5'>
               {note.is_pinned ? (
-                <span className='flex items-center gap-1 text-[10px] text-primary font-medium'>
+                <span className='flex items-center gap-1 text-xs text-primary font-medium'>
                   <Pin className='size-2.5 fill-current' /> Fijada
                 </span>
               ) : null}
               {!note.is_owner && note.owner_name && (
-                <span className='flex items-center gap-1 text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full'>
+                <span className='flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full'>
                   <Users className='size-2.5' />
                   Compartida por {note.owner_name}
                 </span>
               )}
               {note.tags.map((tag) => (
-                <Badge key={tag} variant='outline' className='text-[10px] px-1.5 py-0 h-4'>{tag}</Badge>
+                <Badge key={tag} variant='outline' className='text-xs px-1.5 py-0 h-4'>{tag}</Badge>
               ))}
             </div>
           </div>
@@ -413,7 +413,7 @@ function NoteViewer({
 
         {/* Footer */}
         <div className='px-6 py-3 border-t border-border flex items-center justify-between gap-3 bg-muted/20'>
-          <div className='text-[10px] text-muted-foreground space-y-0.5'>
+          <div className='text-xs text-muted-foreground space-y-0.5'>
             {note.engagement_name && (
               <p className='flex items-center gap-1'>
                 <ChevronDown className='size-2.5 -rotate-90' />
@@ -506,7 +506,7 @@ function NoteCard({
 
       {/* Shared-by badge */}
       {isShared && note.owner_name && (
-        <div className='flex items-center gap-1 text-[10px] text-muted-foreground'>
+        <div className='flex items-center gap-1 text-xs text-muted-foreground'>
           <Users className='size-2.5' />
           <span>De: {note.owner_name}</span>
         </div>
@@ -532,12 +532,12 @@ function NoteCard({
       {note.tags.length > 0 && (
         <div className='flex flex-wrap gap-1 mt-auto'>
           {note.tags.slice(0, 4).map((tag) => (
-            <Badge key={tag} variant='outline' className='text-[10px] px-1.5 py-0 h-4'>
+            <Badge key={tag} variant='outline' className='text-xs px-1.5 py-0 h-4'>
               {tag}
             </Badge>
           ))}
           {note.tags.length > 4 && (
-            <Badge variant='outline' className='text-[10px] px-1.5 py-0 h-4'>
+            <Badge variant='outline' className='text-xs px-1.5 py-0 h-4'>
               +{note.tags.length - 4}
             </Badge>
           )}
@@ -546,7 +546,7 @@ function NoteCard({
 
       {/* Engagement link */}
       {note.engagement_name && (
-        <p className='text-[10px] text-muted-foreground flex items-center gap-1'>
+        <p className='text-xs text-muted-foreground flex items-center gap-1'>
           <ChevronDown className='size-2.5 -rotate-90' />
           {t('notas.linked_to')}: {note.engagement_name}
         </p>
@@ -554,7 +554,7 @@ function NoteCard({
 
       {/* Footer: time + actions */}
       <div className='flex items-center justify-between mt-1'>
-        <span className='text-[10px] text-muted-foreground'>
+        <span className='text-xs text-muted-foreground'>
           {t('notas.last_updated')} {timeAgo(note.updated_at)}
         </span>
         <div className='flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity'>
@@ -921,7 +921,7 @@ export function Notas() {
             <button
               key={tag}
               onClick={() => setFilterTag(tag)}
-              className='text-[11px] px-2 py-0.5 rounded-full border border-border hover:border-primary hover:text-primary transition-colors text-muted-foreground'
+              className='text-xs px-2 py-0.5 rounded-full border border-border hover:border-primary hover:text-primary transition-colors text-muted-foreground'
             >
               {tag}
             </button>

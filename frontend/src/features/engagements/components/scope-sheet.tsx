@@ -42,12 +42,12 @@ function getTypes(t: (k: string) => string) {
 }
 
 const TYPE_BADGE: Record<string, string> = {
-  ip:          'font-mono text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
-  cidr:        'font-mono text-[10px] bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20',
-  domain:      'font-mono text-[10px] bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border-cyan-500/20',
-  url:         'font-mono text-[10px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20',
-  application: 'text-[10px] bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20',
-  other:       'text-[10px] bg-muted text-muted-foreground border-border',
+  ip:          'font-mono text-xs bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
+  cidr:        'font-mono text-xs bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20',
+  domain:      'font-mono text-xs bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border-cyan-500/20',
+  url:         'font-mono text-xs bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20',
+  application: 'text-xs bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20',
+  other:       'text-xs bg-muted text-muted-foreground border-border',
 }
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -275,7 +275,7 @@ function ScopeRow({ item, onDelete }: { item: ScopeItem; onDelete: () => void })
       </Badge>
       <span className='font-mono text-xs flex-1 truncate'>{item.value}</span>
       {item.notes && (
-        <span className='text-[10px] text-muted-foreground hidden group-hover:block truncate max-w-24'>
+        <span className='text-xs text-muted-foreground hidden group-hover:block truncate max-w-24'>
           {item.notes}
         </span>
       )}

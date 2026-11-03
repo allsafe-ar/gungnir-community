@@ -148,7 +148,7 @@ export function ScannerImportDialog({ open, onOpenChange, engagementId, onImport
                   <p className={cn('text-sm font-semibold', scannerType === s.id ? 'text-primary' : 'text-foreground')}>
                     {s.label}
                   </p>
-                  <p className='text-[10px] text-muted-foreground font-mono mt-0.5'>{s.ext}</p>
+                  <p className='text-xs text-muted-foreground font-mono mt-0.5'>{s.ext}</p>
                 </button>
               ))}
             </div>
@@ -235,7 +235,7 @@ export function ScannerImportDialog({ open, onOpenChange, engagementId, onImport
                 <div key={f.id} className='flex items-center gap-2 px-3 py-2 border-b border-border/50 last:border-0'>
                   <div className={cn('h-2 w-2 rounded-full shrink-0', SEV_DOT[f.severity] ?? 'bg-muted')} />
                   <span className='text-xs truncate'>{f.title}</span>
-                  <span className='text-[10px] text-muted-foreground ml-auto shrink-0'>{f.severity}</span>
+                  <span className='text-xs text-muted-foreground ml-auto shrink-0'>{f.severity}</span>
                 </div>
               ))}
             </div>

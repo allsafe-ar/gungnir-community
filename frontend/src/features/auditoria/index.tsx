@@ -89,16 +89,16 @@ export function Auditoria() {
           <Table>
             <TableHeader>
               <TableRow className='border-border hover:bg-transparent'>
-                <TableHead className='text-[11px] font-semibold uppercase tracking-wider text-muted-foreground w-52'>
+                <TableHead className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-52'>
                   Fecha
                 </TableHead>
-                <TableHead className='text-[11px] font-semibold uppercase tracking-wider text-muted-foreground w-32'>
+                <TableHead className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-32'>
                   Usuario
                 </TableHead>
-                <TableHead className='text-[11px] font-semibold uppercase tracking-wider text-muted-foreground w-56'>
+                <TableHead className='text-xs font-semibold uppercase tracking-wider text-muted-foreground w-56'>
                   Acción
                 </TableHead>
-                <TableHead className='text-[11px] font-semibold uppercase tracking-wider text-muted-foreground'>
+                <TableHead className='text-xs font-semibold uppercase tracking-wider text-muted-foreground'>
                   Detalle
                 </TableHead>
               </TableRow>

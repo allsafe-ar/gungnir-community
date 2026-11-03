@@ -203,7 +203,7 @@ export function Templates() {
                 key={s}
                 onClick={() => setSevFilter(s)}
                 className={cn(
-                  'rounded px-2 py-0.5 text-[10px] font-medium border transition-all',
+                  'rounded px-2 py-0.5 text-xs font-medium border transition-all',
                   sevFilter === s
                     ? 'border-primary bg-primary/10 text-primary'
                     : 'border-border text-muted-foreground hover:border-primary/40'
@@ -245,10 +245,10 @@ export function Templates() {
                       <p className='text-xs font-medium leading-tight truncate'>{t.title}</p>
                       <div className='flex items-center gap-1.5 mt-0.5'>
                         {t.category && (
-                          <span className='text-[10px] text-muted-foreground'>{t.category}</span>
+                          <span className='text-xs text-muted-foreground'>{t.category}</span>
                         )}
                         {!!t.is_builtin && (
-                          <span className='text-[10px] text-primary/60 flex items-center gap-0.5'>
+                          <span className='text-xs text-primary/60 flex items-center gap-0.5'>
                             <Star className='size-2.5' />Built-in
                           </span>
                         )}
@@ -278,7 +278,7 @@ export function Templates() {
               <div className='min-w-0 flex-1'>
                 <div className='flex items-center gap-2 mb-1 flex-wrap'>
                   {(() => { const s = SEV_CONFIG[selected.severity]; return (
-                    <span className={cn('inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold', s?.cls)}>
+                    <span className={cn('inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-bold', s?.cls)}>
                       <span className={cn('h-1.5 w-1.5 rounded-full', s?.dot)} />
                       {s?.label}
                     </span>

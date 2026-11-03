@@ -272,7 +272,7 @@ export function EngagementForm({ initial, engagementId }: EngagementFormProps) {
               <SelectContent>
                 {TYPE_GROUPS.map(g => (
                   <div key={g.label}>
-                    <div className='px-2 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground'>
+                    <div className='px-2 py-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground'>
                       {g.label}
                     </div>
                     {g.types.map(item => (
@@ -291,7 +291,7 @@ export function EngagementForm({ initial, engagementId }: EngagementFormProps) {
               <SelectContent>
                 {METHODOLOGIES.map(g => (
                   <div key={g.group}>
-                    <div className='px-2 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground'>
+                    <div className='px-2 py-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground'>
                       {g.group}
                     </div>
                     {g.items.map(m => (

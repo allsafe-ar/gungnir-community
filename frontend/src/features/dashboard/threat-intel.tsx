@@ -78,7 +78,7 @@ export function ThreatIntelDashboard() {
           { label: 'Cobertura total',    value: `${activeCount + FREE_SOURCES.length}`, color: '#8b5cf6' },
         ].map(k => (
           <div key={k.label} className='relative rounded-lg border bg-card px-4 py-3 overflow-hidden'>
-            <div className='text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1'>{k.label}</div>
+            <div className='text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1'>{k.label}</div>
             <div className='text-2xl font-black tabular-nums' style={{ color: k.color }}>{k.value}</div>
             <div className='absolute bottom-0 left-0 right-0 h-0.5' style={{ background: k.color, opacity: 0.4 }} />
           </div>
@@ -111,7 +111,7 @@ export function ThreatIntelDashboard() {
           <div className='flex items-center gap-2 mb-4'>
             <Zap className='h-3.5 w-3.5 text-muted-foreground' />
             <span className='text-xs font-semibold uppercase tracking-widest text-muted-foreground'>APIs externas</span>
-            <span className='ml-auto text-[10px] text-muted-foreground'>{activeCount}/3 configuradas</span>
+            <span className='ml-auto text-xs text-muted-foreground'>{activeCount}/3 configuradas</span>
           </div>
 
           <div className='space-y-4'>
@@ -134,7 +134,7 @@ export function ThreatIntelDashboard() {
                       </a>
                       <Badge
                         variant={active ? 'default' : 'secondary'}
-                        className={cn('text-[10px] ml-auto shrink-0', active && 'bg-green-500/15 text-green-500 border-green-500/30')}
+                        className={cn('text-xs ml-auto shrink-0', active && 'bg-green-500/15 text-green-500 border-green-500/30')}
                       >
                         {active ? 'Activa' : 'Sin configurar'}
                       </Badge>
@@ -142,7 +142,7 @@ export function ThreatIntelDashboard() {
                     <div className='flex flex-wrap gap-1'>
                       {svc.capabilities.map(cap => (
                         <span key={cap} className={cn(
-                          'text-[10px] rounded px-1.5 py-0.5 border',
+                          'text-xs rounded px-1.5 py-0.5 border',
                           active
                             ? 'bg-muted/60 text-muted-foreground border-border'
                             : 'bg-muted/20 text-muted-foreground/40 border-border/30',
@@ -159,7 +159,7 @@ export function ThreatIntelDashboard() {
 
           {activeCount < 3 && (
             <div className='mt-4 pt-3 border-t'>
-              <p className='text-[10px] text-muted-foreground'>
+              <p className='text-xs text-muted-foreground'>
                 Configurá las API keys en{' '}
                 <Link to='/integraciones/api-keys' className='text-primary hover:underline'>Administración → API Keys</Link>
               </p>
@@ -172,7 +172,7 @@ export function ThreatIntelDashboard() {
           <div className='flex items-center gap-2 mb-4'>
             <Globe className='h-3.5 w-3.5 text-muted-foreground' />
             <span className='text-xs font-semibold uppercase tracking-widest text-muted-foreground'>Fuentes libres</span>
-            <span className='ml-auto text-[10px] font-semibold text-green-500'>{FREE_SOURCES.length} activas</span>
+            <span className='ml-auto text-xs font-semibold text-green-500'>{FREE_SOURCES.length} activas</span>
           </div>
 
           <div className='space-y-3'>
@@ -189,7 +189,7 @@ export function ThreatIntelDashboard() {
 
           <div className='mt-4 pt-3 border-t flex items-center gap-2'>
             <div className='h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse' />
-            <span className='text-[10px] text-muted-foreground'>
+            <span className='text-xs text-muted-foreground'>
               Todas las fuentes libres están siempre disponibles, sin configuración adicional
             </span>
           </div>

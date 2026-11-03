@@ -326,7 +326,7 @@ export function Tecnicas({ initialMitre }: TecnicasProps) {
           <div className='flex flex-wrap gap-1'>
             {['all', 'recon', 'scanning', 'exploitation', 'post_exploitation'].map(p => (
               <button key={p} onClick={() => setPhaseFilter(p)}
-                className={cn('rounded px-2 py-0.5 text-[10px] font-medium border transition-colors',
+                className={cn('rounded px-2 py-0.5 text-xs font-medium border transition-colors',
                   phaseFilter === p
                     ? p === 'all' ? 'bg-primary/10 text-primary border-primary/30' : cn(PHASE_COLOR[p])
                     : 'border-border text-muted-foreground hover:border-primary/30'
@@ -358,7 +358,7 @@ export function Tecnicas({ initialMitre }: TecnicasProps) {
                       {tactic}
                     </span>
                   </div>
-                  <span className='text-[10px] text-muted-foreground'>{items.length}</span>
+                  <span className='text-xs text-muted-foreground'>{items.length}</span>
                 </button>
 
                 {expandedTactic === tactic && items.map(tech => (
@@ -370,10 +370,10 @@ export function Tecnicas({ initialMitre }: TecnicasProps) {
                         : 'border-transparent hover:bg-sidebar-accent/50 text-muted-foreground'
                     )}>
                     <div className='flex items-center gap-2'>
-                      <span className='font-mono text-[10px] text-primary shrink-0'>{tech.id}</span>
+                      <span className='font-mono text-xs text-primary shrink-0'>{tech.id}</span>
                       <span className='text-xs truncate'>{tech.name}</span>
                     </div>
-                    <Badge variant='outline' className={cn('mt-0.5 text-[10px] px-1 py-0 h-4 border', PHASE_COLOR[tech.phase])}>
+                    <Badge variant='outline' className={cn('mt-0.5 text-xs px-1 py-0 h-4 border', PHASE_COLOR[tech.phase])}>
                       {PHASE_LABEL[tech.phase]}
                     </Badge>
                   </button>
@@ -422,7 +422,7 @@ export function Tecnicas({ initialMitre }: TecnicasProps) {
             <div>
               <div className='flex items-center gap-2 mb-2'>
                 <p className='text-xs font-semibold uppercase tracking-widest text-muted-foreground'>Herramientas comunes</p>
-                <span className='text-[10px] text-muted-foreground/50'>· click para ver comandos</span>
+                <span className='text-xs text-muted-foreground/50'>· click para ver comandos</span>
               </div>
               <div className='flex flex-wrap gap-2'>
                 {selected.tools.map(tool => {

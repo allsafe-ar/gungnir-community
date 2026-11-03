@@ -364,7 +364,7 @@ function NodeTooltip({ node, x, y }: TooltipProps) {
             {node.ip ?? node.fqdn ?? node.url ?? 'Target'}
           </span>
           {node.owned && (
-            <Badge variant="destructive" className="ml-auto text-[9px] px-1 py-0 h-4 shrink-0">
+            <Badge variant="destructive" className="ml-auto text-xs px-1 py-0 h-4 shrink-0">
               Owned
             </Badge>
           )}
@@ -901,7 +901,7 @@ export function AttackMap({ engagementId }: { engagementId: string }) {
     <div className="flex flex-col gap-4">
       {/* DEBUG — remove after diagnosing */}
       {debugError && (
-        <pre className="bg-red-950 text-red-200 text-[10px] p-2 rounded max-h-40 overflow-auto whitespace-pre-wrap">
+        <pre className="bg-red-950 text-red-200 text-xs p-2 rounded max-h-40 overflow-auto whitespace-pre-wrap">
           {debugError}
         </pre>
       )}

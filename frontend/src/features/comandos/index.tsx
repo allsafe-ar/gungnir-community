@@ -2096,7 +2096,7 @@ function SendToEngagementDialog({ cmd, onClose }: { cmd: Comando | null; onClose
         <div className='flex items-start justify-between gap-3'>
           <div className='min-w-0'>
             <p className='text-sm font-semibold text-foreground truncate'>{cmd.title}</p>
-            <p className='text-[11px] text-muted-foreground mt-0.5'>Agregar al Operation Log de un engagement</p>
+            <p className='text-xs text-muted-foreground mt-0.5'>Agregar al Operation Log de un engagement</p>
           </div>
           <button onClick={onClose} className='text-muted-foreground hover:text-foreground shrink-0'><X className='h-4 w-4' /></button>
         </div>
@@ -2110,7 +2110,7 @@ function SendToEngagementDialog({ cmd, onClose }: { cmd: Comando | null; onClose
         <div className='space-y-3'>
           {/* Engagement */}
           <div className='space-y-1'>
-            <label className='text-[10px] text-muted-foreground uppercase font-semibold'>Engagement *</label>
+            <label className='text-xs text-muted-foreground uppercase font-semibold'>Engagement *</label>
             {loading ? (
               <div className='flex items-center gap-2 text-xs text-muted-foreground'><Loader2 className='h-3 w-3 animate-spin' /> Cargando...</div>
             ) : engs.length === 0 ? (
@@ -2127,7 +2127,7 @@ function SendToEngagementDialog({ cmd, onClose }: { cmd: Comando | null; onClose
 
           {/* Phase */}
           <div className='space-y-1'>
-            <label className='text-[10px] text-muted-foreground uppercase font-semibold'>Fase *</label>
+            <label className='text-xs text-muted-foreground uppercase font-semibold'>Fase *</label>
             <select value={phase} onChange={e => setPhase(e.target.value)}
               className='w-full rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-red-500/60'>
               {ENG_PHASE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -2136,7 +2136,7 @@ function SendToEngagementDialog({ cmd, onClose }: { cmd: Comando | null; onClose
 
           {/* Target */}
           <div className='space-y-1'>
-            <label className='text-[10px] text-muted-foreground uppercase font-semibold'>Target <span className='normal-case text-muted-foreground'>(opcional)</span></label>
+            <label className='text-xs text-muted-foreground uppercase font-semibold'>Target <span className='normal-case text-muted-foreground'>(opcional)</span></label>
             <input value={target} onChange={e => setTarget(e.target.value)}
               placeholder='192.168.1.1, target.com, ...'
               className='w-full rounded-md border border-border bg-background px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-red-500/60' />
@@ -2144,7 +2144,7 @@ function SendToEngagementDialog({ cmd, onClose }: { cmd: Comando | null; onClose
 
           {/* Notes */}
           <div className='space-y-1'>
-            <label className='text-[10px] text-muted-foreground uppercase font-semibold'>Notas <span className='normal-case text-muted-foreground'>(opcional)</span></label>
+            <label className='text-xs text-muted-foreground uppercase font-semibold'>Notas <span className='normal-case text-muted-foreground'>(opcional)</span></label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2}
               className='w-full rounded-md border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-red-500/60 resize-none' />
           </div>
@@ -2198,10 +2198,10 @@ function ComandoCard({ cmd, isCustom, isModified, onEdit, onDelete, onSend }: Co
       <div className='mb-2 flex items-start justify-between gap-2'>
         <div className='flex items-center gap-1.5 min-w-0'>
           {isCustom && (
-            <span className='shrink-0 text-[9px] font-bold text-red-500 bg-red-500/10 border border-red-500/20 px-1 py-0.5 rounded'>CUSTOM</span>
+            <span className='shrink-0 text-xs font-bold text-red-500 bg-red-500/10 border border-red-500/20 px-1 py-0.5 rounded'>CUSTOM</span>
           )}
           {isModified && (
-            <span className='shrink-0 text-[9px] font-bold text-yellow-600 bg-yellow-600/10 border border-yellow-600/20 px-1 py-0.5 rounded'>EDIT</span>
+            <span className='shrink-0 text-xs font-bold text-yellow-600 bg-yellow-600/10 border border-yellow-600/20 px-1 py-0.5 rounded'>EDIT</span>
           )}
           <h3 className='font-medium text-sm text-foreground truncate'>{cmd.title}</h3>
         </div>
@@ -2222,7 +2222,7 @@ function ComandoCard({ cmd, isCustom, isModified, onEdit, onDelete, onSend }: Co
               <Trash2 className='h-3 w-3' />
             </button>
           )}
-          <Badge variant='outline' className={cn('text-[10px] px-1.5 py-0', PHASE_COLORS[cmd.phase])}>
+          <Badge variant='outline' className={cn('text-xs px-1.5 py-0', PHASE_COLORS[cmd.phase])}>
             {PHASE_LABELS[cmd.phase]}
           </Badge>
         </div>
@@ -2238,16 +2238,16 @@ function ComandoCard({ cmd, isCustom, isModified, onEdit, onDelete, onSend }: Co
       </div>
 
       {cmd.notes && (
-        <p className='mt-2 text-[11px] text-muted-foreground italic'>💡 {cmd.notes}</p>
+        <p className='mt-2 text-xs text-muted-foreground italic'>💡 {cmd.notes}</p>
       )}
 
       <div className='mt-3 flex flex-wrap items-center gap-1.5'>
         {cmd.tags.map(t => (
-          <span key={t} className='rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground'>{t}</span>
+          <span key={t} className='rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground'>{t}</span>
         ))}
         {cmd.mitreId && (
           <Link to='/tecnicas' search={{ mitre: cmd.mitreId }}
-            className='ml-auto flex items-center gap-1 text-[10px] text-muted-foreground hover:text-red-400 transition-colors'>
+            className='ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-red-400 transition-colors'>
             <ExternalLink className='h-2.5 w-2.5' />{cmd.mitreId}
           </Link>
         )}
@@ -2332,40 +2332,40 @@ function CmdForm({ toolKey, initial, onSave, onCancel, saving }: CmdFormProps) {
       </div>
       <div className='grid grid-cols-2 gap-2'>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Título *</label>
+          <label className='text-xs text-muted-foreground uppercase'>Título *</label>
           <Input value={title} onChange={e => setTitle(e.target.value)} placeholder='Ej: Enumerar shares' className='h-7 text-xs bg-background border-border' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Fase</label>
+          <label className='text-xs text-muted-foreground uppercase'>Fase</label>
           <select value={phase} onChange={e => setPhase(e.target.value as Phase)}
             className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             {(Object.keys(PHASE_LABELS) as Phase[]).map(p => <option key={p} value={p}>{PHASE_LABELS[p]}</option>)}
           </select>
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Categoría</label>
+          <label className='text-xs text-muted-foreground uppercase'>Categoría</label>
           <Input value={category} onChange={e => setCategory(e.target.value)} placeholder='Ej: Brute Force' className='h-7 text-xs bg-background border-border' />
         </div>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Comando *</label>
+          <label className='text-xs text-muted-foreground uppercase'>Comando *</label>
           <Textarea value={command} onChange={e => setCommand(e.target.value)} rows={4}
             placeholder='El comando o serie de comandos...' className='text-xs font-mono bg-background border-border resize-none' />
         </div>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Descripción</label>
+          <label className='text-xs text-muted-foreground uppercase'>Descripción</label>
           <Textarea value={description} onChange={e => setDesc(e.target.value)} rows={2}
             placeholder='Qué hace este comando...' className='text-xs bg-background border-border resize-none' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>MITRE ID</label>
+          <label className='text-xs text-muted-foreground uppercase'>MITRE ID</label>
           <Input value={mitreId} onChange={e => setMitreId(e.target.value)} placeholder='T1234' className='h-7 text-xs font-mono bg-background border-border' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Tags (comas)</label>
+          <label className='text-xs text-muted-foreground uppercase'>Tags (comas)</label>
           <Input value={tags} onChange={e => setTags(e.target.value)} placeholder='smb, enum, ad' className='h-7 text-xs bg-background border-border' />
         </div>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Notas</label>
+          <label className='text-xs text-muted-foreground uppercase'>Notas</label>
           <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder='Tip o aclaración...' className='h-7 text-xs bg-background border-border' />
         </div>
       </div>
@@ -2404,26 +2404,26 @@ function ToolForm({ defaultCat, onSave, onCancel, saving }: ToolFormProps) {
       </div>
       <div className='grid grid-cols-2 gap-2'>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Nombre *</label>
+          <label className='text-xs text-muted-foreground uppercase'>Nombre *</label>
           <Input value={label} onChange={e => handleLabel(e.target.value)} placeholder='Ej: Katana' className='h-7 text-xs bg-background border-border' />
         </div>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Key (ID único)</label>
+          <label className='text-xs text-muted-foreground uppercase'>Key (ID único)</label>
           <Input value={keyName} onChange={e => setKeyName(autoKey(e.target.value))} className='h-7 text-xs font-mono bg-background border-border' />
         </div>
         <div className='col-span-2 space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Descripción</label>
+          <label className='text-xs text-muted-foreground uppercase'>Descripción</label>
           <Input value={desc} onChange={e => setDesc(e.target.value)} placeholder='Para qué sirve...' className='h-7 text-xs bg-background border-border' />
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>Categoría</label>
+          <label className='text-xs text-muted-foreground uppercase'>Categoría</label>
           <select value={cat} onChange={e => setCat(e.target.value)}
             className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             {ARSENAL_CATS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
         </div>
         <div className='space-y-1'>
-          <label className='text-[10px] text-muted-foreground uppercase'>En Kali</label>
+          <label className='text-xs text-muted-foreground uppercase'>En Kali</label>
           <select value={kali} onChange={e => setKali(e.target.value as 'yes'|'partial'|'no')}
             className='h-7 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground'>
             <option value='yes'>✓ Sí, incluida</option>
@@ -2694,12 +2694,12 @@ export function Comandos({ initialTool }: ComandosProps) {
         <div className='border-b border-border px-3 py-2'>
           <div className='flex flex-wrap gap-1'>
             <button onClick={() => setSelectedPhase('')}
-              className={cn('rounded px-2 py-0.5 text-[10px] transition',
+              className={cn('rounded px-2 py-0.5 text-xs transition',
                 selectedPhase === '' ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground')}
             >Todas</button>
             {(Object.keys(PHASE_LABELS) as Phase[]).map(p => (
               <button key={p} onClick={() => setSelectedPhase(p === selectedPhase ? '' : p)}
-                className={cn('rounded border px-2 py-0.5 text-[10px] transition',
+                className={cn('rounded border px-2 py-0.5 text-xs transition',
                   selectedPhase === p ? PHASE_COLORS[p] + ' opacity-100' : 'border-transparent text-muted-foreground hover:text-foreground')}
               >{PHASE_LABELS[p]}</button>
             ))}
@@ -2713,7 +2713,7 @@ export function Comandos({ initialTool }: ComandosProps) {
               selectedTool === '' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-card hover:text-foreground')}
           >
             <span className='flex-1 text-left font-medium'>Todas las herramientas</span>
-            <span className='rounded bg-accent px-1.5 py-0.5 text-[10px] text-muted-foreground'>{filtered.length}</span>
+            <span className='rounded bg-accent px-1.5 py-0.5 text-xs text-muted-foreground'>{filtered.length}</span>
           </button>
         </div>
 
@@ -2728,7 +2728,7 @@ export function Comandos({ initialTool }: ComandosProps) {
             return (
               <div key={cat.id}>
                 <button onClick={() => toggleCat(cat.id)}
-                  className='group flex w-full items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground transition'>
+                  className='group flex w-full items-center gap-1.5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground transition'>
                   {expanded ? <ChevronDown className='h-3 w-3 shrink-0' /> : <ChevronRight className='h-3 w-3 shrink-0' />}
                   <span className='flex-1 text-left truncate'>{cat.label}</span>
                   {isAdmin && (
@@ -2766,8 +2766,8 @@ export function Comandos({ initialTool }: ComandosProps) {
                             )}>
                             <span className='flex-1 text-left truncate'>{meta.label}</span>
                             {isCustomTool && <span className='text-[8px] text-red-500/70 shrink-0'>✦</span>}
-                            <span className={cn('text-[9px] font-mono shrink-0', kb.cls)}>{kb.label}</span>
-                            <span className={cn('rounded px-1 py-0.5 text-[10px] shrink-0',
+                            <span className={cn('text-xs font-mono shrink-0', kb.cls)}>{kb.label}</span>
+                            <span className={cn('rounded px-1 py-0.5 text-xs shrink-0',
                               active ? 'bg-red-500/15 text-red-700 dark:text-red-400' : 'bg-muted text-muted-foreground')}>{count}</span>
                           </button>
                           {isAdmin && isCustomTool && (
@@ -2802,7 +2802,7 @@ export function Comandos({ initialTool }: ComandosProps) {
               <div className='ml-auto flex items-center gap-2'>
                 {currentMeta.mitreIds?.map(id => (
                   <Link key={id} to='/tecnicas' search={{ mitre: id }}
-                    className='flex items-center gap-1 rounded border border-border px-2 py-1 text-[10px] text-muted-foreground hover:border-red-800 hover:text-red-400 transition'>
+                    className='flex items-center gap-1 rounded border border-border px-2 py-1 text-xs text-muted-foreground hover:border-red-800 hover:text-red-400 transition'>
                     <ExternalLink className='h-2.5 w-2.5' />{id}
                   </Link>
                 ))}
@@ -2901,7 +2901,7 @@ export function Comandos({ initialTool }: ComandosProps) {
                           <h3 className='text-sm font-semibold text-foreground'>{meta?.label ?? tool}</h3>
                           <span className='text-xs text-muted-foreground'>{meta?.description}</span>
                           <button onClick={() => setSelectedTool(tool)}
-                            className='ml-auto text-[10px] text-muted-foreground hover:text-red-400 transition'>ver todos →</button>
+                            className='ml-auto text-xs text-muted-foreground hover:text-red-400 transition'>ver todos →</button>
                         </div>
                         <div className='grid gap-3 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-2'>
                           {cmds.slice(0, 4).map(cmd => {
