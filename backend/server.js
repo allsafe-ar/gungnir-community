@@ -26,6 +26,8 @@ const reconInt   = require("./integrations/recon");
 const correo         = require("./correo");
 const notificaciones = require("./notificaciones");
 const { CATALOGOS: METODOLOGIAS } = require("./data/metodologias");
+const inventarioCommunity = require("./inventario-community");
+const vulnerabilidades    = require("./vulnerabilidades");
 
 const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
@@ -71,6 +73,26 @@ const db = mysql.createPool({
 const qRows = async (sql, p) => { const [r] = await db.execute(sql, p||[]); return r; };
 const qRow  = async (sql, p) => { const r = await qRows(sql, p); return r[0]||null; };
 const qRun  = (sql, p)       => db.execute(sql, p||[]);
+
+/**
+ * Corre `fn` dentro de una transacción, con una conexión propia del pool. `fn` recibe
+ * `{ qRow, qRows, qRun }` sobre esa conexión: lo que se haga con el `qRun` global queda AFUERA.
+ * Si `fn` lanza, se deshace todo. (Igual que en Gungnir Pro; la usa el módulo de Vulnerabilidades.)
+ */
+async function transaccion(fn) {
+  const con = await db.getConnection();
+  try {
+    await con.beginTransaction();
+    const txRows = async (sql, p) => { const [r] = await con.execute(sql, p || []); return r; };
+    const tx = { qRows: txRows, qRow: async (sql, p) => (await txRows(sql, p))[0] || null, qRun: (sql, p) => con.execute(sql, p || []) };
+    const r = await fn(tx);
+    await con.commit();
+    return r;
+  } catch (e) {
+    try { await con.rollback(); } catch (_) { /* la conexión ya no sirve: se libera igual */ }
+    throw e;
+  } finally { con.release(); }
+}
 
 // ── Audit log helper ──────────────────────────────────────────────────────────
 async function auditLog(userId, username, action, entity, entityId, detail, ip) {
@@ -944,6 +966,13 @@ async function initDB() {
       }
     } catch(e) { /* trim failure is non-fatal */ }
   }, 60 * 60 * 1000); // run hourly
+
+  // Inventario único de activos (por cliente) y seguimiento continuo de vulnerabilidades. Van al
+  // final: cuelgan de `clients`. Las mismas tablas que Gungnir Pro, para pasar a Pro sin migrar nada.
+  try {
+    await inventarioCommunity.prepararEsquema({ qRows, qRun });
+    await vulnerabilidades.crearTablasCompletas({ qRows, qRun });
+  } catch (e) { console.error("[GUNGNIR] Inventario y vulnerabilidades: no se pudieron crear las tablas:", e.message); }
 
   console.log("[GUNGNIR] DB inicializada correctamente.");
 }
@@ -2599,6 +2628,17 @@ app.post("/api/engagements/:id/import-scan", auth(["admin","auditor","pentester"
   res.json({ imported: created.length, findings: created });
 });
 
+// ── INVENTARIO Y VULNERABILIDADES ─────────────────────────────────────────────
+// Inventario único de activos (módulo canónico de utiles/activos, copiado en inventario/): vive en
+// inventario-community.js. Los activos son de cada cliente; al unir dos, sus vulnerabilidades pasan
+// al que queda.
+inventarioCommunity.montar(app, { auth, auditLog, qRow, qRows, qRun, alFusionar: vulnerabilidades.alFusionar({ qRow, qRows, qRun }) });
+
+// Vulnerabilidades: seguimiento continuo por cliente (importación manual de escaneos, deduplicación,
+// cierre y reapertura), con prioridad por EPSS y KEV (descarga diaria) y plazos por severidad. Vive en
+// vulnerabilidades.js. Los conectores programados y la API para CI/CD son de Gungnir Pro.
+const vulnerabilidadesApi = vulnerabilidades.montar(app, { auth, auditLog, qRow, qRows, qRun, transaccion });
+
 // ── API KEYS ──────────────────────────────────────────────────────────────────
 const crypto = require("crypto");
 
@@ -4004,6 +4044,9 @@ app.use((err, req, res, next) => {
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 initDB().then(() => {
+  // Con las tablas ya creadas: completar la prioridad que falte y la descarga diaria de KEV y EPSS
+  // (VULN_FUENTES_EXTERNAS=0 la apaga en instalaciones sin salida a internet).
+  vulnerabilidadesApi.enriquecimiento.programar();
   app.listen(PORT, () => {
     console.log(`[GUNGNIR] Servidor corriendo en puerto ${PORT}`);
     console.log(`[GUNGNIR] Env: ${process.env.NODE_ENV || 'development'}`);
