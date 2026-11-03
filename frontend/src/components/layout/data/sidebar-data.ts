@@ -14,6 +14,8 @@ import {
   Brain,
   StickyNote,
   GraduationCap,
+  ShieldAlert,
+  HardDrive,
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -36,6 +38,8 @@ export const sidebarData: SidebarData = {
       items: [
         { title: 'nav.clients',     url: '/clientes',    icon: Building2 },
         { title: 'nav.engagements', url: '/engagements', icon: ClipboardList },
+        { title: 'nav.vulnerabilities', url: '/vulnerabilidades', icon: ShieldAlert },
+        { title: 'nav.assets',      url: '/activos',     icon: HardDrive },
       ],
     },
     {

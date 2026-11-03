@@ -56,6 +56,7 @@ Gungnir Community includes everything a pentest team needs to run professional e
 - **CVE auto-populate** - enter a CVE ID and Gungnir auto-fills CVSS vector, score, description and CWE from the NVD API
 - **PDF pentest report** - professional output with executive and technical sections
 - **XML import** - import findings from Nessus (.nessus), Burp Suite (.xml), OpenVAS (.xml) and Nmap (-oX .xml) directly into any engagement phase
+- **Vulnerability management per client** - continuous tracking of periodic scans (Nessus, OpenVAS, Nmap, ZAP, Burp) on a single asset inventory, with deduplication, automatic close and reopen, history, free EPSS and CISA KEV updated daily, calculated priority and due dates by severity
 - **Command arsenal** - 2,300+ searchable pentest commands (Recon, Web, Network, Active Directory, Post-Exploitation, Evasion and more) - including OWASP ZAP, tshark, searchsploit, smbmap, wes-ng, Windows SysNative techniques and more
 - **Finding templates** - 22 built-in templates including web (SQLi, XSS, CSRF, SSRF, XXE, RCE, path traversal, etc.), **Active Directory** (Kerberoasting, AS-REP Roasting, LLMNR/NBT-NS poisoning), **IoT** (default credentials, unencrypted firmware) and **Mobile** (insecure data storage, missing certificate pinning) + custom library
 - **Per-user dark/light theme** persisted in the database (follows you across devices), and the product version visible in the app
@@ -81,6 +82,10 @@ Gungnir Community includes everything a pentest team needs to run professional e
 | Finding editor (CVSS 3.1, CWE, OWASP, MITRE) | ✅ | ✅ |
 | PDF pentest report | ✅ | ✅ |
 | XML import (Nessus, Burp, OpenVAS, Nmap) | ✅ | ✅ |
+| Asset inventory per client (single inventory, duplicates review, expiries) | ✅ | ✅ |
+| Vulnerability management: manual import (Nessus, OpenVAS, Nmap, ZAP, Burp), deduplication, close and reopen, history | ✅ | ✅ |
+| EPSS and CISA KEV (daily), calculated priority, due dates by severity and metrics | ✅ | ✅ |
+| Scheduled vulnerability connectors (Wazuh, OpenVAS) and import API for CI/CD | ❌ | ✅ |
 | Command arsenal (2,300+ commands, incl. OWASP ZAP) | ✅ | ✅ |
 | Finding templates (22 built-in incl. AD / IoT / Mobile + custom) | ✅ | ✅ |
 | Notes with sharing | ✅ | ✅ |
@@ -222,6 +227,16 @@ Import findings from scanner output files directly into any engagement phase:
 | OpenVAS | `.xml` | CVSS base score → severity bucket |
 | Nmap | `-oX .xml` | Per-port heuristic → info default |
 
+### Vulnerability Management
+Continuous tracking per client, separate from engagements: an engagement has a start and an end, while periodic scans show the state of the client's infrastructure over time.
+- **Single asset inventory per client** - every vulnerability belongs to an asset. Scans add the hosts they find; an IP alone never merges two assets, it is left for a person to review
+- **Manual import** of Nessus, OpenVAS, Nmap, ZAP and Burp files. Re-importing the same scan does not duplicate anything: the same CVE (or scanner rule) on the same asset and port is one vulnerability, even if two tools report it
+- **Close and reopen** - a vulnerability closes on its own only when a scan from the same tool covered its asset and did not find it again; if it comes back, it reopens. Accepted risk and false positive are decisions of a person and no import changes them
+- **History** of every change and every import, with what was new, closed, reopened or unchanged, and a vulnerabilities tab in each asset
+- **Priority and due dates** - EPSS (FIRST) and the KEV catalog (CISA) are downloaded once a day, free of charge. Priority combines severity, EPSS and KEV; due dates by severity (7/30/90/120 days by default, per client if needed), at most 15 days for anything in KEV. Metrics: overdue, due soon, in KEV, MTTR, age and 12-week trend
+- Set `VULN_FUENTES_EXTERNAS=0` on installations without internet access: everything works with what is already stored
+- Scheduled connectors (Wazuh, OpenVAS) and the import API for CI/CD are part of Gungnir Pro. The database schema is the same, so moving to Pro keeps the full history
+
 ### OSINT / Recon
 - **Shodan** - IP intelligence, open ports, CVEs, geolocation
 - **VirusTotal** - domain/IP reputation and threat intel
@@ -325,6 +340,10 @@ Initial credentials (first run): user `admin`. There is no default password: it 
 gungnir-community/
 ├── backend/
 │   ├── server.js              # Single-file Express backend
+│   ├── inventario/            # Shared asset inventory module (copy of the AllSafe canonical one)
+│   ├── inventario-community.js  # Inventory adapter (assets per client)
+│   ├── vulnerabilidades*.js   # Vulnerability management: routes, engine, priority, EPSS/KEV
+│   ├── importacion-escaneres.js # Scanner parsers for vulnerability management
 │   ├── integrations/
 │   │   ├── recon.js           # OSINT integrations (Shodan, VT, Censys, etc.)
 │   │   └── http.js            # HTTP helper

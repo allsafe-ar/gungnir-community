@@ -56,6 +56,7 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 - **Auto-populate por CVE** - ingresá un CVE ID y Gungnir completa automáticamente el vector CVSS, score, descripción y CWE desde la API de NVD
 - **Reporte PDF de pentesting** - salida profesional con secciones ejecutiva y técnica
 - **Importación XML** - importar hallazgos desde Nessus (.nessus), Burp Suite (.xml), OpenVAS (.xml) y Nmap (-oX .xml) directamente en cualquier fase del engagement
+- **Gestión de vulnerabilidades por cliente** - seguimiento continuo de los escaneos periódicos (Nessus, OpenVAS, Nmap, ZAP, Burp) sobre un inventario único de activos, con deduplicación, cierre y reapertura automáticos, historial, EPSS y KEV de CISA gratis con actualización diaria, prioridad calculada y plazos por severidad
 - **Arsenal de comandos** - 2.300+ comandos de pentesting buscables (Recon, Web, Network, Active Directory, Post-Explotación, Evasión y más) - incluye OWASP ZAP, tshark, searchsploit, smbmap, wes-ng, técnicas SysNative Windows y más
 - **Templates de hallazgos** - 22 templates preconfigurados: web (SQLi, XSS, CSRF, SSRF, XXE, RCE, path traversal, etc.), **Active Directory** (Kerberoasting, AS-REP Roasting, envenenamiento LLMNR/NBT-NS), **IoT** (credenciales por defecto, firmware sin cifrar) y **Mobile** (almacenamiento inseguro, falta de certificate pinning) + biblioteca personalizada
 - **Tema dark/light por usuario** persistido en la base de datos (te sigue entre dispositivos), y la versión del producto visible en la app
@@ -98,6 +99,10 @@ Gungnir Community incluye todo lo que un equipo de pentesting necesita para ejec
 | Registro de tiempo por fase y operador | ✅ | ✅ |
 | Cobertura de metodología (checklist WSTG v4.2 + PTES, % de cobertura) | ✅ | ✅ |
 | Export de capa MITRE ATT&CK Navigator (interoperable con Gjallarhorn) | ✅ | ✅ |
+| Inventario de activos por cliente (inventario único, revisión de duplicados, vencimientos) | ✅ | ✅ |
+| Gestión de vulnerabilidades: importación manual (Nessus, OpenVAS, Nmap, ZAP, Burp), deduplicación, cierre y reapertura, historial | ✅ | ✅ |
+| EPSS y KEV de CISA (diario), prioridad calculada, plazos por severidad y métricas | ✅ | ✅ |
+| Conectores programados de vulnerabilidades (Wazuh, OpenVAS) y API de importación para CI/CD | ❌ | ✅ |
 | Anotaciones sobre evidencia (markup de capturas) | ✅ | ✅ |
 | Avisos de hallazgos por correo / webhook | ✅ | ✅ |
 | **Team Engagements** - membresía por engagement + visibilidad restringida por default | ❌ | ✅ |
@@ -222,6 +227,16 @@ Importar hallazgos desde archivos de salida de scanners directamente en cualquie
 | OpenVAS | `.xml` | Score base CVSS → bucket de severidad |
 | Nmap | `-oX .xml` | Heurística por puerto → info por defecto |
 
+### Gestión de vulnerabilidades
+Seguimiento continuo por cliente, separado de los engagements: un engagement tiene principio y fin, y los escaneos periódicos muestran el estado de la infraestructura del cliente a lo largo del tiempo.
+- **Inventario único de activos por cliente** - cada vulnerabilidad cuelga de un activo. Los escaneos suman los equipos que encuentran; la IP sola nunca une dos activos, queda para que la revise una persona
+- **Importación manual** de archivos de Nessus, OpenVAS, Nmap, ZAP y Burp. Reimportar el mismo escaneo no duplica nada: el mismo CVE (o la misma regla del escáner) en el mismo activo y puerto es una sola vulnerabilidad, aunque la informen dos herramientas
+- **Cierre y reapertura** - una vulnerabilidad se cierra sola solo cuando un escaneo de la misma herramienta cubrió su activo y no la volvió a encontrar; si vuelve, se reabre. Riesgo aceptado y falso positivo son decisiones de una persona y ninguna importación las cambia
+- **Historial** de cada cambio y de cada importación, con lo nuevo, lo cerrado, lo reabierto y lo que siguió igual, y una pestaña de vulnerabilidades en cada activo
+- **Prioridad y plazos** - EPSS (FIRST) y el catálogo KEV (CISA) se bajan una vez por día, gratis. La prioridad combina severidad, EPSS y KEV; plazos por severidad (7/30/90/120 días por defecto, propios de cada cliente si hace falta), con 15 días como máximo para lo que está en KEV. Métricas: vencidas, por vencer, en KEV, MTTR, antigüedad y tendencia de 12 semanas
+- En instalaciones sin salida a internet, `VULN_FUENTES_EXTERNAS=0`: todo sigue funcionando con lo que ya está guardado
+- Los conectores programados (Wazuh, OpenVAS) y la API de importación para CI/CD son de Gungnir Pro. El esquema de la base es el mismo, así que al pasar a Pro se conserva toda la historia
+
 ### OSINT / Recon
 - **Shodan** - inteligencia de IPs, puertos abiertos, CVEs, geolocalización
 - **VirusTotal** - reputación de dominios/IPs e inteligencia de amenazas
@@ -325,6 +340,10 @@ Después de instalar, probá importar un engagement de la comunidad para explora
 gungnir-community/
 ├── backend/
 │   ├── server.js              # Backend Express single-file
+│   ├── inventario/            # Módulo único de inventario de activos (copia del canónico de AllSafe)
+│   ├── inventario-community.js  # Adaptador del inventario (activos por cliente)
+│   ├── vulnerabilidades*.js   # Gestión de vulnerabilidades: rutas, motor, prioridad, EPSS/KEV
+│   ├── importacion-escaneres.js # Parsers de escáneres para la gestión de vulnerabilidades
 │   ├── integrations/
 │   │   ├── recon.js           # Integraciones OSINT (Shodan, VT, Censys, etc.)
 │   │   └── http.js            # Helper HTTP

@@ -21,6 +21,7 @@ import { Route as errors404RouteImport } from './routes/(errors)/404'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedActivosIndexRouteImport } from './routes/_authenticated/activos/index'
 import { Route as AuthenticatedAuditoriaIndexRouteImport } from './routes/_authenticated/auditoria/index'
 import { Route as AuthenticatedBibliotecaIndexRouteImport } from './routes/_authenticated/biblioteca/index'
 import { Route as AuthenticatedClientesIndexRouteImport } from './routes/_authenticated/clientes/index'
@@ -44,6 +45,7 @@ import { Route as AuthenticatedScriptsIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedTecnicasIndexRouteImport } from './routes/_authenticated/tecnicas/index'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates/index'
 import { Route as AuthenticatedUsuariosIndexRouteImport } from './routes/_authenticated/usuarios/index'
+import { Route as AuthenticatedVulnerabilidadesIndexRouteImport } from './routes/_authenticated/vulnerabilidades/index'
 import { Route as AuthenticatedWriteupsIndexRouteImport } from './routes/_authenticated/writeups/index'
 import { Route as AuthenticatedClientesClienteIdEditarRouteImport } from './routes/_authenticated/clientes/$clienteId_.editar'
 import { Route as AuthenticatedEngagementsEngagementIdEditarRouteImport } from './routes/_authenticated/engagements/$engagementId_.editar'
@@ -107,6 +109,12 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedActivosIndexRoute =
+  AuthenticatedActivosIndexRouteImport.update({
+    id: '/activos/',
+    path: '/activos/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAuditoriaIndexRoute =
   AuthenticatedAuditoriaIndexRouteImport.update({
     id: '/auditoria/',
@@ -243,6 +251,12 @@ const AuthenticatedUsuariosIndexRoute =
     path: '/usuarios/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedVulnerabilidadesIndexRoute =
+  AuthenticatedVulnerabilidadesIndexRouteImport.update({
+    id: '/vulnerabilidades/',
+    path: '/vulnerabilidades/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedWriteupsIndexRoute =
   AuthenticatedWriteupsIndexRouteImport.update({
     id: '/writeups/',
@@ -280,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/engagements/$engagementId': typeof AuthenticatedEngagementsEngagementIdRoute
   '/engagements/nuevo': typeof AuthenticatedEngagementsNuevoRoute
   '/integraciones/api-keys': typeof AuthenticatedIntegracionesApiKeysRoute
+  '/activos/': typeof AuthenticatedActivosIndexRoute
   '/auditoria/': typeof AuthenticatedAuditoriaIndexRoute
   '/biblioteca/': typeof AuthenticatedBibliotecaIndexRoute
   '/clientes/': typeof AuthenticatedClientesIndexRoute
@@ -297,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/tecnicas/': typeof AuthenticatedTecnicasIndexRoute
   '/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/usuarios/': typeof AuthenticatedUsuariosIndexRoute
+  '/vulnerabilidades/': typeof AuthenticatedVulnerabilidadesIndexRoute
   '/writeups/': typeof AuthenticatedWriteupsIndexRoute
   '/clientes/$clienteId/editar': typeof AuthenticatedClientesClienteIdEditarRoute
   '/engagements/$engagementId/editar': typeof AuthenticatedEngagementsEngagementIdEditarRoute
@@ -319,6 +335,7 @@ export interface FileRoutesByTo {
   '/engagements/$engagementId': typeof AuthenticatedEngagementsEngagementIdRoute
   '/engagements/nuevo': typeof AuthenticatedEngagementsNuevoRoute
   '/integraciones/api-keys': typeof AuthenticatedIntegracionesApiKeysRoute
+  '/activos': typeof AuthenticatedActivosIndexRoute
   '/auditoria': typeof AuthenticatedAuditoriaIndexRoute
   '/biblioteca': typeof AuthenticatedBibliotecaIndexRoute
   '/clientes': typeof AuthenticatedClientesIndexRoute
@@ -336,6 +353,7 @@ export interface FileRoutesByTo {
   '/tecnicas': typeof AuthenticatedTecnicasIndexRoute
   '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/usuarios': typeof AuthenticatedUsuariosIndexRoute
+  '/vulnerabilidades': typeof AuthenticatedVulnerabilidadesIndexRoute
   '/writeups': typeof AuthenticatedWriteupsIndexRoute
   '/clientes/$clienteId/editar': typeof AuthenticatedClientesClienteIdEditarRoute
   '/engagements/$engagementId/editar': typeof AuthenticatedEngagementsEngagementIdEditarRoute
@@ -360,6 +378,7 @@ export interface FileRoutesById {
   '/_authenticated/engagements/$engagementId': typeof AuthenticatedEngagementsEngagementIdRoute
   '/_authenticated/engagements/nuevo': typeof AuthenticatedEngagementsNuevoRoute
   '/_authenticated/integraciones/api-keys': typeof AuthenticatedIntegracionesApiKeysRoute
+  '/_authenticated/activos/': typeof AuthenticatedActivosIndexRoute
   '/_authenticated/auditoria/': typeof AuthenticatedAuditoriaIndexRoute
   '/_authenticated/biblioteca/': typeof AuthenticatedBibliotecaIndexRoute
   '/_authenticated/clientes/': typeof AuthenticatedClientesIndexRoute
@@ -377,6 +396,7 @@ export interface FileRoutesById {
   '/_authenticated/tecnicas/': typeof AuthenticatedTecnicasIndexRoute
   '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/_authenticated/usuarios/': typeof AuthenticatedUsuariosIndexRoute
+  '/_authenticated/vulnerabilidades/': typeof AuthenticatedVulnerabilidadesIndexRoute
   '/_authenticated/writeups/': typeof AuthenticatedWriteupsIndexRoute
   '/_authenticated/clientes/$clienteId_/editar': typeof AuthenticatedClientesClienteIdEditarRoute
   '/_authenticated/engagements/$engagementId_/editar': typeof AuthenticatedEngagementsEngagementIdEditarRoute
@@ -401,6 +421,7 @@ export interface FileRouteTypes {
     | '/engagements/$engagementId'
     | '/engagements/nuevo'
     | '/integraciones/api-keys'
+    | '/activos/'
     | '/auditoria/'
     | '/biblioteca/'
     | '/clientes/'
@@ -418,6 +439,7 @@ export interface FileRouteTypes {
     | '/tecnicas/'
     | '/templates/'
     | '/usuarios/'
+    | '/vulnerabilidades/'
     | '/writeups/'
     | '/clientes/$clienteId/editar'
     | '/engagements/$engagementId/editar'
@@ -440,6 +462,7 @@ export interface FileRouteTypes {
     | '/engagements/$engagementId'
     | '/engagements/nuevo'
     | '/integraciones/api-keys'
+    | '/activos'
     | '/auditoria'
     | '/biblioteca'
     | '/clientes'
@@ -457,6 +480,7 @@ export interface FileRouteTypes {
     | '/tecnicas'
     | '/templates'
     | '/usuarios'
+    | '/vulnerabilidades'
     | '/writeups'
     | '/clientes/$clienteId/editar'
     | '/engagements/$engagementId/editar'
@@ -480,6 +504,7 @@ export interface FileRouteTypes {
     | '/_authenticated/engagements/$engagementId'
     | '/_authenticated/engagements/nuevo'
     | '/_authenticated/integraciones/api-keys'
+    | '/_authenticated/activos/'
     | '/_authenticated/auditoria/'
     | '/_authenticated/biblioteca/'
     | '/_authenticated/clientes/'
@@ -497,6 +522,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tecnicas/'
     | '/_authenticated/templates/'
     | '/_authenticated/usuarios/'
+    | '/_authenticated/vulnerabilidades/'
     | '/_authenticated/writeups/'
     | '/_authenticated/clientes/$clienteId_/editar'
     | '/_authenticated/engagements/$engagementId_/editar'
@@ -600,6 +626,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/activos/': {
+      id: '/_authenticated/activos/'
+      path: '/activos'
+      fullPath: '/activos/'
+      preLoaderRoute: typeof AuthenticatedActivosIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/auditoria/': {
@@ -763,6 +796,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsuariosIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/vulnerabilidades/': {
+      id: '/_authenticated/vulnerabilidades/'
+      path: '/vulnerabilidades'
+      fullPath: '/vulnerabilidades/'
+      preLoaderRoute: typeof AuthenticatedVulnerabilidadesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/writeups/': {
       id: '/_authenticated/writeups/'
       path: '/writeups'
@@ -795,6 +835,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEngagementsEngagementIdRoute: typeof AuthenticatedEngagementsEngagementIdRoute
   AuthenticatedEngagementsNuevoRoute: typeof AuthenticatedEngagementsNuevoRoute
   AuthenticatedIntegracionesApiKeysRoute: typeof AuthenticatedIntegracionesApiKeysRoute
+  AuthenticatedActivosIndexRoute: typeof AuthenticatedActivosIndexRoute
   AuthenticatedAuditoriaIndexRoute: typeof AuthenticatedAuditoriaIndexRoute
   AuthenticatedBibliotecaIndexRoute: typeof AuthenticatedBibliotecaIndexRoute
   AuthenticatedClientesIndexRoute: typeof AuthenticatedClientesIndexRoute
@@ -812,6 +853,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTecnicasIndexRoute: typeof AuthenticatedTecnicasIndexRoute
   AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
   AuthenticatedUsuariosIndexRoute: typeof AuthenticatedUsuariosIndexRoute
+  AuthenticatedVulnerabilidadesIndexRoute: typeof AuthenticatedVulnerabilidadesIndexRoute
   AuthenticatedWriteupsIndexRoute: typeof AuthenticatedWriteupsIndexRoute
   AuthenticatedClientesClienteIdEditarRoute: typeof AuthenticatedClientesClienteIdEditarRoute
   AuthenticatedEngagementsEngagementIdEditarRoute: typeof AuthenticatedEngagementsEngagementIdEditarRoute
@@ -828,6 +870,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEngagementsNuevoRoute: AuthenticatedEngagementsNuevoRoute,
   AuthenticatedIntegracionesApiKeysRoute:
     AuthenticatedIntegracionesApiKeysRoute,
+  AuthenticatedActivosIndexRoute: AuthenticatedActivosIndexRoute,
   AuthenticatedAuditoriaIndexRoute: AuthenticatedAuditoriaIndexRoute,
   AuthenticatedBibliotecaIndexRoute: AuthenticatedBibliotecaIndexRoute,
   AuthenticatedClientesIndexRoute: AuthenticatedClientesIndexRoute,
@@ -845,6 +888,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTecnicasIndexRoute: AuthenticatedTecnicasIndexRoute,
   AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
   AuthenticatedUsuariosIndexRoute: AuthenticatedUsuariosIndexRoute,
+  AuthenticatedVulnerabilidadesIndexRoute:
+    AuthenticatedVulnerabilidadesIndexRoute,
   AuthenticatedWriteupsIndexRoute: AuthenticatedWriteupsIndexRoute,
   AuthenticatedClientesClienteIdEditarRoute:
     AuthenticatedClientesClienteIdEditarRoute,

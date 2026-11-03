@@ -3,6 +3,16 @@
 All notable changes to Gungnir Community are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/); versioning follows [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **Vulnerability management per client**, ported from Gungnir Pro with the same deduplication key, rules and tables, so an installation can move to Pro without losing its history:
+  - Single **asset inventory** per client (copy of the shared AllSafe asset module), with a vulnerabilities tab in each asset.
+  - **Manual import** of Nessus, OpenVAS, Nmap, ZAP and Burp files: deduplication across imports and tools, automatic close only within the scan's scope and from the same tool, reopen when a vulnerability comes back, accepted risk and false positive kept as a person decided, full history and import log.
+  - **EPSS and CISA KEV** downloaded daily at no cost (`VULN_FUENTES_EXTERNAS=0` turns it off), calculated priority, **due dates by severity** (global and per client) and metrics: overdue, due soon, in KEV, MTTR, age and 12-week trend.
+  - The schema is created on first start (also with Docker).
+- Scheduled connectors (Wazuh, OpenVAS) and the import API for CI/CD stay in Gungnir Pro; the import log says so in one line.
+
 ## [1.3.3] - 2026-10-28
 
 ### Security
