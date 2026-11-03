@@ -1952,7 +1952,8 @@
       "alcance": "Equipos",
       "usuario": "Usuario",
       "prioridad": "Prioridad",
-      "plazo": "Plazo"
+      "plazo": "Plazo",
+      "ubicacion": "Ubicación"
     },
     "estado": {
       "abierto": "Abierta",
@@ -1969,21 +1970,28 @@
       "zap": "OWASP ZAP",
       "burp": "Burp Suite",
       "wazuh": "Wazuh",
-      "manual": "Carga manual"
+      "manual": "Carga manual",
+      "sarif": "SARIF (Semgrep, CodeQL...)",
+      "trivy": "Trivy",
+      "nuclei": "Nuclei"
     },
     "historial": {
       "alta": "Apareció en la importación {{codigo}} de {{fuente}}.",
       "alta_manual": "Cargada a mano por {{usuario}}.",
       "cierre_auto": "Cerrada: no apareció en la importación {{codigo}} de {{fuente}}.",
       "reapertura": "Reabierta: volvió a aparecer en la importación {{codigo}} de {{fuente}}.",
-      "manual": "Cambio de estado de {{usuario}}:"
+      "manual": "Cambio de estado de {{usuario}}:",
+      "a_engagement": "Llevada a un engagement por {{usuario}}.",
+      "retest": "Retest en el engagement, registrado por {{usuario}}."
     },
     "eventoCorto": {
       "alta": "Nueva",
       "alta_manual": "Nueva",
       "cierre_auto": "Cerrada",
       "reapertura": "Reabierta",
-      "manual": "Cambio manual"
+      "manual": "Cambio manual",
+      "a_engagement": "A engagement",
+      "retest": "Retest"
     },
     "reaperturasN_one": "Reabierta {{count}} vez",
     "reaperturasN_other": "Reabierta {{count}} veces",
@@ -2116,7 +2124,55 @@
       "conector": "Conector programado",
       "api": "API (CI/CD)"
     },
-    "enPro": "Los conectores programados (Wazuh y OpenVAS) y la API de importación para CI/CD están en la edición Pro."
+    "enPro": "Los conectores programados (Wazuh y OpenVAS) y la API de importación para CI/CD están en la edición Pro.",
+    "formatoAyuda": {
+      "sarif": "SARIF 2.1.0 de Semgrep, CodeQL, Trivy u otro SAST. Cierra solo lo de la misma herramienta en el mismo repositorio.",
+      "trivy": "Salida de trivy image o trivy fs con --format json. La imagen se sigue sin la etiqueta: una versión nueva cierra lo corregido.",
+      "nuclei": "Salida de nuclei -jsonl. Solo trae coincidencias: para cerrar lo de un sitio limpio, nombralo en el alcance."
+    },
+    "activoCodigo": "Activo (repositorio o imagen)",
+    "activoCodigoAyuda": "Solo si el archivo no dice qué analizó, o para corregirlo: github.com/org/app, o imagen:ghcr.io/org/app (sin etiqueta).",
+    "engagement": {
+      "llevar": "Llevar a un engagement",
+      "llevarN_one": "Llevar {{count}} a un engagement",
+      "llevarN_other": "Llevar {{count}} a un engagement",
+      "ayuda": "Se crea un hallazgo en el engagement con el título, la descripción, los CVE, el CVSS, la severidad, el activo, la solución y la evidencia. Lo que ya se llevó no se duplica.",
+      "elegir": "Engagement del cliente",
+      "elegirPlaceholder": "Elegí un engagement",
+      "sinEngagements": "Este cliente no tiene engagements abiertos que puedas ver.",
+      "confirmar": "Llevar",
+      "llevadas_one": "Se creó {{count}} hallazgo en el engagement.",
+      "llevadas_other": "Se crearon {{count}} hallazgos en el engagement.",
+      "yaLlevadas_one": "{{count}} ya estaba en un engagement: no se duplicó.",
+      "yaLlevadas_other": "{{count}} ya estaban en un engagement: no se duplicaron.",
+      "noEncontradas_one": "{{count}} no se encontró en este cliente.",
+      "noEncontradas_other": "{{count}} no se encontraron en este cliente.",
+      "seleccionadas_one": "{{count}} seleccionada",
+      "seleccionadas_other": "{{count}} seleccionadas",
+      "limpiarSeleccion": "Quitar la selección",
+      "seleccionarPagina": "Seleccionar las de esta página",
+      "enlace": "En un engagement",
+      "engagement": "Engagement",
+      "estadoHallazgo": "Estado del hallazgo",
+      "hallazgo": {
+        "open": "Abierto",
+        "in_remediation": "En remediación",
+        "fixed": "Remediado",
+        "accepted": "Riesgo aceptado"
+      },
+      "retest": "Retest",
+      "retestEstado": {
+        "not_retested": "Sin retest",
+        "passed": "Aprobado",
+        "failed": "Falló",
+        "partial": "Parcial"
+      },
+      "retestAyuda": "El retest aprobado no cierra la vulnerabilidad sola: la cierra el escáner que la encontró cuando deja de verla. Si ya está verificada, cerrala a mano.",
+      "cerrarPorRetest": "Cerrar como remediada",
+      "motivoRetest": "Retest aprobado en el engagement {{titulo}}.",
+      "roto": "Se había llevado a un engagement, pero el hallazgo ya no existe. Se puede volver a llevar.",
+      "sinAcceso": "Está en un engagement al que no tenés acceso."
+    }
   },
   "activos": {
     "titulo": "Activos",

@@ -25,7 +25,9 @@
  * OpenVAS) y la API de importación para CI/CD. Las columnas que usan (`origen`, `conector_id`,
  * `externo_id`, `huella`) se crean igual, para que el esquema sea el mismo.
  *
- * Preparado y sin implementar: el pase a engagement (`engagement_id`, `finding_id`).
+ * Etapa 4: importadores de SARIF 2.1.0, Trivy JSON y Nuclei JSONL (`vulnerabilidades-formatos.js`;
+ * el activo de código es el repositorio o la imagen) y el pase a engagement
+ * (`vulnerabilidades-engagement.js`, guarda `engagement_id` y `finding_id`).
  *
  * Cómo se monta en el server.js:
  *
@@ -38,6 +40,8 @@ const escaneres = require("./importacion-escaneres");
 const ingreso = require("./inventario/ingreso");
 const { norm } = require("./inventario/identidad");
 const M = require("./vulnerabilidades-motor");
+const F = require("./vulnerabilidades-formatos");
+const VE = require("./vulnerabilidades-engagement");
 const P = require("./vulnerabilidades-prioridad");
 const E = require("./vulnerabilidades-enriquecimiento");
 const { middlewares, clienteDelPedido, ROLES_ADMINISTRAR } = require("./inventario-community");
@@ -45,7 +49,7 @@ const { middlewares, clienteDelPedido, ROLES_ADMINISTRAR } = require("./inventar
 const MAX_LISTA = 500;
 const MAX_ALCANCE_EXTRA = 2000;
 /** Escáneres web: el host es un sitio, no un equipo de la red (ver `resolverActivos`). */
-const WEB = ["zap", "burp"];
+const WEB = ["zap", "burp", "nuclei"];
 
 const codigoDe = (id) => String(id).slice(0, 8).toUpperCase();
 
@@ -61,6 +65,10 @@ const codigoDe = (id) => String(id).slice(0, 8).toUpperCase();
  * ⚠️ En ZAP y Burp el host es un sitio (`www.cliente.com`). El inventario compara nombres de host sin
  * dominio (`www`), así que dos sitios distintos se unirían: por eso el sitio entra como nombre, no
  * como nombre de host, y se reconoce por el identificador externo.
+ *
+ * 🔑 Etapa 4: un repositorio o una imagen (SARIF, Trivy) llega con `ref` { clave, nombre, tipo } y
+ * entra como software, reconocido solo por su identificador externo (repo:..., imagen:...). Se ingresa
+ * como "sin identidad de red" (agrupado): un repositorio llamado "api" no se une a un equipo "api".
  */
 async function resolverActivos(dep, { cliente, fuente, hosts, usuario }) {
   const mapa = new Map();
@@ -68,6 +76,13 @@ async function resolverActivos(dep, { cliente, fuente, hosts, usuario }) {
   for (const h of hosts) {
     const k = claveHost(h);
     if (!k || mapa.has(k)) continue;
+    if (h.ref) {
+      const r = await ingreso.ingresar(dep, { tenant: cliente, fuente: M.FUENTE_INVENTARIO, externoId: h.ref.clave,
+        entrante: { nombre: h.ref.nombre, tipo: h.ref.tipo, herramienta: fuente }, usuario, agrupado: true });
+      if (r.id) mapa.set(k, r.id);
+      if (r.accion === "nuevo" || r.accion === "nuevo_con_duda") nuevos++;
+      continue;
+    }
     const web = WEB.includes(fuente);
     const entrante = web
       ? { nombre: h.hostname || h.ip, ip: h.ip || null, tipo: "expuesto" }
@@ -81,6 +96,7 @@ async function resolverActivos(dep, { cliente, fuente, hosts, usuario }) {
 }
 
 function claveHost(h) {
+  if (h?.ref?.clave) return `ref|${h.ref.clave}`;
   const ip = norm("ip", h?.ip), hn = h?.hostname ? String(h.hostname).trim().toLowerCase() : null;
   return ip || hn ? `${ip || ""}|${hn || ""}` : null;
 }
@@ -109,15 +125,44 @@ async function alcanceExtra({ qRows }, cliente, lineas) {
  *
  * `origen`: manual (archivo subido en la pantalla), api (CI/CD con clave de API) o conector.
  */
-async function importar(deps, { cliente, fuente, xml, extra = [], usuario, usuarioId = null, archivo = null, origen = "manual", conectorId = null }) {
-  const parser = escaneres.PARSERS[fuente];
-  if (!parser) return { error: "Fuente no importable.", status: 400 };
-  let crudos;
-  try { crudos = parser(xml); } catch (e) { return { error: `No se pudo leer el archivo: ${e.message}`, status: 400 }; }
-  const items = crudos.map(M.desdeParser).filter((i) => i.titulo && (i.host.ip || i.host.hostname));
-  const hosts = escaneres.hostsEscaneados(fuente, xml, crudos);
+async function importar(deps, { cliente, fuente, xml, extra = [], usuario, usuarioId = null, archivo = null, origen = "manual", conectorId = null,
+  activo = null, cierreMinimo = null }) {
+  let crudos, hosts, cierre = null;
+  if (F.FORMATOS.includes(fuente)) {
+    // Etapa 4: SARIF, Trivy y Nuclei dicen ellos mismos qué analizaron (hosts) y, SARIF, qué cierra.
+    try { ({ crudos, hosts, cierre } = F.leer(fuente, xml, { activo })); } catch (e) {
+      if (e.lectura) return { error: `No se pudo leer el archivo: ${e.message}`, status: 400 };
+      throw e;
+    }
+  } else {
+    const parser = escaneres.PARSERS[fuente];
+    if (!parser) return { error: "Fuente no importable.", status: 400 };
+    try { crudos = parser(xml); } catch (e) { return { error: `No se pudo leer el archivo: ${e.message}`, status: 400 }; }
+    hosts = escaneres.hostsEscaneados(fuente, xml, crudos);
+  }
+  const items = crudos.map(M.desdeParser).filter((i) => i.titulo && (i.host.ip || i.host.hostname || i.host.ref));
   if (!items.length && !hosts.length) return { error: "El archivo no tiene vulnerabilidades ni equipos escaneados. Revisá que la fuente elegida sea la correcta.", status: 400 };
-  return importarItems(deps, { cliente, fuente, items, hosts, extra, usuario, usuarioId, archivo, origen, conectorId });
+  return importarItems(deps, { cliente, fuente, items, hosts, extra, usuario, usuarioId, archivo, origen, conectorId, cierre, cierreMinimo });
+}
+
+/**
+ * El filtro de cierre de SARIF: un candidato se cierra solo si un run del archivo cubrió su activo con
+ * la MISMA herramienta y, si el run declaró su juego de reglas, con su regla (ver formatos).
+ */
+function filtroDeCierre(cierre, mapa) {
+  if (!cierre?.length) return null;
+  const porActivo = new Map();
+  for (const r of cierre) {
+    const id = mapa.get(claveHost({ ref: { clave: r.activo } }));
+    if (!id) continue;
+    if (!porActivo.has(id)) porActivo.set(id, []);
+    porActivo.get(id).push(r);
+  }
+  return (c) => {
+    const runs = porActivo.get(c.activo_id);
+    if (!runs) return true;
+    return runs.some((r) => (!r.herramienta || r.herramienta === c.servicio) && (!r.reglas || r.reglas.includes(c.regla)));
+  };
 }
 
 /**
@@ -125,7 +170,7 @@ async function importar(deps, { cliente, fuente, xml, extra = [], usuario, usuar
  * (con `host`) y los equipos que cubrió el escaneo. Una transacción.
  */
 async function importarItems(deps, { cliente, fuente, items, hosts, extra = [], usuario, usuarioId = null, archivo = null,
-  origen = "manual", conectorId = null, cierreMinimo = null }) {
+  origen = "manual", conectorId = null, cierreMinimo = null, cierre = null }) {
   return deps.transaccion(async (tx) => {
     // Dos importaciones del mismo cliente a la vez se pisarían el cierre: se hacen de a una.
     // En Community `clients` no tiene inquilino: `tenant_id` va nulo, como en una instalación de Pro
@@ -145,6 +190,7 @@ async function importarItems(deps, { cliente, fuente, items, hosts, extra = [], 
     importacion.codigo = codigoDe(importacion.id);
     const delta = await M.aplicar(M.repoSQL(tx), {
       cliente, tenant: cli.tenant_id, fuente, items: conActivo, alcance, importacion, usuario, nuevoId: uuidv4, cierreMinimo,
+      filtroCierre: filtroDeCierre(cierre, mapa),
     });
     // Prioridad y plazo de lo que entró, cambió de severidad o se reabrió, con lo que ya tienen las
     // cachés de KEV y EPSS. Lo que la caché de EPSS no tiene se completa después (completarCliente).
@@ -242,7 +288,7 @@ function montar(app, deps) {
   }
 
   const COLS_LISTA = `v.id, v.cliente_id, v.activo_id, v.fuente, v.fuente_ultima, v.titulo, v.severidad, v.cvss, v.cves, v.cwe,
-    v.puerto, v.protocolo, v.servicio, v.estado, v.primera_vez, v.ultima_vez, v.fecha_cierre, v.reaperturas, v.responsable,
+    v.puerto, v.protocolo, v.servicio, v.ubicacion, v.engagement_id, v.finding_id, v.estado, v.primera_vez, v.ultima_vez, v.fecha_cierre, v.reaperturas, v.responsable,
     v.prioridad, v.epss, v.epss_percentil, v.kev, v.kev_ransomware, v.kev_vence, v.fecha_limite,
     a.nombre AS activo_nombre, a.ip AS activo_ip, a.hostname AS activo_hostname`;
 
@@ -251,6 +297,10 @@ function montar(app, deps) {
     res.json({ estados: M.ESTADOS, manuales: M.MANUALES, severidades: M.SEVERIDADES, fuentes: M.FUENTES, importables: M.IMPORTABLES,
       prioridades: P.PRIORIDADES, estados_plazo: P.ESTADOS_PLAZO });
   });
+
+  // ── Etapa 4: pase a engagement. Antes de /:id, que se tragaría "engagements". En Community todos
+  // ven todos los engagements (no hay equipos ni inquilinos) y `findings` no tiene `tenant_id`.
+  const pase = VE.montar(app, { mw, clienteO403, qRow, qRows, qRun, transaccion: deps.transaccion, auditLog, fallo });
 
   /** Detalle de KEV de una lista de CVE (para la insignia: nombre, ransomware, fechas de CISA). */
   async function detalleKev(cves) {
@@ -402,12 +452,14 @@ function montar(app, deps) {
   app.post("/api/vulnerabilidades/importar", mw.editar[0], subida.single("archivo"), ...mw.editar.slice(1), async (req, res) => {
     const cliente = clienteO403(req, res); if (!cliente) return;
     const fuente = String(req.body?.fuente || "").toLowerCase();
-    if (!M.IMPORTABLES.includes(fuente)) return res.status(400).json({ error: "Elegí la herramienta del archivo: OpenVAS, Nessus, Nmap, ZAP o Burp." });
+    if (!M.IMPORTABLES.includes(fuente)) return res.status(400).json({ error: "Elegí la herramienta del archivo: OpenVAS, Nessus, Nmap, ZAP, Burp, SARIF, Trivy o Nuclei." });
     if (!req.file?.buffer?.length) return res.status(400).json({ error: "Falta el archivo del escaneo." });
     const extra = String(req.body?.alcance || "").split(/[\s,;]+/).filter(Boolean);
+    // SARIF y Trivy: el repositorio o la imagen, si el archivo no lo dice (o para corregirlo).
+    const activo = String(req.body?.activo || "").trim().slice(0, 300) || null;
     try {
       const r = await importar(deps, {
-        cliente, fuente, xml: req.file.buffer.toString("utf8"), extra,
+        cliente, fuente, xml: req.file.buffer.toString("utf8"), extra, activo,
         usuario: req.user.username, usuarioId: req.user.id, archivo: req.file.originalname,
       });
       if (r.error) return res.status(r.status || 400).json({ error: r.error });
@@ -516,7 +568,7 @@ function montar(app, deps) {
         return { cve: c, epss: e ? Number(e.epss) : null, percentil: e?.percentil != null ? Number(e.percentil) : null, fecha_epss: P.ymd(e?.fecha), kev: kevs.get(c) || null };
       });
       res.json({ ...conDerivados(h, P.hoyLocal()), plazo_desde: h.plazo_desde || h.primera_vez, activo: a, historial, cves_detalle,
-        kev_detalle: cves_detalle.map((c) => c.kev).filter(Boolean) });
+        kev_detalle: cves_detalle.map((c) => c.kev).filter(Boolean), engagement: await pase.enlace(h, req) });
     } catch (e) { fallo(res, e, "ficha"); }
   });
 
@@ -668,7 +720,7 @@ async function crearTablas({ qRows, qRun }) {
     hallazgo_id     VARCHAR(36)  NOT NULL,
     estado_antes    VARCHAR(20)  NULL,
     estado_despues  VARCHAR(20)  NULL,
-    -- alta, alta_manual, cierre_auto, reapertura, manual
+    -- alta, alta_manual, cierre_auto, reapertura, manual; etapa 4: a_engagement, retest
     evento          VARCHAR(20)  NOT NULL,
     motivo          VARCHAR(1000) NULL,
     automatico      TINYINT(1)   NOT NULL DEFAULT 0,
@@ -681,6 +733,16 @@ async function crearTablas({ qRows, qRun }) {
     INDEX idx_vhi_importacion (importacion_id),
     CONSTRAINT fk_vhi_hallazgo FOREIGN KEY (hallazgo_id) REFERENCES vuln_hallazgos(id) ON DELETE CASCADE
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
+  // Etapa 4: la ubicación que va en el lugar del puerto (SARIF, Trivy, Nuclei) y el índice para
+  // encontrar la vulnerabilidad de un hallazgo de engagement (retest). Sin ADD COLUMN IF NOT EXISTS,
+  // que MySQL 8 no tiene: se mira information_schema.
+  const columnas = new Set((await qRows(
+    "SELECT COLUMN_NAME AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'vuln_hallazgos'")).map((f) => f.c));
+  if (!columnas.has("ubicacion")) await qRun("ALTER TABLE vuln_hallazgos ADD COLUMN ubicacion VARCHAR(500) NULL AFTER protocolo");
+  const indices = new Set((await qRows(
+    "SELECT DISTINCT INDEX_NAME AS i FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'vuln_hallazgos'")).map((f) => f.i));
+  if (!indices.has("idx_vh_finding")) await qRun("ALTER TABLE vuln_hallazgos ADD INDEX idx_vh_finding (finding_id)");
 }
 
 /**
@@ -697,4 +759,5 @@ async function crearTablasCompletas(dep) {
   if (!columnas.has("huella")) await dep.qRun("ALTER TABLE vuln_hallazgos ADD COLUMN huella CHAR(40) NULL");
 }
 
-module.exports = { montar, importar, importarItems, registrarImportacion, crearTablas, crearTablasCompletas, alFusionar, resolverActivos, alcanceExtra, claveHost };
+module.exports = { montar, importar, importarItems, registrarImportacion, crearTablas, crearTablasCompletas, alFusionar, resolverActivos, alcanceExtra, claveHost,
+  filtroDeCierre };

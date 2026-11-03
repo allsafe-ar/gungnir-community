@@ -20,8 +20,10 @@ export const SEVERIDADES: Severidad[] = ['critical', 'high', 'medium', 'low', 'i
 export const ESTADOS: Estado[] = ['abierto', 'en_remediacion', 'reabierto', 'remediado', 'riesgo_aceptado', 'falso_positivo']
 /** A los que se puede pasar a mano: `reabierto` lo pone solo una importación. */
 export const MANUALES: Estado[] = ['abierto', 'en_remediacion', 'remediado', 'riesgo_aceptado', 'falso_positivo']
-export const FUENTES = ['openvas', 'nessus', 'nmap', 'zap', 'burp', 'wazuh', 'manual'] as const
-export const IMPORTABLES = ['openvas', 'nessus', 'nmap', 'zap', 'burp'] as const
+export const FUENTES = ['openvas', 'nessus', 'nmap', 'zap', 'burp', 'sarif', 'trivy', 'nuclei', 'wazuh', 'manual'] as const
+export const IMPORTABLES = ['openvas', 'nessus', 'nmap', 'zap', 'burp', 'sarif', 'trivy', 'nuclei'] as const
+/** Formatos de código e imágenes: el activo es el repositorio o la imagen (se puede escribir al importar). */
+export const CON_ACTIVO_DE_CODIGO = ['sarif', 'trivy'] as const
 
 /** Prioridad calculada (etapa 2): no reemplaza a la severidad. La regla vive en el backend. */
 export type Prioridad = 'urgente' | 'alta' | 'media' | 'baja'
@@ -52,6 +54,10 @@ export interface Vulnerabilidad {
   puerto: string | null
   protocolo: string | null
   servicio: string | null
+  /** Etapa 4: "archivo:línea" (SARIF), el paquete (Trivy) o la URL (Nuclei). */
+  ubicacion: string | null
+  engagement_id: string | null
+  finding_id: string | null
   estado: Estado
   primera_vez: string
   ultima_vez: string
@@ -77,7 +83,7 @@ export interface EventoHistorial {
   id: string
   estado_antes: Estado | null
   estado_despues: Estado | null
-  evento: 'alta' | 'alta_manual' | 'cierre_auto' | 'reapertura' | 'manual'
+  evento: 'alta' | 'alta_manual' | 'cierre_auto' | 'reapertura' | 'manual' | 'a_engagement' | 'retest'
   motivo: string | null
   automatico: number
   importacion_id: string | null
@@ -98,6 +104,21 @@ export interface FichaVulnerabilidad extends Omit<Vulnerabilidad, 'activo_nombre
   plazo_desde: string
   kev_detalle: KevDetalle[]
   cves_detalle: { cve: string; epss: number | null; percentil: number | null; fecha_epss: string | null; kev: KevDetalle | null }[]
+  /** El hallazgo del engagement al que se llevó (etapa 4). */
+  engagement: EnlaceEngagement | null
+}
+
+export type RetestEstado = 'not_retested' | 'passed' | 'failed' | 'partial'
+export interface EnlaceEngagement {
+  roto?: boolean
+  sin_acceso?: boolean
+  finding_id?: string
+  estado?: 'open' | 'in_remediation' | 'fixed' | 'accepted'
+  retest?: RetestEstado
+  retest_fecha?: string | null
+  engagement_id?: string
+  engagement_titulo?: string
+  engagement_estado?: string
 }
 
 export interface Delta {
@@ -222,3 +243,6 @@ export function clienteRecordado(): string {
 export function recordarCliente(id: string) {
   try { localStorage.setItem(CLAVE_CLIENTE, id) } catch { /* sin almacenamiento: no pasa nada */ }
 }
+
+/** Los estados que cuentan como abiertos (los únicos que el cierre automático toca). */
+export const ESTADOS_ABIERTOS: Estado[] = ['abierto', 'en_remediacion', 'reabierto']

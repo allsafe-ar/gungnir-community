@@ -2060,6 +2060,8 @@ app.post("/api/engagements/:id/findings/:fid/retest", auth(ESCRIBEN), async (req
     [result, sevRetest, notes || null, req.user.id, nuevoStatus, req.params.fid]
   );
   auditLog(req.user.id, req.user.username, "finding_retest", "engagements", req.params.id, `${String(f.title).slice(0,60)} → ${result}`, req.ip);
+  // Si el hallazgo nació de una vulnerabilidad continua, el retest queda en su historial (no la cierra).
+  await require("./vulnerabilidades-engagement").registrarRetest({ qRows, qRun }, req.params.fid, result, req.user.username);
   res.json(await qRow("SELECT * FROM findings WHERE id=?", [req.params.fid]));
 });
 

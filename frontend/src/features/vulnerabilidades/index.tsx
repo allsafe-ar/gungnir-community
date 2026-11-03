@@ -13,11 +13,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { ChevronLeft, ChevronRight, Loader2, Plus, Search, ShieldAlert, Upload } from 'lucide-react'
+import { Briefcase, ChevronLeft, ChevronRight, Loader2, Plus, Search, ShieldAlert, Upload } from 'lucide-react'
 import { apiFetch } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -35,6 +36,7 @@ import { PanelMetricas } from './metricas'
 import { ConfigPlazos } from './plazos'
 import { FichaVulnerabilidadSheet } from './ficha-vulnerabilidad'
 import { DialogoImportar, VistaDelta } from './importar-escaneo'
+import { DialogoLlevarEngagement } from './llevar-engagement'
 
 interface Resumen {
   abiertas: Record<Severidad, number>
@@ -75,6 +77,11 @@ function Contadores({ r }: { r: Resumen | undefined }) {
 function Listado({ cliente, fuentes, abrir }: { cliente: string; fuentes: string[]; abrir: (id: string) => void }) {
   const { t } = useTranslation()
   const { fecha, antiguedad } = useFecha()
+  const puede = usePermisos()
+  // Selección para llevar en lote a un engagement (etapa 4). Sobrevive al cambio de página.
+  const [seleccion, setSeleccion] = useState<Set<string>>(() => new Set())
+  const [llevar, setLlevar] = useState(false)
+  const alternar = (id: string, si: boolean) => setSeleccion((s) => { const n = new Set(s); if (si) n.add(id); else n.delete(id); return n })
   const [estado, setEstadoF] = useState('abiertas')
   const [severidad, setSeveridadF] = useState(TODOS)
   const [fuente, setFuenteF] = useState(TODOS)
@@ -161,11 +168,27 @@ function Listado({ cliente, fuentes, abrir }: { cliente: string; fuentes: string
         </Select>
         <span className='text-muted-foreground ml-auto text-sm'>{t('vulns.resultados', { count: data?.total || 0 })}</span>
       </div>
+      {puede.editar && seleccion.size ? (
+        <div className='bg-muted/50 flex flex-wrap items-center gap-2 rounded-md border px-3 py-2'>
+          <span className='text-sm'>{t('vulns.engagement.seleccionadas', { count: seleccion.size })}</span>
+          <Button size='sm' onClick={() => setLlevar(true)}><Briefcase className='mr-1 size-4' />{t('vulns.engagement.llevarN', { count: seleccion.size })}</Button>
+          <Button size='sm' variant='ghost' onClick={() => setSeleccion(new Set())}>{t('vulns.engagement.limpiarSeleccion')}</Button>
+        </div>
+      ) : null}
 
       <div className='rounded-md border'>
         <Table>
           <TableHeader>
             <TableRow>
+              {puede.editar ? (
+                <TableHead className='w-8'>
+                  <Checkbox
+                    aria-label={t('vulns.engagement.seleccionarPagina')}
+                    checked={!!data?.filas.length && data.filas.every((v) => seleccion.has(v.id))}
+                    onCheckedChange={(c) => setSeleccion((s) => { const n = new Set(s); for (const v of data?.filas || []) { if (c === true) n.add(v.id); else n.delete(v.id) } return n })}
+                  />
+                </TableHead>
+              ) : null}
               <TableHead><span className='flex items-center gap-1'>{t('vulns.col.prioridad')}<AyudaPrioridad /></span></TableHead>
               <TableHead>{t('vulns.col.severidad')}</TableHead>
               <TableHead>{t('vulns.col.titulo')}</TableHead>
@@ -179,16 +202,22 @@ function Listado({ cliente, fuentes, abrir }: { cliente: string; fuentes: string
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={9} className='py-8 text-center'><Loader2 className='mx-auto size-5 animate-spin' /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className='py-8 text-center'><Loader2 className='mx-auto size-5 animate-spin' /></TableCell></TableRow>
             ) : !data?.filas.length ? (
-              <TableRow><TableCell colSpan={9} className='text-muted-foreground py-8 text-center'>{t('vulns.sinResultados')}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={10} className='text-muted-foreground py-8 text-center'>{t('vulns.sinResultados')}</TableCell></TableRow>
             ) : data.filas.map((v) => (
               <TableRow key={v.id} className='cursor-pointer' onClick={() => abrir(v.id)}>
+                {puede.editar ? (
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Checkbox aria-label={v.titulo} checked={seleccion.has(v.id)} onCheckedChange={(c) => alternar(v.id, c === true)} />
+                  </TableCell>
+                ) : null}
                 <TableCell><BadgePrioridad p={v.prioridad} /></TableCell>
                 <TableCell><BadgeSeveridad s={v.severidad} /></TableCell>
                 <TableCell className='max-w-md'>
                   <p className='truncate text-sm font-medium'>{v.titulo}</p>
                   <div className='flex items-center gap-1'>
+                    {v.finding_id ? <span title={t('vulns.engagement.enlace')}><Briefcase className='text-muted-foreground size-3.5' /></span> : null}
                     {Number(v.kev) === 1 ? <BadgeKev detalle={v.kev_detalle} ransomware={Number(v.kev_ransomware) === 1} /> : null}
                     {v.cves ? <p className='text-muted-foreground truncate text-xs'>{v.cves.split(',').join(', ')}</p> : null}
                   </div>
@@ -197,8 +226,9 @@ function Listado({ cliente, fuentes, abrir }: { cliente: string; fuentes: string
                 <TableCell>
                   <p className='text-sm'>{v.activo_nombre}</p>
                   <p className='text-muted-foreground text-xs'>
-                    {[v.activo_ip && v.activo_ip !== v.activo_nombre ? v.activo_ip : null, v.puerto ? `${v.puerto}/${v.protocolo || 'tcp'}` : null].filter(Boolean).join(' · ')}
+                    {[v.activo_ip && v.activo_ip !== v.activo_nombre ? v.activo_ip : null, v.ubicacion ? null : v.puerto ? `${v.puerto}/${v.protocolo || 'tcp'}` : null].filter(Boolean).join(' · ')}
                   </p>
+                  {v.ubicacion ? <p className='text-muted-foreground max-w-xs truncate font-mono text-xs' title={v.ubicacion}>{v.ubicacion}</p> : null}
                 </TableCell>
                 <TableCell>
                   <BadgeEstado e={v.estado} />
@@ -219,6 +249,8 @@ function Listado({ cliente, fuentes, abrir }: { cliente: string; fuentes: string
           <Button variant='outline' size='sm' disabled={pagina >= paginas} onClick={() => setPagina((p) => p + 1)}><ChevronRight className='size-4' /></Button>
         </div>
       ) : null}
+      <DialogoLlevarEngagement abierto={llevar} onClose={() => setLlevar(false)} cliente={cliente} ids={[...seleccion]}
+        onListo={() => setSeleccion(new Set())} />
     </div>
   )
 }

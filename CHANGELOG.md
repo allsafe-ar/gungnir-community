@@ -5,6 +5,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/); versioning foll
 
 ## [1.5.0] - 2026-11-03
 
+### Added
+- **SARIF 2.1.0, Trivy JSON and Nuclei JSONL** in the manual import of Vulnerabilities (same engine and files as Gungnir Pro). Code and image findings hang from the repository (`repo:host/org/app`) or the image without its tag (`imagen:registry/app`) as software assets; the optional "asset" field fills it in when the file does not say it. The v1 key puts the location (file:line, package or matched-at) where the port goes. A SARIF run only closes what the same tool found in the same repository and, if the run declares its rule set, only those rules.
+- **Take to an engagement:** from the vulnerability sheet or in bulk from the list, a vulnerability becomes a finding of an engagement of the same client, never duplicated, with history on both sides. A passed retest shows up in the sheet and its history, with a shortcut to close the vulnerability manually; it does not close it by itself (the source that found it does).
+
 ### Changed
 - **New version notice**: when a new build is published, open tabs show a notice to reload (shared AllSafe component, `version.json` served without cache).
 - Accent color like Gungnir Pro: red in light and dark mode.

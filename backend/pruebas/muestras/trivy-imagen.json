@@ -1,0 +1,113 @@
+{
+  "SchemaVersion": 2,
+  "CreatedAt": "2026-10-30T14:12:03.511234567-03:00",
+  "ArtifactName": "ghcr.io/ejemplo-org/tienda-web:1.4.0",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "Size": 197681152,
+    "OS": { "Family": "debian", "Name": "12.5" },
+    "ImageID": "sha256:3b1d6f2c9a8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a3928170f6e5d",
+    "DiffIDs": ["sha256:5d4427064ecc46e3c2add169e9b5eafc7ed2be7861081ec925938ab628ac0e25"],
+    "RepoTags": ["ghcr.io/ejemplo-org/tienda-web:1.4.0"],
+    "RepoDigests": ["ghcr.io/ejemplo-org/tienda-web@sha256:0f9e8d7c6b5a49382716f5e4d3c2b1a09f8e7d6c5b4a3928170f6e5d4c3b2a19"],
+    "ImageConfig": { "architecture": "amd64", "os": "linux" }
+  },
+  "Results": [
+    {
+      "Target": "ghcr.io/ejemplo-org/tienda-web:1.4.0 (debian 12.5)",
+      "Class": "os-pkgs",
+      "Type": "debian",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2024-6387",
+          "PkgID": "openssh-client@1:9.2p1-2+deb12u2",
+          "PkgName": "openssh-client",
+          "PkgIdentifier": { "PURL": "pkg:deb/debian/openssh-client@9.2p1-2%2Bdeb12u2?arch=amd64&distro=debian-12.5&epoch=1" },
+          "InstalledVersion": "1:9.2p1-2+deb12u2",
+          "FixedVersion": "1:9.2p1-2+deb12u3",
+          "Status": "fixed",
+          "Layer": { "DiffID": "sha256:5d4427064ecc46e3c2add169e9b5eafc7ed2be7861081ec925938ab628ac0e25" },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2024-6387",
+          "DataSource": { "ID": "debian", "Name": "Debian Security Tracker", "URL": "https://salsa.debian.org/security-tracker-team/security-tracker" },
+          "Title": "openssh: regreSSHion - race condition in SSH allows RCE/DoS",
+          "Description": "A security regression (CVE-2006-5051) was discovered in OpenSSH's server (sshd). There is a race condition which can lead sshd to handle some signals in an unsafe manner.",
+          "Severity": "HIGH",
+          "CweIDs": ["CWE-364"],
+          "VendorSeverity": { "debian": 3, "nvd": 3 },
+          "CVSS": { "nvd": { "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H", "V3Score": 8.1 } },
+          "PublishedDate": "2024-07-01T13:15:06.467Z",
+          "LastModifiedDate": "2024-09-30T13:15:27.473Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2023-4911",
+          "PkgID": "libc6@2.36-9+deb12u1",
+          "PkgName": "libc6",
+          "InstalledVersion": "2.36-9+deb12u1",
+          "FixedVersion": "2.36-9+deb12u3",
+          "Status": "fixed",
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-4911",
+          "Title": "glibc: buffer overflow in ld.so leading to privilege escalation",
+          "Description": "A buffer overflow was discovered in the GNU C Library's dynamic loader ld.so while processing the GLIBC_TUNABLES environment variable.",
+          "Severity": "HIGH",
+          "CweIDs": ["CWE-787", "CWE-122"],
+          "CVSS": { "nvd": { "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H", "V3Score": 7.8 } }
+        },
+        {
+          "VulnerabilityID": "CVE-2023-4911",
+          "PkgID": "libc-bin@2.36-9+deb12u1",
+          "PkgName": "libc-bin",
+          "InstalledVersion": "2.36-9+deb12u1",
+          "FixedVersion": "2.36-9+deb12u3",
+          "Status": "fixed",
+          "SeveritySource": "nvd",
+          "Title": "glibc: buffer overflow in ld.so leading to privilege escalation",
+          "Severity": "HIGH",
+          "CweIDs": ["CWE-787", "CWE-122"],
+          "CVSS": { "nvd": { "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H", "V3Score": 7.8 } }
+        }
+      ]
+    },
+    {
+      "Target": "app/package-lock.json",
+      "Class": "lang-pkgs",
+      "Type": "npm",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2024-29041",
+          "PkgID": "express@4.18.2",
+          "PkgName": "express",
+          "InstalledVersion": "4.18.2",
+          "FixedVersion": "4.19.2, 5.0.0-beta.3",
+          "Status": "fixed",
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2024-29041",
+          "Title": "express: cause malformed URLs to be evaluated",
+          "Description": "Express.js minimalist web framework for node. Versions of Express.js prior to 4.19.0 and all pre-release alpha and beta versions of 5.0 are affected by an open redirect vulnerability using malformed URLs.",
+          "Severity": "MEDIUM",
+          "CweIDs": ["CWE-601", "CWE-1286"],
+          "CVSS": { "ghsa": { "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:N", "V3Score": 6.1 } }
+        },
+        {
+          "VulnerabilityID": "GHSA-952p-6rrq-rcjv",
+          "PkgID": "micromatch@4.0.5",
+          "PkgName": "micromatch",
+          "InstalledVersion": "4.0.5",
+          "FixedVersion": "4.0.8",
+          "Status": "fixed",
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://github.com/advisories/GHSA-952p-6rrq-rcjv",
+          "Title": "Regular Expression Denial of Service (ReDoS) in micromatch",
+          "Severity": "MEDIUM",
+          "CweIDs": ["CWE-1333"]
+        }
+      ]
+    },
+    {
+      "Target": "app/node_modules/.package-lock.json",
+      "Class": "lang-pkgs",
+      "Type": "node-pkg"
+    }
+  ]
+}

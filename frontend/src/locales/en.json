@@ -1952,7 +1952,8 @@
       "alcance": "Devices",
       "usuario": "User",
       "prioridad": "Priority",
-      "plazo": "Due date"
+      "plazo": "Due date",
+      "ubicacion": "Location"
     },
     "estado": {
       "abierto": "Open",
@@ -1969,21 +1970,28 @@
       "zap": "OWASP ZAP",
       "burp": "Burp Suite",
       "wazuh": "Wazuh",
-      "manual": "Manual entry"
+      "manual": "Manual entry",
+      "sarif": "SARIF (Semgrep, CodeQL...)",
+      "trivy": "Trivy",
+      "nuclei": "Nuclei"
     },
     "historial": {
       "alta": "Appeared in import {{codigo}} from {{fuente}}.",
       "alta_manual": "Entered manually by {{usuario}}.",
       "cierre_auto": "Closed: did not appear in import {{codigo}} from {{fuente}}.",
       "reapertura": "Reopened: showed up again in import {{codigo}} from {{fuente}}.",
-      "manual": "Status change by {{usuario}}:"
+      "manual": "Status change by {{usuario}}:",
+      "a_engagement": "Taken to an engagement by {{usuario}}.",
+      "retest": "Retest in the engagement, recorded by {{usuario}}."
     },
     "eventoCorto": {
       "alta": "New",
       "alta_manual": "New",
       "cierre_auto": "Closed",
       "reapertura": "Reopened",
-      "manual": "Manual change"
+      "manual": "Manual change",
+      "a_engagement": "To engagement",
+      "retest": "Retest"
     },
     "reaperturasN_one": "Reopened {{count}} time",
     "reaperturasN_other": "Reopened {{count}} times",
@@ -2116,7 +2124,55 @@
       "conector": "Scheduled connector",
       "api": "API (CI/CD)"
     },
-    "enPro": "Scheduled connectors (Wazuh and OpenVAS) and the import API for CI/CD are available in the Pro edition."
+    "enPro": "Scheduled connectors (Wazuh and OpenVAS) and the import API for CI/CD are available in the Pro edition.",
+    "formatoAyuda": {
+      "sarif": "SARIF 2.1.0 from Semgrep, CodeQL, Trivy or another SAST. It only closes what the same tool found in the same repository.",
+      "trivy": "Output of trivy image or trivy fs with --format json. The image is tracked without its tag: a new version closes what was fixed.",
+      "nuclei": "Output of nuclei -jsonl. It only lists matches: to close what a clean site had, name it in the scope."
+    },
+    "activoCodigo": "Asset (repository or image)",
+    "activoCodigoAyuda": "Only if the file does not say what it scanned, or to correct it: github.com/org/app, or imagen:ghcr.io/org/app (no tag).",
+    "engagement": {
+      "llevar": "Take to an engagement",
+      "llevarN_one": "Take {{count}} to an engagement",
+      "llevarN_other": "Take {{count}} to an engagement",
+      "ayuda": "A finding is created in the engagement with the title, description, CVEs, CVSS, severity, asset, solution and evidence. What was already taken is not duplicated.",
+      "elegir": "Client engagement",
+      "elegirPlaceholder": "Choose an engagement",
+      "sinEngagements": "This client has no open engagements you can see.",
+      "confirmar": "Take",
+      "llevadas_one": "{{count}} finding was created in the engagement.",
+      "llevadas_other": "{{count}} findings were created in the engagement.",
+      "yaLlevadas_one": "{{count}} was already in an engagement: not duplicated.",
+      "yaLlevadas_other": "{{count}} were already in an engagement: not duplicated.",
+      "noEncontradas_one": "{{count}} was not found in this client.",
+      "noEncontradas_other": "{{count}} were not found in this client.",
+      "seleccionadas_one": "{{count}} selected",
+      "seleccionadas_other": "{{count}} selected",
+      "limpiarSeleccion": "Clear selection",
+      "seleccionarPagina": "Select the ones on this page",
+      "enlace": "In an engagement",
+      "engagement": "Engagement",
+      "estadoHallazgo": "Finding status",
+      "hallazgo": {
+        "open": "Open",
+        "in_remediation": "In remediation",
+        "fixed": "Remediated",
+        "accepted": "Risk accepted"
+      },
+      "retest": "Retest",
+      "retestEstado": {
+        "not_retested": "Not retested",
+        "passed": "Passed",
+        "failed": "Failed",
+        "partial": "Partial"
+      },
+      "retestAyuda": "A passed retest does not close the vulnerability by itself: the scanner that found it closes it when it stops seeing it. If it is already verified, close it manually.",
+      "cerrarPorRetest": "Close as remediated",
+      "motivoRetest": "Retest passed in the engagement {{titulo}}.",
+      "roto": "It was taken to an engagement, but the finding no longer exists. It can be taken again.",
+      "sinAcceso": "It is in an engagement you do not have access to."
+    }
   },
   "activos": {
     "titulo": "Assets",

@@ -11,13 +11,18 @@ import { apiFetch } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-import { IMPORTABLES, type Delta } from './comun'
+import { CON_ACTIVO_DE_CODIGO, IMPORTABLES, type Delta } from './comun'
 import { SelectorCliente } from './componentes'
 
-const EXTENSION: Record<string, string> = { nessus: '.nessus,.xml', openvas: '.xml', nmap: '.xml', zap: '.xml', burp: '.xml' }
+const EXTENSION: Record<string, string> = {
+  nessus: '.nessus,.xml', openvas: '.xml', nmap: '.xml', zap: '.xml', burp: '.xml',
+  sarif: '.sarif,.json', trivy: '.json', nuclei: '.jsonl,.json,.txt',
+}
+const esDeCodigo = (f: string) => (CON_ACTIVO_DE_CODIGO as readonly string[]).includes(f)
 
 export function NumeroDelta({ valor, etiqueta, clase }: { valor: number; etiqueta: string; clase?: string }) {
   return (
@@ -71,6 +76,7 @@ function CuerpoImportar({ onClose, clienteInicial }: { onClose: () => void; clie
   const [fuente, setFuente] = useState<string>('openvas')
   const [archivo, setArchivo] = useState<File | null>(null)
   const [alcance, setAlcance] = useState('')
+  const [activo, setActivo] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [delta, setDelta] = useState<Delta | null>(null)
 
@@ -82,6 +88,7 @@ function CuerpoImportar({ onClose, clienteInicial }: { onClose: () => void; clie
       fd.append('cliente', cliente)
       fd.append('fuente', fuente)
       fd.append('alcance', alcance)
+      if (esDeCodigo(fuente) && activo.trim()) fd.append('activo', activo.trim())
       fd.append('archivo', archivo)
       const r = await apiFetch<Delta>('/vulnerabilidades/importar', { method: 'POST', body: fd })
       setDelta(r)
@@ -111,7 +118,15 @@ function CuerpoImportar({ onClose, clienteInicial }: { onClose: () => void; clie
               <SelectTrigger className='w-72'><SelectValue /></SelectTrigger>
               <SelectContent>{IMPORTABLES.map((f) => <SelectItem key={f} value={f}>{t(`vulns.fuente.${f}`)}</SelectItem>)}</SelectContent>
             </Select>
+            {['sarif', 'trivy', 'nuclei'].includes(fuente) ? <p className='text-muted-foreground text-xs'>{t(`vulns.formatoAyuda.${fuente}`)}</p> : null}
           </div>
+          {esDeCodigo(fuente) ? (
+            <div className='space-y-1'>
+              <Label>{t('vulns.activoCodigo')}</Label>
+              <Input value={activo} onChange={(e) => setActivo(e.target.value)} maxLength={300} placeholder='github.com/org/app' />
+              <p className='text-muted-foreground text-xs'>{t('vulns.activoCodigoAyuda')}</p>
+            </div>
+          ) : null}
           <div className='space-y-1'>
             <Label>{t('vulns.archivo')}</Label>
             <div

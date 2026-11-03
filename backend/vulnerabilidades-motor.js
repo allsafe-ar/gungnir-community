@@ -19,6 +19,12 @@
  *
  *   puerto/protocolo = "443/tcp", o vacío si el hallazgo no es de un puerto.
  *
+ *   ⚠️ Etapa 4: en los formatos de código y de contenedores no hay puerto, y en Nuclei el puerto no
+ *   alcanza (dos rutas del mismo sitio son dos hallazgos). Ahí va la UBICACIÓN en el lugar del
+ *   puerto, con la misma fórmula: "archivo:línea" (SARIF), el paquete (Trivy) o el matched-at
+ *   (Nuclei). La regla lleva la herramienta adelante: sarif:<ruleId>, trivy:<id>, nuclei:<template>.
+ *   Las claves de antes no cambian: sin ubicación, el segmento sigue siendo el puerto.
+ *
  * La fuente NO entra en la clave: el mismo CVE en el mismo puerto del mismo equipo, visto por
  * OpenVAS y por Nessus, es una sola vulnerabilidad. La regla sí lleva el nombre de la herramienta
  * adelante, porque los números de plugin de dos herramientas pueden coincidir sin ser lo mismo.
@@ -50,9 +56,11 @@ const RANGO = { critical: 5, high: 4, medium: 3, low: 2, info: 1 };
  * Fuentes del hallazgo. Las importables tienen parser hoy; el resto queda previsto para los
  * conectores programados y la API (etapa 3).
  */
-const FUENTES = ["openvas", "nessus", "nmap", "zap", "burp", "wazuh", "manual"];
-const NOMBRE_FUENTE = { openvas: "OpenVAS", nessus: "Nessus", nmap: "Nmap", zap: "ZAP", burp: "Burp", wazuh: "Wazuh", manual: "carga manual" };
-const IMPORTABLES = ["openvas", "nessus", "nmap", "zap", "burp"];
+const FUENTES = ["openvas", "nessus", "nmap", "zap", "burp", "sarif", "trivy", "nuclei", "wazuh", "manual"];
+const NOMBRE_FUENTE = { openvas: "OpenVAS", nessus: "Nessus", nmap: "Nmap", zap: "ZAP", burp: "Burp", sarif: "SARIF", trivy: "Trivy",
+  nuclei: "Nuclei", wazuh: "Wazuh", manual: "carga manual" };
+/** Etapa 4: SARIF 2.1.0, Trivy JSON y Nuclei JSONL se leen en `vulnerabilidades-formatos.js`. */
+const IMPORTABLES = ["openvas", "nessus", "nmap", "zap", "burp", "sarif", "trivy", "nuclei"];
 
 /** Fuente con la que el inventario registra lo que encontró un escáner (ver vulnerabilidades.js). */
 const FUENTE_INVENTARIO = "escaneo";
@@ -82,9 +90,16 @@ function identificador({ cves, regla, titulo }) {
   return `titulo:${normalizarTitulo(titulo)}`;
 }
 
-function claveDedup({ activo_id, puerto, protocolo, cves, regla, titulo }) {
+/** La ubicación que va en el lugar del puerto (etapa 4). Vacía si el hallazgo no la tiene. */
+function ubicacionDe(u) {
+  const s = String(u ?? "").trim();
+  return s ? s.slice(0, 500) : "";
+}
+
+function claveDedup({ activo_id, puerto, protocolo, ubicacion, cves, regla, titulo }) {
   if (!activo_id) throw new Error("claveDedup: falta el activo");
-  const base = `v1|${activo_id}|${puertoProtocolo(puerto, protocolo)}|${identificador({ cves, regla, titulo })}`;
+  const lugar = ubicacionDe(ubicacion) || puertoProtocolo(puerto, protocolo);
+  const base = `v1|${activo_id}|${lugar}|${identificador({ cves, regla, titulo })}`;
   return crypto.createHash("sha256").update(base, "utf8").digest("hex");
 }
 
@@ -110,10 +125,15 @@ function desdeParser(f) {
     protocolo: pp && pp !== "0" ? corto(String(f._protocolo || "tcp").toLowerCase(), 10) : null,
     servicio: corto(f._servicio, 80),
     regla: corto(f._regla, 200),
+    ubicacion: ubicacionDe(f._ubicacion) || null,
     descripcion: corto(f.description, 60000),
     solucion: corto(f.recommendation, 60000),
     evidencia: corto(f.steps_to_reproduce, 20000),
-    host: { ip: String(f._ip || "").trim(), hostname: String(f._hostname || "").trim() },
+    host: {
+      ip: String(f._ip || "").trim(), hostname: String(f._hostname || "").trim(),
+      // Código e imágenes no tienen IP: el activo es el repositorio o la imagen (ver formatos).
+      ...(f._activo && f._activo.clave ? { ref: f._activo } : {}),
+    },
   };
 }
 
@@ -146,9 +166,13 @@ function huella(d) {
  * @param opciones  { cliente, tenant, fuente, items (con activo_id), alcance (ids de activos que
  *                    cubrió el escaneo), importacion: { id, codigo }, usuario, nuevoId(),
  *                    cierreMinimo? (severidad: lo que está por debajo no se cierra por ausencia,
- *                    porque la fuente lo filtró y no lo trae) }
+ *                    porque la fuente lo filtró y no lo trae),
+ *                    filtroCierre? (recibe cada candidato a cerrar, con su regla, servicio y ubicación,
+ *                    y dice si estaba en lo que el archivo analizó: SARIF lo usa para que una
+ *                    herramienta o un juego de reglas no cierre lo que encontró otro) }
  */
-async function aplicar(repo, { cliente, tenant = null, fuente, items, alcance, importacion, usuario = null, nuevoId, cierreMinimo = null }) {
+async function aplicar(repo, { cliente, tenant = null, fuente, items, alcance, importacion, usuario = null, nuevoId, cierreMinimo = null,
+  filtroCierre = null }) {
   if (!IMPORTABLES.includes(fuente) && !FUENTES.includes(fuente)) throw new Error(`fuente desconocida: ${fuente}`);
   const ref = { fuente, codigo: importacion.codigo };
 
@@ -189,7 +213,7 @@ async function aplicar(repo, { cliente, tenant = null, fuente, items, alcance, i
       const id = nuevoId();
       altas.push({
         id, tenant_id: tenant, cliente_id: cliente, activo_id: it.activo_id, fuente, fuente_ultima: fuente,
-        ...descriptivos(it), puerto: it.puerto, protocolo: it.protocolo, clave_dedup: clave,
+        ...descriptivos(it), puerto: it.puerto, protocolo: it.protocolo, ubicacion: it.ubicacion || null, clave_dedup: clave,
         estado: "abierto", ultima_importacion_id: importacion.id, created_by: usuario,
       });
       anotar({ id: nuevoId(), cliente_id: cliente, hallazgo_id: id, estado_antes: null, estado_despues: "abierto",
@@ -233,6 +257,7 @@ async function aplicar(repo, { cliente, tenant = null, fuente, items, alcance, i
   for (const c of candidatos) {
     if (porClave.has(c.clave_dedup)) continue;
     if (piso && c.severidad && (RANGO[c.severidad] || 0) < piso) continue;
+    if (filtroCierre && !filtroCierre(c)) continue;
     await repo.actualizar(c.id, { estado: "remediado", fecha_cierre: "ahora" });
     anotar({ id: nuevoId(), cliente_id: cliente, hallazgo_id: c.id, estado_antes: c.estado, estado_despues: "remediado",
       evento: "cierre_auto", motivo: motivoAutomatico("cierre_auto", ref), automatico: 1, importacion_id: importacion.id, fuente, usuario });
@@ -270,7 +295,7 @@ function trozos(arr, n = TROZO) { const o = []; for (let i = 0; i < arr.length; 
 
 const COLUMNAS_INSERT = ["id", "tenant_id", "cliente_id", "activo_id", "fuente", "fuente_ultima", "titulo", "severidad", "cvss",
   "cvss_vector", "cves", "cwe", "puerto", "protocolo", "servicio", "regla", "descripcion", "solucion", "evidencia",
-  "clave_dedup", "estado", "ultima_importacion_id", "created_by", "externo_id", "huella"];
+  "clave_dedup", "estado", "ultima_importacion_id", "created_by", "externo_id", "huella", "ubicacion"];
 const ACTUALIZABLES = new Set(["titulo", "severidad", "cvss", "cvss_vector", "cves", "cwe", "servicio", "regla", "descripcion",
   "solucion", "evidencia", "estado", "fecha_cierre", "ultima_vez", "fuente_ultima", "ultima_importacion_id", "reaperturas",
   "responsable", "notas", "activo_id", "clave_dedup", "primera_vez", "plazo_desde", "externo_id", "huella"]);
@@ -316,7 +341,7 @@ function repoSQL({ qRows, qRun }) {
       const o = [];
       for (const t of trozos(activos)) {
         o.push(...await qRows(
-          `SELECT id, clave_dedup, estado, activo_id, severidad FROM vuln_hallazgos
+          `SELECT id, clave_dedup, estado, activo_id, severidad, regla, servicio, ubicacion FROM vuln_hallazgos
             WHERE cliente_id = ? AND fuente = ? AND estado IN (${ABIERTOS.map(() => "?").join(",")})
               AND activo_id IN (${t.map(() => "?").join(",")})`,
           [cliente, fuente, ...ABIERTOS, ...t]));
@@ -379,7 +404,7 @@ async function moverDeActivo({ qRow, qRows, qRun }, principalId, absorbidoId) {
   const filas = await qRows("SELECT * FROM vuln_hallazgos WHERE activo_id = ?", [absorbidoId]);
   let movidas = 0, unidas = 0;
   for (const h of filas) {
-    const clave = claveDedup({ activo_id: principalId, puerto: h.puerto, protocolo: h.protocolo, cves: h.cves, regla: h.regla, titulo: h.titulo });
+    const clave = claveDedup({ activo_id: principalId, puerto: h.puerto, protocolo: h.protocolo, ubicacion: h.ubicacion, cves: h.cves, regla: h.regla, titulo: h.titulo });
     const ya = await qRow("SELECT id FROM vuln_hallazgos WHERE cliente_id = ? AND clave_dedup = ? AND id <> ?", [h.cliente_id, clave, h.id]);
     if (ya) {
       await qRun(`UPDATE vuln_hallazgos SET primera_vez = LEAST(primera_vez, ?), ultima_vez = GREATEST(ultima_vez, ?) WHERE id = ?`,
@@ -397,6 +422,6 @@ async function moverDeActivo({ qRow, qRows, qRun }, principalId, absorbidoId) {
 
 module.exports = {
   ESTADOS, ABIERTOS, DECISIONES, MANUALES, CERRADOS, SEVERIDADES, RANGO, FUENTES, IMPORTABLES, FUENTE_INVENTARIO,
-  normalizarTitulo, normalizarCves, puertoProtocolo, identificador, claveDedup, desdeParser, motivoAutomatico,
+  normalizarTitulo, normalizarCves, puertoProtocolo, ubicacionDe, identificador, claveDedup, desdeParser, motivoAutomatico,
   aplicar, transicionManual, repoSQL, moverDeActivo, trozos, huella, lotesPorTamano,
 };
