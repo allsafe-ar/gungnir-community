@@ -3,7 +3,7 @@
 All notable changes to Gungnir Community are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/); versioning follows [SemVer](https://semver.org/).
 
-## [Unreleased]
+## [1.4.0] - 2026-11-02
 
 ### Added
 - **Vulnerability management per client**, ported from Gungnir Pro with the same deduplication key, rules and tables, so an installation can move to Pro without losing its history:
