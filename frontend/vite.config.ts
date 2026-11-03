@@ -6,6 +6,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import { playwright } from '@vitest/browser-playwright'
+import { versionJson } from './vite-version-json'
 
 // https://vite.dev/config/
 const pkg = createRequire(import.meta.url)('./package.json')
@@ -13,6 +14,8 @@ const pkg = createRequire(import.meta.url)('./package.json')
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [
+    // Publica /version.json con el id de esta compilación: el aviso de versión nueva lo compara (src/lib/version-nueva.ts).
+    versionJson(pkg.version),
     tanstackRouter({
       target: 'react',
       autoCodeSplitting: true,

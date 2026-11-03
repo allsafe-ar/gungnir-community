@@ -11,6 +11,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-store'
 import { handleServerError } from '@/lib/handle-server-error'
+import { recargarSiFaltaUnArchivo } from '@/lib/version-nueva'
 import { DirectionProvider } from './context/direction-provider'
 import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
@@ -18,6 +19,10 @@ import { ThemeProvider } from './context/theme-provider'
 import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
+
+// Una pestaña de una versión anterior pide archivos que el despliegue ya borró: se recarga una vez
+// para traer la versión publicada (ver src/lib/version-nueva.ts).
+recargarSiFaltaUnArchivo('gungnir-recargada')
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -4029,7 +4029,8 @@ app.get("/api/exploitdb/saved/:id/pdf", auth(), async (req, res) => {
 });
 
 if (fs.existsSync(DIST)) {
-  app.use(express.static(DIST));
+  // /version.json sin caché: el aviso de versión nueva lo consulta y, si quedara guardado, nunca avisaría.
+  app.use(express.static(DIST, { setHeaders: (res, p) => { if (path.basename(p) === "version.json") res.setHeader("Cache-Control", "no-store"); } }));
   app.get("*", (_, res) => res.sendFile(path.join(DIST, "index.html")));
 }
 
