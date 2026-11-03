@@ -3,6 +3,13 @@
 All notable changes to Gungnir Community are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/); versioning follows [SemVer](https://semver.org/).
 
+## [1.5.0] - 2026-11-03
+
+### Changed
+- **New version notice**: when a new build is published, open tabs show a notice to reload (shared AllSafe component, `version.json` served without cache).
+- Accent color like Gungnir Pro: red in light and dark mode.
+- No text below 12 px on any screen.
+
 ## [1.4.0] - 2026-11-02
 
 ### Added
