@@ -26,8 +26,6 @@ export function NavUser(_props?: { user?: { name: string; email: string; avatar:
   const [menuPos, setMenuPos] = useState({ bottom: 0, left: 0, width: 260 })
   const triggerRef = useRef<HTMLButtonElement>(null)
 
-  // Only admin and auditor can see this menu
-  if (role !== 'admin' && role !== 'auditor') return null
 
   // Close on outside click
   useEffect(() => {
@@ -42,6 +40,11 @@ export function NavUser(_props?: { user?: { name: string; email: string; avatar:
     document.addEventListener('mousedown', handle)
     return () => document.removeEventListener('mousedown', handle)
   }, [menuOpen])
+
+  // Only admin and auditor can see this menu.
+  // 🔴 El corte va DESPUÉS de todos los hooks: al vencer la sesión el rol queda vacío y, si cortaba antes,
+  // React tiraba el error #300 (menos hooks que en el dibujo anterior) y se veía la pantalla 500 en vez del login.
+  if (role !== 'admin' && role !== 'auditor') return null
 
   function handleToggle() {
     if (!menuOpen && triggerRef.current) {

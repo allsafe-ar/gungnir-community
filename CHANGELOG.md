@@ -3,6 +3,11 @@
 All notable changes to Gungnir Community are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/); versioning follows [SemVer](https://semver.org/).
 
+## [1.5.1] - 2026-11-18
+
+### Fixed
+- When the session expired the 500 screen showed up instead of the login: the Administration menu in the sidebar returned early before one of its hooks and, with the user already cleared, React threw error #300. The early return now comes after every hook.
+
 ## [1.5.0] - 2026-11-03
 
 ### Added
