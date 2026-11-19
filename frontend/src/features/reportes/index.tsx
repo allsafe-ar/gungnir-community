@@ -1,5 +1,5 @@
 /**
- * Reportes — Generador de informes de pentesting
+ * Reportes - Generador de informes de pentesting
  * Seleccioná un engagement → configurá opciones → generá el PDF ejecutivo/técnico.
  */
 
@@ -429,7 +429,7 @@ export function Reportes() {
             <div className='rounded-xl border border-border bg-background p-5'>
               <div className='flex items-center justify-between gap-4'>
                 <div>
-                  <p className='text-sm font-medium text-foreground'>Informe PDF — Ejecutivo + Técnico</p>
+                  <p className='text-sm font-medium text-foreground'>Informe PDF - Ejecutivo + Técnico</p>
                   <p className='text-xs text-muted-foreground mt-0.5'>
                     Portada · Resumen ejecutivo · Tabla de hallazgos · Detalle técnico · Metodología
                   </p>
@@ -462,7 +462,7 @@ export function Reportes() {
                 <div className='mt-3 flex items-center gap-2 text-xs text-muted-foreground'>
                   <CheckCircle2 className='h-3.5 w-3.5 text-green-600' />
                   <span>
-                    Listo para generar — {displayedFindings.length} hallazgo{displayedFindings.length !== 1 ? 's' : ''} ·{' '}
+                    Listo para generar - {displayedFindings.length} hallazgo{displayedFindings.length !== 1 ? 's' : ''} ·{' '}
                     {scope.filter(s => s.in_scope).length} activos in-scope
                   </span>
                 </div>

@@ -1,5 +1,5 @@
 /**
- * Templates de Findings — Biblioteca reutilizable de hallazgos.
+ * Templates de Findings - Biblioteca reutilizable de hallazgos.
  * Permite crear, editar y aplicar plantillas de findings a cualquier engagement.
  * Incluye 15 templates built-in del sistema + templates personalizados.
  */
@@ -148,7 +148,7 @@ export function Templates() {
     const text = [
       `# ${t.title}`,
       t.owasp_category ? `**OWASP:** ${t.owasp_category}` : '',
-      t.cwe_id ? `**CWE:** ${t.cwe_id} — ${t.cwe_name || ''}` : '',
+      t.cwe_id ? `**CWE:** ${t.cwe_id} - ${t.cwe_name || ''}` : '',
       '',
       '## Descripción',
       t.description || '',
@@ -368,7 +368,7 @@ export function Templates() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className='max-w-2xl max-h-[90vh] overflow-y-auto'>
           <DialogHeader>
-            <DialogTitle>{editing ? `Editar — ${editing.title}` : 'Nuevo template'}</DialogTitle>
+            <DialogTitle>{editing ? `Editar - ${editing.title}` : 'Nuevo template'}</DialogTitle>
           </DialogHeader>
 
           <div className='space-y-4 py-2'>
@@ -409,7 +409,7 @@ export function Templates() {
               <div className='space-y-1.5'>
                 <Label className='text-xs'>OWASP</Label>
                 <Input value={form.owasp_category} onChange={e => setForm(f => ({ ...f, owasp_category: e.target.value }))}
-                  placeholder='A03:2021 – Injection' className='text-sm h-8' />
+                  placeholder='A03:2021 - Injection' className='text-sm h-8' />
               </div>
               <div className='col-span-2 space-y-1.5'>
                 <Label className='text-xs'>CWE Nombre</Label>

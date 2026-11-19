@@ -1,8 +1,8 @@
 /**
- * Writeup PDF Generator — Gungnir
+ * Writeup PDF Generator - Gungnir
  * Genera writeups estructurados para plataformas de práctica:
  * HackTheBox, TryHackMe, OSCP Lab, Bug Bounty (VDP/BBP)
- * Writeups para plataformas de práctica — Gungnir.
+ * Writeups para plataformas de práctica - Gungnir.
  */
 
 import jsPDF from 'jspdf'
@@ -119,7 +119,7 @@ export function generateWriteup(data: WriteupData) {
       // Footer on previous page
       doc.setFontSize(7); setColor(GRAY)
       doc.setFont('helvetica', 'normal')
-      doc.text(`${style.label} — ${data.machine_name || data.title || 'Writeup'}`, M, PH - 7)
+      doc.text(`${style.label} - ${data.machine_name || data.title || 'Writeup'}`, M, PH - 7)
       doc.text(String(currentPage), PW - M, PH - 7, { align: 'right' })
       setFill(style.accent); doc.rect(M, PH - 10, W, 0.4, 'F')
       doc.addPage()
@@ -167,7 +167,7 @@ export function generateWriteup(data: WriteupData) {
     doc.setFontSize(7.5); doc.setFont('helvetica', 'bold'); setColor(GRAY)
     doc.text(label.toUpperCase(), x, y)
     doc.setFont('helvetica', 'normal'); setColor(DARK)
-    doc.text(value || '—', x, y + 5)
+    doc.text(value || '-', x, y + 5)
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -175,7 +175,7 @@ export function generateWriteup(data: WriteupData) {
   // ─────────────────────────────────────────────────────────────────────────
   currentPage = 1
 
-  // Cover header — full height dark block
+  // Cover header - full height dark block
   setFill(style.headerBg); doc.rect(0, 0, PW, 90, 'F')
 
   // Platform logo / label
@@ -215,20 +215,20 @@ export function generateWriteup(data: WriteupData) {
     infoRow('Sistema operativo', data.os || '', M + 5 + cW, y + 8, cW)
     infoRow('Dificultad', data.difficulty || '', M + 5 + cW * 2, y + 8, cW)
     infoRow('Puntos', data.points || '', M + 5 + cW * 3, y + 8, cW)
-    infoRow('User flag', data.user_flag ? data.user_flag.slice(0, 20) + '...' : '—', M + 5, y + 22, cW * 2)
-    infoRow('Root flag', data.root_flag ? data.root_flag.slice(0, 20) + '...' : '—', M + 5 + cW * 2, y + 22, cW * 2)
+    infoRow('User flag', data.user_flag ? data.user_flag.slice(0, 20) + '...' : '-', M + 5, y + 22, cW * 2)
+    infoRow('Root flag', data.root_flag ? data.root_flag.slice(0, 20) + '...' : '-', M + 5 + cW * 2, y + 22, cW * 2)
   } else if (data.platform === 'oscp') {
     infoRow('Hostname', data.hostname || '', M + 5, y + 8, cW)
     infoRow('IP', data.ip || '', M + 5 + cW, y + 8, cW)
     infoRow('OS', data.os || '', M + 5 + cW * 2, y + 8, cW)
     infoRow('Dificultad', data.difficulty || '', M + 5 + cW * 3, y + 8, cW)
-    infoRow('Local proof', data.local_proof ? data.local_proof.slice(0, 25) + '...' : '—', M + 5, y + 22, cW * 2)
-    infoRow('Proof', data.proof ? data.proof.slice(0, 25) + '...' : '—', M + 5 + cW * 2, y + 22, cW * 2)
+    infoRow('Local proof', data.local_proof ? data.local_proof.slice(0, 25) + '...' : '-', M + 5, y + 22, cW * 2)
+    infoRow('Proof', data.proof ? data.proof.slice(0, 25) + '...' : '-', M + 5 + cW * 2, y + 22, cW * 2)
   } else if (data.platform === 'bugbounty') {
     infoRow('Programa', data.program || '', M + 5, y + 8, cW * 2)
     infoRow('Severidad', data.severity || '', M + 5 + cW * 2, y + 8, cW)
     infoRow('CVSS', data.cvss || '', M + 5 + cW * 3, y + 8, cW)
-    infoRow('URL afectada', data.affected_url ? data.affected_url.slice(0, 40) : '—', M + 5, y + 22, W - 10)
+    infoRow('URL afectada', data.affected_url ? data.affected_url.slice(0, 40) : '-', M + 5, y + 22, W - 10)
   }
 
   y += 45
@@ -308,7 +308,7 @@ export function generateWriteup(data: WriteupData) {
   doc.setFontSize(7); setColor(GRAY)
   doc.setFont('helvetica', 'normal')
   const nameStr = data.machine_name || data.title || 'Writeup'
-  doc.text(`${style.label} — ${nameStr}`, M, PH - 7)
+  doc.text(`${style.label} - ${nameStr}`, M, PH - 7)
   doc.text(String(currentPage), PW - M, PH - 7, { align: 'right' })
   setFill(style.accent); doc.rect(M, PH - 10, W, 0.4, 'F')
 

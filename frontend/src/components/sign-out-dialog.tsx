@@ -16,7 +16,7 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
     queryClient.cancelQueries()
     queryClient.clear()
 
-    // Borrar SOLO el token del localStorage — sin tocar el estado de Zustand.
+    // Borrar SOLO el token del localStorage - sin tocar el estado de Zustand.
     // Si llamáramos auth.reset() primero, React re-renderizaría el árbol con
     // user=null y algún componente montado podría crashear (user.algo → TypeError)
     // mostrando la página de error 500 por un instante antes de navegar.

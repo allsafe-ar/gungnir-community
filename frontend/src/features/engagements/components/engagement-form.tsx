@@ -36,13 +36,13 @@ const PENTESTING_TYPES = new Set([
 
 const METHODOLOGIES = [
   { group: 'Pentesting', items: [
-    { value: 'ptes',           label: 'PTES — Penetration Testing Execution Standard' },
-    { value: 'owasp_wstg',    label: 'OWASP WSTG — Web Security Testing Guide' },
+    { value: 'ptes',           label: 'PTES - Penetration Testing Execution Standard' },
+    { value: 'owasp_wstg',    label: 'OWASP WSTG - Web Security Testing Guide' },
     { value: 'nist',          label: 'NIST SP 800-115' },
     { value: 'red_team_mitre',label: 'Red Team / MITRE ATT&CK' },
   ]},
   { group: 'Frameworks', items: [
-    { value: 'owasp_samm', label: 'OWASP SAMM — Software Assurance Maturity Model' },
+    { value: 'owasp_samm', label: 'OWASP SAMM - Software Assurance Maturity Model' },
     { value: 'nist_csf',   label: 'NIST Cybersecurity Framework (CSF)' },
     { value: 'iso27001',   label: 'ISO/IEC 27001' },
     { value: 'cobit',      label: 'COBIT 2019' },
@@ -122,7 +122,7 @@ export function EngagementForm({ initial, engagementId }: EngagementFormProps) {
     notes:       (initial as Record<string, string>)?.notes       ?? '',
   })
 
-  // ─── Tipos agrupados — must be inside component to use t() ────────────────
+  // ─── Tipos agrupados - must be inside component to use t() ────────────────
   const TYPE_GROUPS = [
     {
       label: t('engform.group_pentesting'),
@@ -243,7 +243,7 @@ export function EngagementForm({ initial, engagementId }: EngagementFormProps) {
           <div className='space-y-1.5'>
             <Label htmlFor='title'>{t('engform.label_title')} <span className='text-destructive'>*</span></Label>
             <Input id='title' value={form.title} onChange={set('title')}
-              placeholder='Ej: Application Security Review — App de Turnos Q2 2026' required />
+              placeholder='Ej: Application Security Review - App de Turnos Q2 2026' required />
           </div>
           <div className='space-y-1.5'>
             <Label htmlFor='codename'>
@@ -305,7 +305,7 @@ export function EngagementForm({ initial, engagementId }: EngagementFormProps) {
         </CardContent>
       </Card>
 
-      {/* Modo de trabajo — solo en creación */}
+      {/* Modo de trabajo - solo en creación */}
       {!isEdit && (
         <Card>
           <CardHeader className='pb-3'>

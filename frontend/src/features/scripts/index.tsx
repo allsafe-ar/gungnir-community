@@ -1,5 +1,5 @@
 /**
- * Scripts — Biblioteca de scripts ofensivos listos para ejecutar.
+ * Scripts - Biblioteca de scripts ofensivos listos para ejecutar.
  * Integrado con Arsenal (herramientas) y Técnicas (MITRE ATT&CK).
  */
 
@@ -82,7 +82,7 @@ const BUILTIN_SCRIPTS: Script[] = [
   // ── Detección de vulnerabilidades ──────────────────────────────────────────
   {
     id: 'b_eternalblue',
-    name: 'EternalBlue — MS17-010 Check',
+    name: 'EternalBlue - MS17-010 Check',
     category: 'Detección de vulnerabilidades',
     platform: 'cross', language: 'bash',
     severity: 'critical', script_type: 'detection',
@@ -93,7 +93,7 @@ const BUILTIN_SCRIPTS: Script[] = [
     notes: 'Requiere nmap con scripts NSE. Ejecutar como root para mejores resultados.',
     content: `#!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Gungnir — EternalBlue / MS17-010 Detection Script
+# Gungnir - EternalBlue / MS17-010 Detection Script
 # Detecta si los hosts objetivo son vulnerables a EternalBlue.
 # MITRE ATT&CK: T1190, T1210
 # Requiere: nmap
@@ -118,7 +118,7 @@ if ! command -v nmap &>/dev/null; then
   exit 1
 fi
 
-echo -e "\${YELLOW}[*] Gungnir — EternalBlue Scanner\${NC}"
+echo -e "\${YELLOW}[*] Gungnir - EternalBlue Scanner\${NC}"
 echo -e "[*] Target  : $TARGET"
 echo -e "[*] Output  : $OUTPUT"
 echo -e "[*] Inicio  : $(date)"
@@ -146,14 +146,14 @@ while read -r HOST; do
   RESULT=$(nmap -p 445 --script smb-vuln-ms17-010 -T4 "$HOST" 2>/dev/null)
 
   if echo "$RESULT" | grep -q "VULNERABLE"; then
-    echo -e "\${RED}[VULNERABLE]\${NC} $HOST — MS17-010 (EternalBlue)"
-    echo "[VULNERABLE] $HOST — MS17-010 (EternalBlue)" >> "$OUTPUT"
+    echo -e "\${RED}[VULNERABLE]\${NC} $HOST - MS17-010 (EternalBlue)"
+    echo "[VULNERABLE] $HOST - MS17-010 (EternalBlue)" >> "$OUTPUT"
     ((VULN_COUNT++))
   elif echo "$RESULT" | grep -q "NT_STATUS_ACCESS_DENIED"; then
-    echo -e "\${YELLOW}[AUTH REQUERIDA]\${NC} $HOST — No se pudo verificar (requiere autenticación)"
+    echo -e "\${YELLOW}[AUTH REQUERIDA]\${NC} $HOST - No se pudo verificar (requiere autenticación)"
     echo "[AUTH REQUIRED] $HOST" >> "$OUTPUT"
   else
-    echo -e "\${GREEN}[SAFE]\${NC} $HOST — No vulnerable"
+    echo -e "\${GREEN}[SAFE]\${NC} $HOST - No vulnerable"
     echo "[SAFE] $HOST" >> "$OUTPUT"
     ((SAFE_COUNT++))
   fi
@@ -170,7 +170,7 @@ echo "[*] Referencia: https://attack.mitre.org/techniques/T1210/"`,
   },
   {
     id: 'b_smb_relay',
-    name: 'SMB Signing Check — Relay Attack Surface',
+    name: 'SMB Signing Check - Relay Attack Surface',
     category: 'Detección de vulnerabilidades',
     platform: 'cross', language: 'bash',
     severity: 'high', script_type: 'detection',
@@ -181,7 +181,7 @@ echo "[*] Referencia: https://attack.mitre.org/techniques/T1210/"`,
     notes: 'Hosts sin SMB signing son el prerequisito para ataques de relay. Combinar con Responder/ntlmrelayx.',
     content: `#!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Gungnir — SMB Signing Check
+# Gungnir - SMB Signing Check
 # Detecta hosts con SMB Signing deshabilitado (vulnerables a relay)
 # MITRE ATT&CK: T1557, T1550
 # Requiere: nmap o crackmapexec
@@ -193,7 +193,7 @@ RED='\\033[0;31m'; GREEN='\\033[0;32m'; YELLOW='\\033[1;33m'; NC='\\033[0m'
 TARGET=\${1:-"192.168.1.0/24"}
 OUTPUT="smb_signing_$(date +%Y%m%d_%H%M%S).txt"
 
-echo -e "\${YELLOW}[*] Gungnir — SMB Signing Audit\${NC}"
+echo -e "\${YELLOW}[*] Gungnir - SMB Signing Audit\${NC}"
 echo -e "[*] Target: $TARGET"
 echo "═══════════════════════════════════════════"
 
@@ -228,7 +228,7 @@ echo "[*] via GPO: Computer Config → Windows Settings → Security Settings �
   },
   {
     id: 'b_log4shell',
-    name: 'Log4Shell — CVE-2021-44228 Detector',
+    name: 'Log4Shell - CVE-2021-44228 Detector',
     category: 'Detección de vulnerabilidades',
     platform: 'linux', language: 'bash',
     severity: 'critical', script_type: 'detection',
@@ -239,7 +239,7 @@ echo "[*] via GPO: Computer Config → Windows Settings → Security Settings �
     notes: 'Para callback real usar interactsh (interactsh.com) o Burp Collaborator. Sin callback solo detecta reflexión en errores.',
     content: `#!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Gungnir — Log4Shell CVE-2021-44228 Detection
+# Gungnir - Log4Shell CVE-2021-44228 Detection
 # Prueba headers HTTP con payloads JNDI para detectar Log4j vulnerable.
 # MITRE ATT&CK: T1190, T1203
 # Requiere: curl, (opcional) nuclei, interactsh-client
@@ -257,7 +257,7 @@ if [ -z "$TARGET_URL" ]; then
   exit 1
 fi
 
-echo -e "\${YELLOW}[*] Gungnir — Log4Shell Scanner\${NC}"
+echo -e "\${YELLOW}[*] Gungnir - Log4Shell Scanner\${NC}"
 echo -e "[*] Target  : $TARGET_URL"
 echo -e "[*] Callback: $CALLBACK"
 echo "═══════════════════════════════════════════"
@@ -303,7 +303,7 @@ echo "[*] Referencia: https://attack.mitre.org/techniques/T1190/"`,
   },
   {
     id: 'b_llmnr_check',
-    name: 'LLMNR / NBT-NS Poisoning — Windows Check',
+    name: 'LLMNR / NBT-NS Poisoning - Windows Check',
     category: 'Detección de vulnerabilidades',
     platform: 'windows', language: 'powershell',
     severity: 'high', script_type: 'detection',
@@ -313,7 +313,7 @@ echo "[*] Referencia: https://attack.mitre.org/techniques/T1190/"`,
     tags: ['llmnr', 'nbt-ns', 'windows', 'mitm', 'netntlm'],
     notes: 'Ejecutar como admin para ver todas las políticas. Ideal para auditoría de red corporativa.',
     content: `# ═══════════════════════════════════════════════════════════════
-# Gungnir — LLMNR / NBT-NS Check
+# Gungnir - LLMNR / NBT-NS Check
 # Verifica si el host es susceptible a ataques de poisoning LLMNR.
 # MITRE ATT&CK: T1557
 # Requiere: PowerShell (admin recomendado)
@@ -321,7 +321,7 @@ echo "[*] Referencia: https://attack.mitre.org/techniques/T1190/"`,
 # ═══════════════════════════════════════════════════════════════
 
 Write-Host ""
-Write-Host "=== Gungnir — LLMNR / NBT-NS Poisoning Check ===" -ForegroundColor Yellow
+Write-Host "=== Gungnir - LLMNR / NBT-NS Poisoning Check ===" -ForegroundColor Yellow
 Write-Host ""
 
 $issues = @()
@@ -334,7 +334,7 @@ $llmnrVal = Get-ItemProperty -Path $llmnrKey -Name "EnableMulticast" -ErrorActio
 if ($llmnrVal -and $llmnrVal.EnableMulticast -eq 0) {
     Write-Host "  [SAFE] LLMNR deshabilitado via GPO." -ForegroundColor Green
 } else {
-    Write-Host "  [VULN] LLMNR HABILITADO — susceptible a poisoning!" -ForegroundColor Red
+    Write-Host "  [VULN] LLMNR HABILITADO - susceptible a poisoning!" -ForegroundColor Red
     $issues += "LLMNR habilitado"
 }
 
@@ -382,7 +382,7 @@ Write-Host ""`,
   },
   {
     id: 'b_default_creds',
-    name: 'Default Credentials — SSH / HTTP Checker',
+    name: 'Default Credentials - SSH / HTTP Checker',
     category: 'Auditoría de credenciales',
     platform: 'linux', language: 'bash',
     severity: 'high', script_type: 'detection',
@@ -393,7 +393,7 @@ Write-Host ""`,
     notes: 'SOLO usar en redes propias o con autorización explícita. Ajustar DEFAULT_CREDS y TARGETS según el engagement.',
     content: `#!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Gungnir — Default Credentials Checker
+# Gungnir - Default Credentials Checker
 # Prueba credenciales por defecto en SSH y servicios HTTP básicos.
 # MITRE ATT&CK: T1110, T1133
 # Requiere: nmap, sshpass (apt install sshpass)
@@ -417,7 +417,7 @@ declare -A DEFAULT_CREDS=(
   ["cisco"]="cisco admin"
 )
 
-echo -e "\${YELLOW}[*] Gungnir — Default Credentials Scanner\${NC}"
+echo -e "\${YELLOW}[*] Gungnir - Default Credentials Scanner\${NC}"
 echo -e "[*] Target : $TARGET_RANGE"
 echo "[*] ADVERTENCIA: Solo usar en redes autorizadas"
 echo "═══════════════════════════════════════════"
@@ -441,7 +441,7 @@ else
           "$USER@$HOST" "echo OK" 2>/dev/null)
 
         if [ "$RESULT" = "OK" ]; then
-          echo -e "  \${RED}[ACCESO] $HOST — $USER:$PASS\${NC}"
+          echo -e "  \${RED}[ACCESO] $HOST - $USER:$PASS\${NC}"
           echo "ACCESO SSH: $HOST | $USER:$PASS" >> "default_creds_results.txt"
         fi
       done
@@ -457,7 +457,7 @@ echo "[*] Para HTTP: usar gobuster/ffuf con credenciales comunes."`,
   // ── Enumeración ────────────────────────────────────────────────────────────
   {
     id: 'b_linux_enum',
-    name: 'Linux Quick Enum — System Recon',
+    name: 'Linux Quick Enum - System Recon',
     category: 'Enumeración y reconocimiento',
     platform: 'linux', language: 'bash',
     severity: 'info', script_type: 'enum',
@@ -468,7 +468,7 @@ echo "[*] Para HTTP: usar gobuster/ffuf con credenciales comunes."`,
     notes: 'Para enumeración completa usar LinPEAS. Este script es el punto de partida rápido.',
     content: `#!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Gungnir — Linux Quick Enumeration
+# Gungnir - Linux Quick Enumeration
 # Recopila información del sistema para análisis post-compromiso.
 # MITRE ATT&CK: T1082, T1087, T1069
 # Uso: ./linux_enum.sh [output.txt]
@@ -480,7 +480,7 @@ OUT=\${1:-"/tmp/enum_$(hostname)_$(date +%Y%m%d).txt"}
 section() { echo -e "\\n\${YELLOW}══ $1 ══\${NC}"; echo "\\n=== $1 ===" >> "$OUT" 2>/dev/null; }
 run()     { echo -e "\${GREEN}[>]\${NC} $@"; eval "$@" 2>/dev/null | tee -a "$OUT"; }
 
-echo -e "\${YELLOW}[*] Gungnir — Linux System Enum\${NC}" | tee "$OUT"
+echo -e "\${YELLOW}[*] Gungnir - Linux System Enum\${NC}" | tee "$OUT"
 echo "[*] Host: $(hostname) | $(date)" | tee -a "$OUT"
 echo "═══════════════════════════════════════════" | tee -a "$OUT"
 
@@ -542,7 +542,7 @@ echo -e "\\n\${YELLOW}[*] Enum completada. Resultados: $OUT\${NC}"`,
   },
   {
     id: 'b_network_disco',
-    name: 'Network Discovery — ARP + Port Scan',
+    name: 'Network Discovery - ARP + Port Scan',
     category: 'Enumeración y reconocimiento',
     platform: 'linux', language: 'bash',
     severity: 'info', script_type: 'enum',
@@ -553,7 +553,7 @@ echo -e "\\n\${YELLOW}[*] Enum completada. Resultados: $OUT\${NC}"`,
     notes: 'ARP discovery solo funciona en la red local (mismo segmento). Para redes remotas usar nmap ping scan.',
     content: `#!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Gungnir — Network Discovery Script
+# Gungnir - Network Discovery Script
 # Descubrimiento ARP + port scan de servicios comunes en LAN.
 # MITRE ATT&CK: T1018, T1046
 # Requiere: nmap, arp-scan (apt install arp-scan)
@@ -566,7 +566,7 @@ IFACE=\${1:-$(ip route | grep default | awk '{print $5}' | head -1)}
 SUBNET=\${2:-$(ip -4 addr show "$IFACE" 2>/dev/null | grep inet | awk '{print $2}' | head -1)}
 PORTS="21,22,23,25,53,80,110,135,139,143,443,445,1433,3306,3389,5432,5985,6379,8080,8443,8888,27017"
 
-echo -e "\${YELLOW}[*] Gungnir — Network Discovery\${NC}"
+echo -e "\${YELLOW}[*] Gungnir - Network Discovery\${NC}"
 echo -e "[*] Interfaz: $IFACE"
 echo -e "[*] Subnet  : $SUBNET"
 echo "═══════════════════════════════════════════"
@@ -602,7 +602,7 @@ echo "[*] Discovery completado. Para escaneo completo: masscan / nmap -p-"`,
   // ── Escalación de privilegios ──────────────────────────────────────────────
   {
     id: 'b_suid_finder',
-    name: 'SUID / SGID Finder — GTFOBins Check',
+    name: 'SUID / SGID Finder - GTFOBins Check',
     category: 'Escalación de privilegios',
     platform: 'linux', language: 'bash',
     severity: 'high', script_type: 'privesc',
@@ -613,7 +613,7 @@ echo "[*] Discovery completado. Para escaneo completo: masscan / nmap -p-"`,
     notes: 'Ver https://gtfobins.github.io para la técnica de explotación de cada binario encontrado.',
     content: `#!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Gungnir — SUID/SGID Finder + GTFOBins Check
+# Gungnir - SUID/SGID Finder + GTFOBins Check
 # Detecta vectores de escalación via binarios mal configurados.
 # MITRE ATT&CK: T1548, T1068
 # Uso: ./suid_finder.sh
@@ -633,7 +633,7 @@ GTFOBINS=(
   "aria2c" "crontab" "make" "mysql" "sqlite3" "psql"
 )
 
-echo -e "\${YELLOW}[*] Gungnir — SUID/SGID & Capabilities Finder\${NC}"
+echo -e "\${YELLOW}[*] Gungnir - SUID/SGID & Capabilities Finder\${NC}"
 echo -e "[*] Host: $(hostname) | $(date)"
 echo "═══════════════════════════════════════════"
 
@@ -704,7 +704,7 @@ echo "[*] Para análisis completo: curl -sL https://github.com/carlospolop/PEASS
     notes: 'Requiere acceso al sistema como usuario sin privilegios. Complementar con GTFOBins para saber cómo explotar cada entrada.',
     content: `#!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Gungnir — Sudo Misconfiguration Analyzer
+# Gungnir - Sudo Misconfiguration Analyzer
 # Analiza sudo rules buscando vectores de escalación.
 # MITRE ATT&CK: T1548
 # Uso: ./sudo_check.sh
@@ -721,7 +721,7 @@ SHELL_SPAWNERS=("bash" "sh" "zsh" "dash" "python" "python3" "perl" "ruby" "lua"
 FILE_WRITERS=("cp" "mv" "tee" "dd" "tar" "rsync" "zip" "curl" "wget" "base64"
               "openssl" "cat" "apt" "yum" "pip" "npm" "make")
 
-echo -e "\${YELLOW}[*] Gungnir — Sudo Analyzer\${NC}"
+echo -e "\${YELLOW}[*] Gungnir - Sudo Analyzer\${NC}"
 echo -e "[*] Usuario: $(whoami) | $(date)"
 echo "═══════════════════════════════════════════"
 
@@ -774,7 +774,7 @@ echo "[*] GTFOBins: https://gtfobins.github.io/#sudo"`,
   // ── Post-explotación ──────────────────────────────────────────────────────
   {
     id: 'b_persistence_check',
-    name: 'Linux Persistence — Detection Sweep',
+    name: 'Linux Persistence - Detection Sweep',
     category: 'Post-explotación',
     platform: 'linux', language: 'bash',
     severity: 'medium', script_type: 'persistence',
@@ -785,7 +785,7 @@ echo "[*] GTFOBins: https://gtfobins.github.io/#sudo"`,
     notes: 'Útil tanto para Red Team (verificar persistencia instalada) como para Blue Team (detectar IOCs).',
     content: `#!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Gungnir — Linux Persistence Detection Sweep
+# Gungnir - Linux Persistence Detection Sweep
 # Detecta mecanismos de persistencia instalados o sospechosos.
 # MITRE ATT&CK: T1053, T1547, T1078
 # Uso: ./persistence_check.sh [dias_atras]
@@ -796,7 +796,7 @@ DAYS=\${1:-7}
 
 section() { echo -e "\\n\${YELLOW}══ $1 ══\${NC}"; }
 
-echo -e "\${YELLOW}[*] Gungnir — Linux Persistence Check\${NC}"
+echo -e "\${YELLOW}[*] Gungnir - Linux Persistence Check\${NC}"
 echo -e "[*] Buscando cambios de los últimos $DAYS días"
 echo "═══════════════════════════════════════════"
 
@@ -854,7 +854,7 @@ echo "[*] Sweep completado. Investigar \${RED}[marcados]\${NC} manualmente."`,
   // ── Active Directory ───────────────────────────────────────────────────────
   {
     id: 'b_ad_enum_ps',
-    name: 'Active Directory Quick Enum — PowerShell',
+    name: 'Active Directory Quick Enum - PowerShell',
     category: 'Active Directory / Windows',
     platform: 'windows', language: 'powershell',
     severity: 'medium', script_type: 'enum',
@@ -864,7 +864,7 @@ echo "[*] Sweep completado. Investigar \${RED}[marcados]\${NC} manualmente."`,
     tags: ['ad', 'windows', 'enum', 'powershell', 'domain'],
     notes: 'Sin módulo AD: el fallback ADSI funciona en cualquier sistema unido al dominio. No requiere privilegios elevados para la mayoría de queries.',
     content: `# ═══════════════════════════════════════════════════════════════
-# Gungnir — Active Directory Quick Enumeration
+# Gungnir - Active Directory Quick Enumeration
 # Enum básico de AD sin herramientas externas.
 # MITRE ATT&CK: T1087, T1069, T1016
 # Uso: .\\ad_enum.ps1 [-Domain domain.local]
@@ -873,7 +873,7 @@ echo "[*] Sweep completado. Investigar \${RED}[marcados]\${NC} manualmente."`,
 param([string]$Domain = $env:USERDNSDOMAIN)
 
 Write-Host ""
-Write-Host "=== Gungnir — AD Quick Enum ===" -ForegroundColor Yellow
+Write-Host "=== Gungnir - AD Quick Enum ===" -ForegroundColor Yellow
 Write-Host "[*] Dominio: $Domain" -ForegroundColor Cyan
 Write-Host "[*] Usuario: $env:USERNAME @ $(hostname)"
 Write-Host ""
@@ -914,7 +914,7 @@ if ($hasAD) {
     $searcher.SizeLimit = 50
     $searcher.FindAll() | ForEach-Object {
         $u = $_.Properties
-        Write-Host "  $($u['samaccountname']) — $($u['displayname'])"
+        Write-Host "  $($u['samaccountname']) - $($u['displayname'])"
     }
 }
 
@@ -969,7 +969,7 @@ Write-Host ""`,
   // ── Wireless ────────────────────────────────────────────────────────────────
   {
     id: 'b_wifi_audit',
-    name: 'WiFi Audit — WPA2 Handshake Capture',
+    name: 'WiFi Audit - WPA2 Handshake Capture',
     category: 'Wireless / WiFi',
     platform: 'linux', language: 'bash',
     severity: 'high', script_type: 'wireless',
@@ -980,7 +980,7 @@ Write-Host ""`,
     notes: 'Requiere tarjeta WiFi con soporte de monitor mode e inyección de paquetes. Instalar: apt install aircrack-ng.',
     content: `#!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Gungnir — WiFi WPA2 Handshake Capture
+# Gungnir - WiFi WPA2 Handshake Capture
 # Captura handshakes WPA2 para crackeo offline con hashcat.
 # Requiere: aircrack-ng suite, tarjeta con monitor mode
 # Uso: ./wifi_audit.sh [interface]
@@ -1006,7 +1006,7 @@ trap cleanup SIGINT SIGTERM
 [ "$(id -u)" != "0" ] && { echo -e "\${RED}[!] Ejecutar como root.\${NC}"; exit 1; }
 command -v airmon-ng &>/dev/null || { echo -e "\${RED}[!] Instalar: apt install aircrack-ng\${NC}"; exit 1; }
 
-echo -e "\${YELLOW}[*] Gungnir — WiFi WPA2 Auditor\${NC}"
+echo -e "\${YELLOW}[*] Gungnir - WiFi WPA2 Auditor\${NC}"
 echo -e "[*] Interfaz: $IFACE"
 echo ""
 
@@ -1095,7 +1095,7 @@ cleanup`,
   },
   {
     id: 'b_domain_osint',
-    name: 'Domain OSINT — Passive Recon',
+    name: 'Domain OSINT - Passive Recon',
     category: 'Enumeración y reconocimiento',
     platform: 'linux', language: 'bash',
     severity: 'info', script_type: 'enum',
@@ -1106,7 +1106,7 @@ cleanup`,
     notes: 'Solo usa fuentes públicas, sin conexión directa al objetivo. 100% pasivo y sigiloso.',
     content: `#!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Gungnir — Domain Passive OSINT
+# Gungnir - Domain Passive OSINT
 # Recon pasivo: WHOIS, DNS, CT logs, Shodan.
 # MITRE ATT&CK: T1590, T1596
 # Requiere: whois, dig, curl, jq (apt install jq)
@@ -1122,14 +1122,14 @@ OUT="osint_\${DOMAIN}_$(date +%Y%m%d).txt"
 section() { echo -e "\\n\${YELLOW}══ $1 ══\${NC}" | tee -a "$OUT"; }
 run()     { eval "$@" 2>/dev/null | tee -a "$OUT"; }
 
-echo -e "\${YELLOW}[*] Gungnir — Domain OSINT\${NC}" | tee "$OUT"
+echo -e "\${YELLOW}[*] Gungnir - Domain OSINT\${NC}" | tee "$OUT"
 echo "[*] Dominio: $DOMAIN | $(date)" | tee -a "$OUT"
 echo "═══════════════════════════════════════════" | tee -a "$OUT"
 
 section "WHOIS"
 run "whois $DOMAIN | grep -iE 'Registrar|Creation|Expiry|Updated|Name Server|Admin Email|Registrant'"
 
-section "DNS — Registros básicos"
+section "DNS - Registros básicos"
 for TYPE in A AAAA MX NS TXT SOA; do
   echo -e "\${GREEN}[$TYPE]\${NC}" | tee -a "$OUT"
   run "dig +short $TYPE $DOMAIN"
@@ -1146,14 +1146,14 @@ for sel in default google mail selector1 selector2 s1 s2 k1; do
   [ -n "$REC" ] && echo "  [\${sel}] $REC" | tee -a "$OUT"
 done
 
-section "Certificate Transparency — Subdominios"
+section "Certificate Transparency - Subdominios"
 echo "[*] Consultando crt.sh..." | tee -a "$OUT"
 curl -s "https://crt.sh/?q=%.\${DOMAIN}&output=json" 2>/dev/null | \
   jq -r '.[].name_value' 2>/dev/null | \
   sed 's/\\*\\.//g' | sort -u | grep -v "^$DOMAIN$" | \
   head -50 | tee -a "$OUT"
 
-section "Shodan (sin API key — web scrape básico)"
+section "Shodan (sin API key - web scrape básico)"
 echo "[*] Para búsqueda completa: shodan search 'hostname:$DOMAIN'" | tee -a "$OUT"
 echo "[*] O registrarse en https://shodan.io y usar: pip install shodan" | tee -a "$OUT"
 
@@ -1177,7 +1177,7 @@ echo "[*] Resultado completo en: $OUT" | tee -a "$OUT"`,
   },
   {
     id: 'b_web_headers',
-    name: 'Web Security Headers — Audit',
+    name: 'Web Security Headers - Audit',
     category: 'Detección de vulnerabilidades',
     platform: 'cross', language: 'bash',
     severity: 'medium', script_type: 'detection',
@@ -1188,7 +1188,7 @@ echo "[*] Resultado completo en: $OUT" | tee -a "$OUT"`,
     notes: 'Headers faltantes son Finding de bajo/medio impacto pero comunes en reportes de pentest web.',
     content: `#!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# Gungnir — Web Security Headers Audit
+# Gungnir - Web Security Headers Audit
 # Verifica presencia y configuración de headers de seguridad HTTP.
 # MITRE ATT&CK: T1190
 # Requiere: curl
@@ -1210,7 +1210,7 @@ check_header() {
       echo -e "  \${GREEN}[OK]\${NC} $NAME: $VAL"
     fi
   else
-    echo -e "  \${RED}[MISSING]\${NC} $NAME — $BAD_MSG"
+    echo -e "  \${RED}[MISSING]\${NC} $NAME - $BAD_MSG"
   fi
 }
 
@@ -1232,9 +1232,9 @@ for URL in "\${URLS[@]}"; do
   # Headers de seguridad
   echo -e "\\n\${YELLOW}[*] Security headers:\${NC}"
   check_header "$RESPONSE" "Strict-Transport-Security" "max-age" \
-    "HSTS activo" "HSTS faltante — sujeto a downgrade attack"
+    "HSTS activo" "HSTS faltante - sujeto a downgrade attack"
   check_header "$RESPONSE" "Content-Security-Policy" "" \
-    "CSP presente" "CSP faltante — permite XSS/injection"
+    "CSP presente" "CSP faltante - permite XSS/injection"
   check_header "$RESPONSE" "X-Frame-Options" "DENY\\|SAMEORIGIN" \
     "Clickjacking protegido" "Clickjacking posible"
   check_header "$RESPONSE" "X-Content-Type-Options" "nosniff" \
@@ -1249,7 +1249,7 @@ for URL in "\${URLS[@]}"; do
   CORS=$(echo "$RESPONSE" | grep -i "^access-control-allow-origin:")
   if [ -n "$CORS" ]; then
     if echo "$CORS" | grep -q "\*"; then
-      echo -e "  \${RED}[VULN]\${NC} $CORS — Wildcard CORS, cualquier origen puede leer"
+      echo -e "  \${RED}[VULN]\${NC} $CORS - Wildcard CORS, cualquier origen puede leer"
     else
       echo -e "  \${GREEN}[OK]\${NC} $CORS"
     fi

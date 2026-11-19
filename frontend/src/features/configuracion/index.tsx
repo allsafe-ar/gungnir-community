@@ -1,5 +1,5 @@
 /**
- * Configuracion — Ajustes del sistema Gungnir.
+ * Configuracion - Ajustes del sistema Gungnir.
  * Plantilla de reportes PDF.
  * Solo admins pueden guardar cambios.
  */

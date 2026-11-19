@@ -3,7 +3,7 @@ const { httpRequest, parseJSON } = require("./http");
 const dns = require("dns").promises;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Shodan — IP host info
+// Shodan - IP host info
 // GET /shodan/host/{ip}?key=...
 // ─────────────────────────────────────────────────────────────────────────────
 async function shodanHost(ip, apiKey) {
@@ -47,7 +47,7 @@ async function shodanHost(ip, apiKey) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Shodan — DNS resolve (domain → IPs)
+// Shodan - DNS resolve (domain → IPs)
 // GET /dns/resolve?hostnames=...&key=...
 // ─────────────────────────────────────────────────────────────────────────────
 async function shodanDnsResolve(hostnames, apiKey) {
@@ -63,7 +63,7 @@ async function shodanDnsResolve(hostnames, apiKey) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Shodan — DNS reverse (IP → hostnames)
+// Shodan - DNS reverse (IP → hostnames)
 // GET /dns/reverse?ips=...&key=...
 // ─────────────────────────────────────────────────────────────────────────────
 async function shodanDnsReverse(ips, apiKey) {
@@ -79,7 +79,7 @@ async function shodanDnsReverse(ips, apiKey) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Shodan — Account info (validate key + check credits)
+// Shodan - Account info (validate key + check credits)
 // ─────────────────────────────────────────────────────────────────────────────
 async function shodanAccountInfo(apiKey) {
   if (!apiKey) return { ok: false, error: "No configurada" };
@@ -95,7 +95,7 @@ async function shodanAccountInfo(apiKey) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// RDAP — Domain registration info (free, no key needed)
+// RDAP - Domain registration info (free, no key needed)
 // ─────────────────────────────────────────────────────────────────────────────
 async function rdapDomain(domain) {
   try {
@@ -145,7 +145,7 @@ async function rdapDomain(domain) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// crt.sh — Certificate transparency (subdomain enumeration, free)
+// crt.sh - Certificate transparency (subdomain enumeration, free)
 // ─────────────────────────────────────────────────────────────────────────────
 async function crtshSubdomains(domain) {
   try {
@@ -180,7 +180,7 @@ async function crtshSubdomains(domain) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DNS — Live lookup (A, MX, NS, TXT) using Node.js dns module
+// DNS - Live lookup (A, MX, NS, TXT) using Node.js dns module
 // ─────────────────────────────────────────────────────────────────────────────
 async function dnsLookup(domain) {
   const result = {};

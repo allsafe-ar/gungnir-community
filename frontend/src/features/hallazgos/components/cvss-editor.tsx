@@ -1,5 +1,5 @@
 /**
- * CVSS 3.1 Editor visual — AllSafe Gungnir
+ * CVSS 3.1 Editor visual - AllSafe Gungnir
  * Calcula el score base en el frontend sin backend.
  * Basado en la especificación CVSS 3.1 del FIRST.
  */

@@ -67,7 +67,7 @@ export function generatePDF(lead: LeadForPdf) {
     doc.setPage(pageNum)
     doc.setFontSize(8); setColor(GRAY)
     doc.text(`Página ${pageNum}`, PW - M, PH - 8, { align: 'right' })
-    doc.text('Confidencial — Uso exclusivo del cliente', M, PH - 8)
+    doc.text('Confidencial - Uso exclusivo del cliente', M, PH - 8)
     pageNum++
   }
 
@@ -89,7 +89,7 @@ export function generatePDF(lead: LeadForPdf) {
   doc.setFontSize(9); doc.setFont('helvetica', 'bold'); setColor(BLUE)
   doc.text('PREPARADO PARA', M + 6, 79)
   doc.setFontSize(16); doc.setFont('helvetica', 'bold'); setColor(NAVY)
-  doc.text((meta?.empresa || '—').toUpperCase(), M + 6, 90)
+  doc.text((meta?.empresa || '-').toUpperCase(), M + 6, 90)
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); setColor(GRAY)
   const dateParts = new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' })
   doc.text(`Fecha de análisis: ${dateParts}`, M + 6, 99)
@@ -138,7 +138,7 @@ export function generatePDF(lead: LeadForPdf) {
   setFill(NAVY); doc.roundedRect(M, y, W, 32, 4, 4, 'F')
   doc.setFontSize(32); doc.setFont('helvetica', 'bold')
   doc.setTextColor(totalColor[0], totalColor[1], totalColor[2])
-  doc.text(totalScore !== null ? totalScore.toString() : '—', M + 22, y + 21, { align: 'center' })
+  doc.text(totalScore !== null ? totalScore.toString() : '-', M + 22, y + 21, { align: 'center' })
 
   setDraw([50, 60, 90] as RGB); doc.setLineWidth(0.3)
   doc.line(M + 44, y + 6, M + 44, y + 26)
@@ -183,7 +183,7 @@ export function generatePDF(lead: LeadForPdf) {
 
     doc.setFontSize(13); doc.setFont('helvetica', 'bold')
     doc.setTextColor(col[0], col[1], col[2])
-    doc.text(avg !== null ? avg.toString() : '—', M + 62, y + 11, { align: 'center' })
+    doc.text(avg !== null ? avg.toString() : '-', M + 62, y + 11, { align: 'center' })
 
     const barX = M + 70, barW = W - 70 - 5
     drawBar(barX, y + 5, barW, 6, avg, 25)
@@ -252,9 +252,9 @@ export function generatePDF(lead: LeadForPdf) {
 // ─── Budget PDF ───────────────────────────────────────────────────────────────
 
 function fmtN(v: number | string | undefined | null): string {
-  if (v == null || v === '') return '—'
+  if (v == null || v === '') return '-'
   const n = Number(v)
-  if (isNaN(n)) return '—'
+  if (isNaN(n)) return '-'
   return `$ ${n.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
 }
 
@@ -314,10 +314,10 @@ export function generateBudgetPDF(b: BudgetForPDF) {
   doc.text(b.number, M, 21)
   const numW = doc.getTextWidth(b.number)
   doc.setFont('helvetica', 'normal'); setColor([150, 170, 210] as RGB)
-  if (b.title) doc.text(` — ${b.title}`, M + numW, 21)
+  if (b.title) doc.text(` - ${b.title}`, M + numW, 21)
 
   doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); setColor([120, 145, 190] as RGB)
-  doc.text(b.preparer ? `AllSafe Security Solutions — ${b.preparer}` : 'AllSafe Security Solutions', M, 28)
+  doc.text(b.preparer ? `AllSafe Security Solutions - ${b.preparer}` : 'AllSafe Security Solutions', M, 28)
 
   let y = HDR + 8
 
@@ -333,7 +333,7 @@ export function generateBudgetPDF(b: BudgetForPDF) {
 
   // ── METADATA (2-column text, compact) ──
   const tcLabel = b.exchange_rate_type ? `TC ${b.exchange_rate_type.toUpperCase()} REF.` : 'TC OFICIAL REF.'
-  const tcValue = b.exchange_rate_usd ? `$ ${b.exchange_rate_usd.toLocaleString('es-AR')}` : '—'
+  const tcValue = b.exchange_rate_usd ? `$ ${b.exchange_rate_usd.toLocaleString('es-AR')}` : '-'
   const colR = M + W / 2 + 2
   const halfW = W / 2 - 6
 
@@ -386,7 +386,7 @@ export function generateBudgetPDF(b: BudgetForPDF) {
     it.unit,
     fmtN(it.unit_price_ars),
     Number(it.quantity).toLocaleString('es-AR'),
-    it.is_optional ? '—' : fmtN(Number(it.quantity) * Number(it.unit_price_ars)),
+    it.is_optional ? '-' : fmtN(Number(it.quantity) * Number(it.unit_price_ars)),
   ])
 
   autoTable(doc, {

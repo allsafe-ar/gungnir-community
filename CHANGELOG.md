@@ -3,6 +3,19 @@
 All notable changes to Gungnir Community are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/); versioning follows [SemVer](https://semver.org/).
 
+## [1.5.2] - 2026-11-19
+
+### Fixed
+- The panel locked itself after a few minutes of normal use ("Too many requests" for 15 minutes). The general rate limit (200 requests per 15 minutes) also counted the panel files served by the same process, so opening about five screens used it up. The limit now applies only to the API, with 1000 requests per 15 minutes as in Gungnir Pro.
+
+### Changed
+- Menu group titles in two tones of the system color that read in light and dark mode (4.5:1 or more). The second tone is no longer a transparency of the first.
+- Dark mode: text in the system color uses a readable version of the accent, separate from the button background, and secondary text goes up to 5:1.
+- Dark mode: red accent text goes from 3.7:1 to 5.5:1, close to the AllSafe red.
+
+### Security
+- Sign-in has its own limit: 30 attempts per 15 minutes per address, on top of the per-account lockout.
+
 ## [1.5.1] - 2026-11-18
 
 ### Fixed

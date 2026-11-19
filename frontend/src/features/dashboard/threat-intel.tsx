@@ -1,5 +1,5 @@
 /**
- * Threat Intel Dashboard — Estado de fuentes OSINT + acceso rápido a Recon.
+ * Threat Intel Dashboard - Estado de fuentes OSINT + acceso rápido a Recon.
  */
 
 import { Link } from '@tanstack/react-router'
@@ -39,7 +39,7 @@ const OSINT_SERVICES = [
 ]
 
 const FREE_SOURCES = [
-  { label: 'crt.sh',                          desc: 'Certificados TLS — enumeración de subdominios via CT logs' },
+  { label: 'crt.sh',                          desc: 'Certificados TLS - enumeración de subdominios via CT logs' },
   { label: 'RDAP / WHOIS',                    desc: 'Registro de dominios, registrante, fechas, nameservers' },
   { label: 'DNS Live Lookup',                  desc: 'A, AAAA, MX, NS, TXT, CNAME en tiempo real (Node.js dns)' },
   { label: 'Shodan DNS Resolve (con key)',     desc: 'Dominio → IP a través de la API de Shodan' },

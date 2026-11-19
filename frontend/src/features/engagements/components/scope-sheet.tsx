@@ -1,5 +1,5 @@
 /**
- * ScopeSheet — Manage scope items (in-scope / out-of-scope) for an engagement.
+ * ScopeSheet - Manage scope items (in-scope / out-of-scope) for an engagement.
  * Opens as a Sheet from the right, keeping workspace context intact.
  */
 

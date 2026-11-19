@@ -1,5 +1,5 @@
 /**
- * HallazgoSheet — Create/edit a finding within the engagement workspace.
+ * HallazgoSheet - Create/edit a finding within the engagement workspace.
  * Slides in from the right as a Sheet. Integrates CvssEditor.
  */
 

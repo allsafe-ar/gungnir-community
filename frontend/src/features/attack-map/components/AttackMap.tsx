@@ -383,7 +383,7 @@ function NodeTooltip({ node, x, y }: TooltipProps) {
           )}
         </div>
 
-        {/* Ports — scrollable, unconstrained height so all ports show */}
+        {/* Ports - scrollable, unconstrained height so all ports show */}
         {node.ports && node.ports.length > 0 && (
           <div className="border-t border-border/40 px-3 py-2 overflow-y-auto min-h-0 flex-1">
             <div className="flex items-center gap-1 mb-1.5 opacity-60 sticky top-0 bg-[#161b22]">
@@ -426,7 +426,7 @@ function LegendPill({ type, label }: { type: OsType; label: string }) {
 }
 
 // -- IP deduplication ----------------------------------------------------------
-// Merges targets that share the same IP — including URLs like http://1.2.3.4:80
+// Merges targets that share the same IP - including URLs like http://1.2.3.4:80
 // whose host matches a plain IP node. OR-merges `owned`; merges `ports`.
 // Prefers nodes with a plain ip_address over URL-only nodes as canonical.
 // Remaps edge from/to to the canonical node ID.
@@ -523,7 +523,7 @@ export function AttackMap({ engagementId }: { engagementId: string }) {
     const visNodes = nodes.map(n => ({
       id:    n.id,
       label: n.label,
-      title: null,               // null instead of undefined — vis-network safer
+      title: null,               // null instead of undefined - vis-network safer
       shape: 'image' as const,
       image: getNodeImage(n.type, n.owned),
       size:  28,
@@ -541,7 +541,7 @@ export function AttackMap({ engagementId }: { engagementId: string }) {
       shadow: { enabled: true, color: 'rgba(0,0,0,0.6)', size: 8, x: 2, y: 2 },
       x:     n.x ?? undefined,
       y:     n.y ?? undefined,
-      // No `fixed` — physics is disabled after stabilization so nodes stay put;
+      // No `fixed` - physics is disabled after stabilization so nodes stay put;
       // removing fixed lets the user always drag any node freely.
     }))
 
@@ -561,7 +561,7 @@ export function AttackMap({ engagementId }: { engagementId: string }) {
     edgesDS.current.clear()
     edgesDS.current.add(visEdges)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // nodesDS/edgesDS are stable refs — no deps needed
+  }, []) // nodesDS/edgesDS are stable refs - no deps needed
 
   // -- Fetch ------------------------------------------------------------------
   const load = useCallback(async () => {
@@ -593,7 +593,7 @@ export function AttackMap({ engagementId }: { engagementId: string }) {
     if (!containerRef.current || loading) return
     const options: Options = {
       physics: {
-        // Skip physics if we have saved positions — keeps layout stable on reload
+        // Skip physics if we have saved positions - keeps layout stable on reload
         enabled: !hasSavedPositionsRef.current,
         solver: 'forceAtlas2Based',
         forceAtlas2Based: { gravitationalConstant: -80, centralGravity: 0.01, springLength: 220, springConstant: 0.05, damping: 0.4, avoidOverlap: 0.9 },
@@ -617,7 +617,7 @@ export function AttackMap({ engagementId }: { engagementId: string }) {
           apiFetch(`/engagements/${engagementId}/targets/${nodeId}/position`, {
             method: 'PATCH', body: JSON.stringify({ x: pos.x, y: pos.y }),
           }).catch(() => {})
-          // NOTE: do NOT set fixed:true here — that would lock the node permanently
+          // NOTE: do NOT set fixed:true here - that would lock the node permanently
         }
         setHoverTooltip(null)
       })
@@ -899,7 +899,7 @@ export function AttackMap({ engagementId }: { engagementId: string }) {
   // -- Render ----------------------------------------------------------------
   return (
     <div className="flex flex-col gap-4">
-      {/* DEBUG — remove after diagnosing */}
+      {/* DEBUG - remove after diagnosing */}
       {debugError && (
         <pre className="bg-red-950 text-red-200 text-xs p-2 rounded max-h-40 overflow-auto whitespace-pre-wrap">
           {debugError}

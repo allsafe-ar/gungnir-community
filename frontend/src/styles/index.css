@@ -88,7 +88,7 @@
 }
 
 /* ── Autofill del browser (Chrome/Edge pone fondo verde/amarillo por defecto) ── */
-/* IMPORTANTE: usar var(--card) (opaco) — var(--input) es semi-transparente y no funciona
+/* IMPORTANTE: usar var(--card) (opaco) - var(--input) es semi-transparente y no funciona
    con -webkit-box-shadow inset. hsl(var(--x)) es inválido en Tailwind v4 (las vars ya son oklch). */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,

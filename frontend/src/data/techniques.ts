@@ -1,5 +1,5 @@
 /**
- * Catálogo de técnicas MITRE ATT&CK — datos compartidos
+ * Catálogo de técnicas MITRE ATT&CK - datos compartidos
  * Usado en: Técnicas, TecnicasSheet (engagements)
  */
 
@@ -29,7 +29,7 @@ export const TECHNIQUES: Technique[] = [
     description:'OSINT sobre usuarios: emails, credenciales en brechas previas (HIBP, Dehashed), perfiles LinkedIn, nombres de usuario, estructura organizacional.',
     tools:['theHarvester','hunter.io','linkedin2username','holehe','breach-parse'], detection:'Difícil de detectar desde fuentes externas. Monitoreo de dark web para credenciales filtradas.', mitigation:'Monitoreo de menciones en dark web, concienciación sobre exposición de información pública.' },
   { id:'T1593', name:'Search Open Websites/Domains', tactic:'Reconnaissance', phase:'recon',
-    description:'Google Dorks, Wayback Machine, Pastebin, GitHub/GitLab search — buscando credenciales hardcodeadas, archivos de configuración y datos sensibles filtrados en repositorios públicos.',
+    description:'Google Dorks, Wayback Machine, Pastebin, GitHub/GitLab search - buscando credenciales hardcodeadas, archivos de configuración y datos sensibles filtrados en repositorios públicos.',
     tools:['google dorks','github search','waybackurls','gau','gitdorker','trufflehog'], detection:'Difícil de detectar. Implementar monitoreo de GitHub/GitLab para secrets.', mitigation:'Secret scanning automático en CI/CD, auditorías de OSINT propio, rotación inmediata ante hallazgos.' },
   // Initial Access
   { id:'T1190', name:'Exploit Public-Facing Application', tactic:'Initial Access', phase:'exploitation',

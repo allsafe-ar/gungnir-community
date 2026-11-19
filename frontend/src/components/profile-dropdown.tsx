@@ -1,5 +1,5 @@
 /**
- * ProfileDropdown — Top-right user menu.
+ * ProfileDropdown - Top-right user menu.
  * Shows avatar with initials, name, role. Links to Mi cuenta and logout.
  */
 
@@ -29,7 +29,7 @@ export function ProfileDropdown() {
   const [open, setOpen] = useDialogState()
   const { auth } = useAuthStore()
   const user = auth.user
-  const displayName = user?.full_name || user?.username || '—'
+  const displayName = user?.full_name || user?.username || '-'
   const initials = displayName
     .split(' ')
     .map((w: string) => w[0])

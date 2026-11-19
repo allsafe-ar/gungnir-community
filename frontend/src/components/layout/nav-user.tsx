@@ -1,5 +1,5 @@
 /**
- * NavUser — Sidebar footer: Admin menu (Administración).
+ * NavUser - Sidebar footer: Admin menu (Administración).
  * Opens as a popover with: Usuarios, Auditoría, Configuración, Reportar bug.
  * Only visible to admin/lead roles.
  */

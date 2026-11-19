@@ -1,5 +1,5 @@
 /**
- * EvidenceSheet — Upload y gestión de evidencias de un engagement.
+ * EvidenceSheet - Upload y gestión de evidencias de un engagement.
  * Soporta imágenes, capturas, scripts, logs, texto y otros archivos.
  */
 

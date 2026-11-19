@@ -35,7 +35,7 @@ function hotpSync(secret: string, counter: number): string {
   view.setUint32(4, counter >>> 0, false)
   const msg = new Uint8Array(buf)
 
-  // HMAC-SHA1 (sync, browser SubtleCrypto is async — using pure-JS fallback)
+  // HMAC-SHA1 (sync, browser SubtleCrypto is async - using pure-JS fallback)
   // Simple pure-JS SHA-1 HMAC for TOTP (RFC 4226)
   function sha1(data: number[]): number[] {
     let h0=0x67452301,h1=0xEFCDAB89,h2=0x98BADCFE,h3=0x10325476,h4=0xC3D2E1F0

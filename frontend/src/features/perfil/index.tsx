@@ -1,5 +1,5 @@
 /**
- * Perfil — Configuración de cuenta del usuario.
+ * Perfil - Configuración de cuenta del usuario.
  * Cambio de contraseña, 2FA TOTP, idioma.
  */
 
@@ -138,11 +138,11 @@ export function Perfil() {
             </div>
             <div className='space-y-0.5'>
               <p className='text-xs text-muted-foreground'>Nombre</p>
-              <p className='font-medium'>{user?.full_name || '—'}</p>
+              <p className='font-medium'>{user?.full_name || '-'}</p>
             </div>
             <div className='space-y-0.5'>
               <p className='text-xs text-muted-foreground'>Email</p>
-              <p className='font-medium'>{user?.email || '—'}</p>
+              <p className='font-medium'>{user?.email || '-'}</p>
             </div>
             <div className='space-y-0.5'>
               <p className='text-xs text-muted-foreground'>Rol</p>

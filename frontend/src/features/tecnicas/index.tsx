@@ -1,5 +1,5 @@
 /**
- * Técnicas — MITRE ATT&CK technique browser
+ * Técnicas - MITRE ATT&CK technique browser
  * Biblioteca integrada de técnicas ofensivas organizadas por táctica.
  * Red team focused: cada técnica muestra herramientas, detección y mitigación.
  */
@@ -92,7 +92,7 @@ const TECHNIQUES: Technique[] = [
   },
   {
     id: 'T1593', name: 'Search Open Websites/Domains', tactic: 'Reconnaissance', phase: 'recon',
-    description: 'Google Dorks, Wayback Machine, Pastebin, GitHub/GitLab search — buscando credenciales hardcodeadas, archivos de configuración y datos sensibles filtrados en repositorios públicos.',
+    description: 'Google Dorks, Wayback Machine, Pastebin, GitHub/GitLab search - buscando credenciales hardcodeadas, archivos de configuración y datos sensibles filtrados en repositorios públicos.',
     tools: ['google dorks', 'github search', 'waybackurls', 'gau', 'gitdorker', 'trufflehog'],
     detection: 'Difícil de detectar. Implementar monitoreo de GitHub/GitLab para secrets.',
     mitigation: 'Secret scanning automático en CI/CD, auditorías de OSINT propio, rotación inmediata ante hallazgos.',

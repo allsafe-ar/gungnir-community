@@ -1,5 +1,5 @@
 /**
- * Mi cuenta — Configuración personal del usuario.
+ * Mi cuenta - Configuración personal del usuario.
  * Layout: izquierda (password + 2FA + idioma) / derecha (info cuenta + branding logo).
  */
 
@@ -327,7 +327,7 @@ export function MiCuenta() {
                 </div>
                 <div className='flex justify-between items-center py-2 border-b border-border'>
                   <span className='text-xs text-muted-foreground'>{t('mi_cuenta.account.name')}</span>
-                  <span className='text-sm font-medium'>{user?.full_name || '—'}</span>
+                  <span className='text-sm font-medium'>{user?.full_name || '-'}</span>
                 </div>
                 <div className='flex justify-between items-center py-2'>
                   <span className='text-xs text-muted-foreground'>{t('mi_cuenta.account.role')}</span>

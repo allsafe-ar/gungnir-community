@@ -1,6 +1,6 @@
 "use strict";
 /**
- * Notificaciones de hallazgos — aviso por correo y/o webhook cuando entra un hallazgo
+ * Notificaciones de hallazgos - aviso por correo y/o webhook cuando entra un hallazgo
  * de severidad relevante.
  *
  * La configuración vive en `settings` bajo la clave `notificaciones` (JSON):

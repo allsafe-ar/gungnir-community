@@ -1,5 +1,5 @@
 /**
- * Biblioteca de Hallazgos — plantillas reutilizables de vulnerabilidades.
+ * Biblioteca de Hallazgos - plantillas reutilizables de vulnerabilidades.
  * Colección curada de hallazgos comunes listos para importar a un engagement.
  * Organizada por categoría: Web App, Infraestructura, Red Team, etc.
  */
@@ -42,13 +42,13 @@ const TEMPLATES: FindingTemplate[] = [
     cwe_id: 'CWE-89', cwe_name: 'Improper Neutralization of Special Elements used in SQL Command',
     owasp: 'A03:2021 - Injection',
     description: 'Se identificó una vulnerabilidad de inyección SQL que permite a un atacante no autenticado manipular consultas a la base de datos. El input del usuario se concatena directamente en la consulta SQL sin usar prepared statements ni validación adecuada.',
-    steps: '1. Identificar parámetros inyectables (GET, POST, headers, cookies)\n2. Probar comilla simple: \' — observar error de BD\n3. Confirmar con: \' OR \'1\'=\'1\n4. Extraer información: \' UNION SELECT null, version(), user()--\n5. Demostrar impacto: acceso a tablas sensibles',
+    steps: '1. Identificar parámetros inyectables (GET, POST, headers, cookies)\n2. Probar comilla simple: \' - observar error de BD\n3. Confirmar con: \' OR \'1\'=\'1\n4. Extraer información: \' UNION SELECT null, version(), user()--\n5. Demostrar impacto: acceso a tablas sensibles',
     recommendation: '• Usar prepared statements / ORM en todas las consultas SQL\n• Validar y sanitizar todos los inputs del lado del servidor\n• Implementar principio de menor privilegio en la cuenta de BD\n• Deshabilitar mensajes de error detallados en producción\n• Usar WAF como capa adicional de defensa',
     tags: ['injection', 'database', 'authentication bypass'],
   },
   {
     id: 'xss-01',
-    title: 'Cross-Site Scripting (XSS) — Reflected',
+    title: 'Cross-Site Scripting (XSS) - Reflected',
     category: 'Web Application',
     severity: 'medium',
     cvss_score: 6.1,
@@ -62,7 +62,7 @@ const TEMPLATES: FindingTemplate[] = [
   },
   {
     id: 'xss-02',
-    title: 'Cross-Site Scripting (XSS) — Stored',
+    title: 'Cross-Site Scripting (XSS) - Stored',
     category: 'Web Application',
     severity: 'high',
     cvss_score: 8.0,
@@ -76,7 +76,7 @@ const TEMPLATES: FindingTemplate[] = [
   },
   {
     id: 'idor-01',
-    title: 'IDOR — Insecure Direct Object Reference',
+    title: 'IDOR - Insecure Direct Object Reference',
     category: 'Web Application',
     severity: 'high',
     cvss_score: 7.5,
@@ -90,7 +90,7 @@ const TEMPLATES: FindingTemplate[] = [
   },
   {
     id: 'ssrf-01',
-    title: 'SSRF — Server-Side Request Forgery',
+    title: 'SSRF - Server-Side Request Forgery',
     category: 'Web Application',
     severity: 'high',
     cvss_score: 8.6,
@@ -132,7 +132,7 @@ const TEMPLATES: FindingTemplate[] = [
   },
   {
     id: 'csrf-01',
-    title: 'CSRF — Cross-Site Request Forgery',
+    title: 'CSRF - Cross-Site Request Forgery',
     category: 'Web Application',
     severity: 'medium',
     cvss_score: 6.5,
@@ -146,7 +146,7 @@ const TEMPLATES: FindingTemplate[] = [
   },
   {
     id: 'broken-auth-01',
-    title: 'Autenticación Rota — Sin Bloqueo por Intentos',
+    title: 'Autenticación Rota - Sin Bloqueo por Intentos',
     category: 'Web Application',
     severity: 'high',
     cvss_score: 7.5,
@@ -217,7 +217,7 @@ const TEMPLATES: FindingTemplate[] = [
   },
   {
     id: 'clickjacking-01',
-    title: 'Clickjacking — Sin X-Frame-Options',
+    title: 'Clickjacking - Sin X-Frame-Options',
     category: 'Web Application',
     severity: 'low',
     cvss_score: 3.1,
@@ -232,7 +232,7 @@ const TEMPLATES: FindingTemplate[] = [
   // ── Red Team ────────────────────────────────────────────────────────────────
   {
     id: 'kerberoasting-01',
-    title: 'Kerberoasting — Cuentas de Servicio Vulnerables',
+    title: 'Kerberoasting - Cuentas de Servicio Vulnerables',
     category: 'Active Directory',
     severity: 'high',
     cvss_score: 7.5,
@@ -246,7 +246,7 @@ const TEMPLATES: FindingTemplate[] = [
   },
   {
     id: 'pass-the-hash-01',
-    title: 'Pass-the-Hash — NTLM Authentication',
+    title: 'Pass-the-Hash - NTLM Authentication',
     category: 'Active Directory',
     severity: 'critical',
     cvss_score: 9.0,
@@ -314,7 +314,7 @@ export function Biblioteca() {
   const copyTemplate = (t: FindingTemplate) => {
     const text = [
       `# ${t.title}`,
-      `**CVE/CWE:** ${t.cwe_id} — ${t.cwe_name}`,
+      `**CVE/CWE:** ${t.cwe_id} - ${t.cwe_name}`,
       `**OWASP:** ${t.owasp || 'N/A'}`,
       `**CVSS 3.1:** ${t.cvss_score} (${t.cvss_vector})`,
       '',

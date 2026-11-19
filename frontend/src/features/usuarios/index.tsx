@@ -1,5 +1,5 @@
 /**
- * Usuarios — Gestión de usuarios del sistema (solo admins).
+ * Usuarios - Gestión de usuarios del sistema (solo admins).
  * Estándar AllSafe: mismas columnas y colores que Heimdall, Gjallarhorn, etc.
  */
 
@@ -146,7 +146,7 @@ export function Usuarios() {
 
   return (
     <div className='space-y-6'>
-      {/* Header — estándar AllSafe */}
+      {/* Header - estándar AllSafe */}
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-xl font-bold'>{t('users.title')}</h1>
@@ -196,26 +196,26 @@ export function Usuarios() {
                       {user.username}
                     </TableCell>
 
-                    {/* Rol — badge outline gris, sin colores por rol */}
+                    {/* Rol - badge outline gris, sin colores por rol */}
                     <TableCell>
                       <span className='rounded border border-border px-1.5 py-0.5 text-xs font-medium text-foreground/80'>
                         {ROLE_LABELS[user.role] ?? user.role}
                       </span>
                     </TableCell>
 
-                    {/* 2FA — ícono */}
+                    {/* 2FA - ícono */}
                     <TableCell>
                       {user.totp_enabled ? (
                         <ShieldCheck className='h-4 w-4 text-green-700 dark:text-green-400' />
                       ) : (
                         <div className='flex items-center gap-1'>
                           <ShieldOff className='h-4 w-4 text-muted-foreground/40' />
-                          <span className='text-xs text-muted-foreground/40'>—</span>
+                          <span className='text-xs text-muted-foreground/40'>-</span>
                         </div>
                       )}
                     </TableCell>
 
-                    {/* Estado — verde / gris */}
+                    {/* Estado - verde / gris */}
                     <TableCell>
                       {user.is_active ? (
                         <span className='inline-flex items-center rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-semibold text-green-700 dark:text-green-400 ring-1 ring-green-500/30'>
@@ -233,7 +233,7 @@ export function Usuarios() {
                       {new Date(user.created_at).toLocaleDateString('es-AR')}
                     </TableCell>
 
-                    {/* Acciones — solo para otros usuarios */}
+                    {/* Acciones - solo para otros usuarios */}
                     <TableCell>
                       {!isSelf ? (
                         <div className='flex items-center justify-end gap-0.5'>
@@ -256,7 +256,7 @@ export function Usuarios() {
                               : <ToggleLeft className='h-3.5 w-3.5 text-muted-foreground/50' />
                             }
                           </button>
-                          {/* Reset 2FA — solo si está activo */}
+                          {/* Reset 2FA - solo si está activo */}
                           {!!user.totp_enabled && (
                             <button
                               onClick={() => handleResetTotp(user)}

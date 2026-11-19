@@ -1,5 +1,5 @@
 /**
- * TecnicasSheet — Panel de técnicas MITRE ATT&CK asociadas a un engagement.
+ * TecnicasSheet - Panel de técnicas MITRE ATT&CK asociadas a un engagement.
  * Funciona tanto en workspace pentesting como custom.
  */
 
@@ -333,7 +333,7 @@ export function TecnicasSheet({ open, onOpenChange, engagementId, currentPhaseId
                 <div className='space-y-1'>
                   <label className='text-xs font-medium'>{t('techniques.label_name')} <span className='text-destructive'>*</span></label>
                   <Input value={customName} onChange={e => setCustomName(e.target.value)}
-                    placeholder='Ej: OWASP WSTG — Authentication Testing, ZAP Spider...' className='text-xs h-8' />
+                    placeholder='Ej: OWASP WSTG - Authentication Testing, ZAP Spider...' className='text-xs h-8' />
                 </div>
                 <div className='space-y-1'>
                   <label className='text-xs font-medium'>{t('techniques.label_tool')}</label>

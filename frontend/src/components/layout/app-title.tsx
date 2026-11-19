@@ -1,5 +1,5 @@
 /**
- * AppTitle — Sidebar header: AllSafe logo + system name + apps switcher.
+ * AppTitle - Sidebar header: AllSafe logo + system name + apps switcher.
  * Logo visibility is controlled by the user's branding setting (localStorage).
  */
 

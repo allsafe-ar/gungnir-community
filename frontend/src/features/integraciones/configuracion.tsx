@@ -1,5 +1,5 @@
 /**
- * Configuración de Scanners — Solo admin.
+ * Configuración de Scanners - Solo admin.
  * Movido del tab Configuración de IntegracionesPage al menú Administración.
  */
 
@@ -78,7 +78,7 @@ export function ScannersConfigPage() {
     return (
       <div className='p-6 flex flex-col items-center justify-center min-h-64 gap-3'>
         <ShieldOff className='h-10 w-10 text-muted-foreground/30' />
-        <p className='text-sm text-muted-foreground'>Acceso restringido — solo administradores</p>
+        <p className='text-sm text-muted-foreground'>Acceso restringido - solo administradores</p>
       </div>
     )
   }

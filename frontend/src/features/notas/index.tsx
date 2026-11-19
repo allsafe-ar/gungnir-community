@@ -1,5 +1,5 @@
 /**
- * Notas — Base de conocimiento personal.
+ * Notas - Base de conocimiento personal.
  * Links, configs, comandos, observaciones. Markdown soportado.
  * Scoped al usuario autenticado. Opcionalmente vinculadas a un engagement.
  * Soporta compartir notas con otros usuarios (lectura).
@@ -408,7 +408,7 @@ function NoteViewer({
           }
         </div>
 
-        {/* Share panel — solo si es dueño */}
+        {/* Share panel - solo si es dueño */}
         {note.is_owner && <SharePanel noteId={note.id} />}
 
         {/* Footer */}

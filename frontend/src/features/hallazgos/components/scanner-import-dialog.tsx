@@ -1,5 +1,5 @@
 /**
- * ScannerImportDialog — Importa hallazgos desde archivos de scanners.
+ * ScannerImportDialog - Importa hallazgos desde archivos de scanners.
  * Soporta: Nessus (.nessus), Burp Suite (.xml), OpenVAS (.xml)
  */
 

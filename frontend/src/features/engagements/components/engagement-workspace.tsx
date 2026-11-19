@@ -437,7 +437,7 @@ export function EngagementWorkspace({ engagementId }: { engagementId: string }) 
           {logs.length > 0 && (
             <div>
               <h3 className='text-sm font-semibold mb-3'>
-                Operation Log — {phaseLabel[activePhase] ?? activePhase}
+                Operation Log - {phaseLabel[activePhase] ?? activePhase}
               </h3>
               <div className='space-y-2'>
                 {logs.slice(0, 10).map((log) => (

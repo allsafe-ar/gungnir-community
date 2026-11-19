@@ -1,5 +1,5 @@
 /**
- * Auditoría — Log de actividad del sistema.
+ * Auditoría - Log de actividad del sistema.
  * Tabla plana estándar AllSafe: FECHA | USUARIO | ACCIÓN | DETALLE
  * Solo visible para admin y lead.
  */
@@ -70,7 +70,7 @@ export function Auditoria() {
           Auditoría
         </h1>
         <p className='text-sm text-muted-foreground mt-0.5'>
-          Registro de actividad del sistema — {data?.total ?? 0} entradas
+          Registro de actividad del sistema - {data?.total ?? 0} entradas
         </p>
       </div>
 
@@ -112,13 +112,13 @@ export function Auditoria() {
                       {new Date(row.created_at).toLocaleString('es-AR')}
                     </TableCell>
                     <TableCell className='text-sm font-medium'>
-                      {row.username ?? '—'}
+                      {row.username ?? '-'}
                     </TableCell>
                     <TableCell className={`text-sm font-medium ${color}`}>
                       {label}
                     </TableCell>
                     <TableCell className='text-sm text-muted-foreground'>
-                      {row.detail ?? (row.ip ? `desde ${row.ip}` : '—')}
+                      {row.detail ?? (row.ip ? `desde ${row.ip}` : '-')}
                     </TableCell>
                   </TableRow>
                 )

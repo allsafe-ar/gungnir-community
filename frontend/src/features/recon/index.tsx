@@ -62,7 +62,7 @@ type QueryResult = IPQueryResult | DomainQueryResult
 
 // ── Small helpers ───────────────────────────────────────────────────────────
 function fmtDate(val: string | undefined) {
-  if (!val) return '—'
+  if (!val) return '-'
   const d = new Date(val)
   return isNaN(d.getTime()) ? val : d.toLocaleDateString('es-AR', { year: 'numeric', month: 'short', day: 'numeric' })
 }
@@ -127,7 +127,7 @@ function ShodanIPCard({ data }: { data: ShodanResult }) {
   const sevColor = (data.vulns?.length || 0) > 0 ? '#ef4444' : '#22c55e'
 
   return (
-    <Section icon={<Server className='h-3.5 w-3.5' />} title={`Shodan — ${data.ip}`}>
+    <Section icon={<Server className='h-3.5 w-3.5' />} title={`Shodan - ${data.ip}`}>
       <div className='space-y-4'>
         {/* KPIs */}
         <div className='grid grid-cols-2 md:grid-cols-4 gap-2'>
@@ -211,7 +211,7 @@ function ShodanIPCard({ data }: { data: ShodanResult }) {
                   <span className='flex-1 text-muted-foreground truncate'>
                     {svc.product ? <span className='text-foreground font-medium'>{svc.product}</span> : null}
                     {svc.version ? ` ${svc.version}` : ''}
-                    {svc.http_title ? <span className='ml-2 text-muted-foreground'>— {svc.http_title}</span> : null}
+                    {svc.http_title ? <span className='ml-2 text-muted-foreground'>- {svc.http_title}</span> : null}
                     {!svc.product && !svc.http_title && svc.banner ? svc.banner.slice(0, 80) : ''}
                   </span>
                 </div>
@@ -357,12 +357,12 @@ function DomainResultView({ result }: { result: DomainQueryResult }) {
       {result.hosts.length === 0 && result.dns.a && result.dns.a.length > 0 && (
         <div className='rounded-lg border px-4 py-3 text-xs text-muted-foreground'>
           <Shield className='h-3.5 w-3.5 inline mr-1.5' />
-          IP resuelta: {result.dns.a[0]} — configurá la API key de Shodan para obtener información del host.
+          IP resuelta: {result.dns.a[0]} - configurá la API key de Shodan para obtener información del host.
         </div>
       )}
 
       {/* crt.sh subdomains */}
-      <Section icon={<FileSearch className='h-3.5 w-3.5' />} title={`Subdominios (crt.sh) — ${result.crt.ok ? result.crt.total ?? 0 : '—'}`} defaultOpen={false}>
+      <Section icon={<FileSearch className='h-3.5 w-3.5' />} title={`Subdominios (crt.sh) - ${result.crt.ok ? result.crt.total ?? 0 : '-'}`} defaultOpen={false}>
         {result.crt.ok ? (
           result.crt.subdomains && result.crt.subdomains.length > 0 ? (
             <div className='flex flex-wrap gap-1.5 max-h-48 overflow-y-auto'>

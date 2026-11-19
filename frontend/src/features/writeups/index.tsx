@@ -1,5 +1,5 @@
 /**
- * Writeups — Generador de writeups para plataformas de práctica
+ * Writeups - Generador de writeups para plataformas de práctica
  * HackTheBox · TryHackMe · OSCP Lab · Bug Bounty
  * Generador de writeups para plataformas de práctica.
  */
@@ -255,7 +255,7 @@ export function Writeups() {
           ))}
         </div>
 
-        {/* Metadata fields — scroll */}
+        {/* Metadata fields - scroll */}
         <div className='flex-1 overflow-y-auto p-3 space-y-4'>
           <FieldGroup title='Identificación'>
             <FormField label='Autor'>
@@ -328,7 +328,7 @@ export function Writeups() {
                 <Input className={INPUT_CLS} placeholder='Reflected XSS en /search' value={data.title} onChange={set('title')} />
               </FormField>
               <FormField label='Programa'>
-                <Input className={INPUT_CLS} placeholder='HackerOne — Empresa XYZ' value={data.program} onChange={set('program')} />
+                <Input className={INPUT_CLS} placeholder='HackerOne - Empresa XYZ' value={data.program} onChange={set('program')} />
               </FormField>
               <FormField label='Severidad'>
                 <PillSelect
@@ -616,7 +616,7 @@ export function Writeups() {
             <div className='flex items-center justify-between gap-4'>
               <div>
                 <p className='text-sm font-medium text-foreground'>
-                  Writeup PDF — {P.label}
+                  Writeup PDF - {P.label}
                 </p>
                 <p className='text-xs text-muted-foreground mt-0.5'>
                   Portada · Info card · Secciones de contenido · Pie de página
@@ -654,7 +654,7 @@ export function Writeups() {
             <Shield className='h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0' />
             <p className='text-xs text-muted-foreground leading-relaxed'>
               El PDF se genera completamente en el cliente. No se envía ningún dato al servidor.
-              Los writeups son para uso personal / práctica — respetá las reglas de cada plataforma respecto a publicación de soluciones.
+              Los writeups son para uso personal / práctica - respetá las reglas de cada plataforma respecto a publicación de soluciones.
             </p>
           </div>
 
@@ -673,7 +673,7 @@ function SectionCard({ title, hint, children }: { title: string; hint?: string; 
       <div className='border-b border-border px-4 py-3 flex items-center gap-2'>
         <div className='h-2.5 w-0.5 rounded-full bg-red-600' />
         <h3 className='text-xs font-semibold text-foreground'>{title}</h3>
-        {hint && <span className='text-xs text-muted-foreground'>— {hint}</span>}
+        {hint && <span className='text-xs text-muted-foreground'>- {hint}</span>}
       </div>
       <div className='p-4'>
         {children}

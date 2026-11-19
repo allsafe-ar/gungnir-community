@@ -160,7 +160,7 @@ export function IntegracionesApiKeysPage() {
         </div>
 
         <div className='space-y-3'>
-          {/* Scanner status — Pro feature */}
+          {/* Scanner status - Pro feature */}
           <div className='rounded-lg border border-dashed bg-muted/20 p-4'>
             <div className='flex items-center gap-2 mb-3'>
               <ScanLine className='h-3.5 w-3.5 text-muted-foreground' />
@@ -169,7 +169,7 @@ export function IntegracionesApiKeysPage() {
             </div>
             <div className='space-y-2 text-sm text-muted-foreground'>
               <p>Live scanner feeds (Nessus, OpenVAS) are available in <strong>Gungnir Pro</strong>.</p>
-              <p className='text-xs'>XML import from .nessus / .xml files is available in all editions — use it from within any engagement phase.</p>
+              <p className='text-xs'>XML import from .nessus / .xml files is available in all editions - use it from within any engagement phase.</p>
             </div>
           </div>
 

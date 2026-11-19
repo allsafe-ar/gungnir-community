@@ -148,7 +148,7 @@ export function TimeSheet({ open, onOpenChange, engagementId, currentPhase }: {
             {entries.map(e => (
               <div key={e.id} className='group flex items-center gap-2 rounded-md border border-border bg-muted/20 px-3 py-2 text-xs'>
                 <span className='font-mono font-semibold tabular-nums'>{fmtDur(e.minutes)}</span>
-                <span className='text-muted-foreground'>{e.custom_phase_name || (e.phase_type ? t(`phase.${e.phase_type}`) : '—')}</span>
+                <span className='text-muted-foreground'>{e.custom_phase_name || (e.phase_type ? t(`phase.${e.phase_type}`) : '-')}</span>
                 {e.note && <span className='truncate flex-1 text-foreground/70'>{e.note}</span>}
                 <span className='ml-auto text-xs text-muted-foreground shrink-0'>{e.user_name} · {e.worked_on?.slice(0, 10)}</span>
                 {(canWrite && (auth.user?.id === e.user_id || auth.user?.role === 'admin' || auth.user?.role === 'auditor')) && (
