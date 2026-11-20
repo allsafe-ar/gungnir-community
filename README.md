@@ -405,7 +405,7 @@ Using offensive security tools against systems without authorization is illegal 
 
 ## Author
 
-Created by **Eduardo Emiliano Alaniz** ([@h4wkby73](https://github.com/h4wkby73))
+Created by **Eduardo Emiliano Alaniz**
 [AllSafe Security Solutions](https://www.allsafe.com.ar)
 
 ---
